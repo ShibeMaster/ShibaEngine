@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\ImGUI">
+      <UniqueIdentifier>{ac224ee2-f428-40ee-8871-a509004b68cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine">
+      <UniqueIdentifier>{4bd043b0-4d24-44e9-a9f9-8513c8ee7984}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Entity">
+      <UniqueIdentifier>{884b84ae-0606-459c-8677-109975f29b22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Component">
+      <UniqueIdentifier>{0be02d59-890d-4016-a1e8-f0c07965915c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{36c496b3-757e-45b2-aa93-76a3cab321fd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui_demo.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui_draw.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui_impl_glfw.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui_impl_opengl3.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui_tables.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="External Libraries\ImGui\imgui_widgets.cpp">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="External Libraries\ImGui\imconfig.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imgui.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imgui_impl_glfw.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imgui_impl_opengl3.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imgui_internal.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imstb_rectpack.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imstb_textedit.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imstb_truetype.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="External Libraries\ImGui\imgui_impl_opengl3_loader.h">
+      <Filter>Resource Files\ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentManager.h">
+      <Filter>Header Files\Engine\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentArray.h">
+      <Filter>Header Files\Engine\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityManager.h">
+      <Filter>Header Files\Engine\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripting.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
