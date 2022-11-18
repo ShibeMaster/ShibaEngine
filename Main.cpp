@@ -12,6 +12,7 @@
 #include "Scripting.h"
 #include "Camera.h"
 #include <Mono/jit/jit.h>
+#include "Project.h"
 #include <Mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include "Mesh.h"
@@ -65,6 +66,7 @@ char entryPoint[128];
 Camera camera;
 Camera& activeCamera = camera;
 bool inRuntime = false;
+Project project;
 
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
@@ -164,6 +166,7 @@ int main() {
 	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
 
 	Scripting::Initialize();
+	project.LoadProjectHierachy();
 
 
 	IMGUI_CHECKVERSION();
@@ -230,7 +233,7 @@ int main() {
 		Shaders::activeShader.SetMat4("view", activeCamera.GetViewMatrix());
 		Engine::Update();
 
-		
+
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -251,6 +254,9 @@ int main() {
 		}
 		ImGui::End();
 
+		// ImGui::Begin("Project", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+
+
 		/*
 		ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 		ImGui::SetWindowPos("Settings", ImVec2(20, SCREEN_HEIGHT - 350));
@@ -258,7 +264,7 @@ int main() {
 		ImGui::SetWindowSize("Settings", ImVec2(350, 350));
 		ImGui::End();
 		*/
-
+		project.RenderHierachy();
 		if (selectedEntity != -1) {
 			std::string windowName = std::to_string(selectedEntity);
 			ImGui::Begin(windowName.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysVerticalScrollbar);
