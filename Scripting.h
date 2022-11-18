@@ -16,6 +16,7 @@ enum class FieldType {
 	Double,
 	Bool,
 	Char,
+	String,
 	Byte,
 	Short,
 	Int,
@@ -123,6 +124,7 @@ public:
 		else if (name == "System.Double") return FieldType::Double;
 		else if (name == "System.Bool") return FieldType::Bool;
 		else if (name == "System.Char") return FieldType::Char;
+		else if (name == "System.String") return FieldType::String;
 		else if (name == "System.Byte") return FieldType::Byte;
 		else if (name == "System.Int16") return FieldType::Short;
 		else if (name == "System.Int32") return FieldType::Int;
@@ -159,6 +161,7 @@ public:
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::GetComponent", GetComponent);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::SetTransform", SetTransform);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::AddComponent", AddComponent);
+		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
 	}
 
 #pragma region Internal Calls 
@@ -185,6 +188,9 @@ public:
 	}
 	static MonoObject* GetComponent(unsigned int entity, MonoString* name) {
 		return data.entities[entity][mono_string_to_utf8(name)].instance;
+	}
+	static unsigned int CreateEntity() {
+		return Engine::CreateEntity();
 	}
 
 #pragma endregion 

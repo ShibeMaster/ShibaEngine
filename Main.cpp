@@ -16,6 +16,7 @@
 #include <mono/metadata/debug-helpers.h>
 #include "Mesh.h"
 #include <GLFW/glfw3.h>
+#include <assimp/Importer.hpp>
 #include "Time.h"
 #include "Transform.h"
 #include "MeshRenderer.h"
@@ -36,17 +37,15 @@ const char* defaultVertexSource = R"GLSL(
 #version 330 core
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec4 color;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec3 texCoords;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-out vec4 Color;
-
 void main(){
 	gl_Position = projection * view * model * vec4(position, 1.0);
-	Color = color;
 }
 
 )GLSL";
@@ -54,12 +53,12 @@ void main(){
 const char* defaultFragmentSource = R"GLSL(
 #version 330 core
 
-in vec4 Color;
 
 out vec4 FragColor;
 
+
 void main(){
-	FragColor = Color;
+	FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 )GLSL";
 char entryPoint[128];
@@ -101,8 +100,54 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
 	activeCamera.ProcessCameraMouse();
-	
+}
 
+void RenderField(Field field, ClassInstance& instance) {
+	// im sorrry for making this
+	float floatVal;
+	double doubleVal;
+	bool boolVal;
+	std::string stringVal;
+	glm::vec2 vec2Val;
+	glm::vec3 vec3Val;
+	int intValue;
+	switch (field.type) {
+	case FieldType::Float:
+		floatVal = instance.GetFieldValue<float>(field.name);
+		ImGui::InputFloat(field.name.c_str(), &floatVal);
+		if (floatVal != instance.GetFieldValue<float>(field.name))
+			instance.SetFieldValue<float>(field.name, floatVal);
+		break;
+	case FieldType::Double:
+		doubleVal = instance.GetFieldValue<double>(field.name);
+		ImGui::InputDouble(field.name.c_str(), &doubleVal);
+		if (doubleVal != instance.GetFieldValue<double>(field.name))
+			instance.SetFieldValue<double>(field.name, doubleVal);
+		break;
+	case FieldType::Bool:
+		boolVal = instance.GetFieldValue<bool>(field.name);
+		ImGui::Checkbox(field.name.c_str(), &boolVal);
+		if (boolVal != instance.GetFieldValue<bool>(field.name))
+			instance.SetFieldValue<bool>(field.name, boolVal);
+		break;
+	case FieldType::Vector2:
+		vec2Val = instance.GetFieldValue<glm::vec2>(field.name);
+		ImGui::InputFloat2(field.name.c_str(), &vec2Val[0]);
+		if (vec2Val != instance.GetFieldValue<glm::vec2>(field.name))
+			instance.SetFieldValue<glm::vec2>(field.name, vec2Val);
+		break;
+	case FieldType::Vector3:
+		vec3Val = instance.GetFieldValue<glm::vec3>(field.name);
+		ImGui::InputFloat3(field.name.c_str(), &vec3Val[0]);
+		if (vec3Val != instance.GetFieldValue<glm::vec3>(field.name))
+			instance.SetFieldValue<glm::vec3>(field.name, vec3Val);
+		break;
+	case FieldType::Int:
+		intValue = instance.GetFieldValue<int>(field.name);
+		ImGui::InputInt(field.name.c_str(), &intValue);
+		if (intValue != instance.GetFieldValue<int>(field.name.c_str()))
+			instance.SetFieldValue<int>(field.name, intValue);
+	}
 }
 
 int main() {
@@ -130,9 +175,6 @@ int main() {
 	Engine::RegisterComponent<Transform>();
 	Engine::RegisterComponent<MeshRenderer>();
 	Engine::RegisterComponent<Camera>();
-	auto entity = Engine::CreateEntity();
-	Engine::AddComponent<Transform>(entity, Transform(glm::vec3(0.0f, 1.0f, 0.0f)));
-	Engine::AddComponent<MeshRenderer>(entity, MeshRenderer(Mesh(vertices)));
 	camera = Camera(glm::vec3(0.0f));
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -225,7 +267,8 @@ int main() {
 
 
 			// Built-In Component Displays
-			
+			// this shit below was made in a rush, i definitely need to clean this up at some point
+
 			if (Engine::HasComponent<Transform>(selectedEntity)) {
 				if (ImGui::CollapsingHeader("Transform")) {
 
@@ -241,7 +284,8 @@ int main() {
 
 			if (Engine::HasComponent<MeshRenderer>(selectedEntity)) {
 				if (ImGui::CollapsingHeader("Mesh Renderer")) {
-
+					MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
+					ImGui::InputText("Model Path", renderer.modelPath, IM_ARRAYSIZE(renderer.modelPath));
 				}
 				ImGui::Separator();
 
@@ -257,29 +301,28 @@ int main() {
 
 			}
 
-			if (ImGui::CollapsingHeader("Scripts")) {
-				for (auto script : Scripting::GetEntityComponentInstances(selectedEntity)) {
-					ImGui::Text(script.first.c_str());
+			for (auto script : Scripting::GetEntityComponentInstances(selectedEntity)) {
+				if (ImGui::CollapsingHeader(script.first.c_str())) {
 
 					for (auto field : script.second.classData.fields) {
-						switch (field.second.type) {
-						case FieldType::Int:
-							int value = script.second.GetFieldValue<int>(field.first);
-							ImGui::InputInt(field.first.c_str(), &value);
-							if(value != script.second.GetFieldValue<int>(field.first))
-								script.second.SetFieldValue<int>(field.first, value);
-						}
+						RenderField(field.second, script.second);
 					}
 					ImGui::Separator();
 				}
-
 			}
+
 
 			ImGui::InputText("Component", addingComponent, IM_ARRAYSIZE(addingComponent));
 			if (ImGui::Button("Add Component")) {
-				Engine::AddScript(selectedEntity, addingComponent);
+				if (std::string(addingComponent) == "MeshRenderer") {
+					Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
+					std::cout << "was mesh renderer" << std::endl;
+				}
+				else
+					Engine::AddScript(selectedEntity, addingComponent);
 				Scripting::LoadEntityScripts(selectedEntity);
 			}
+
 
 			ImGui::End();
 		}

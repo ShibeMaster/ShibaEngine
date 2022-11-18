@@ -36,7 +36,9 @@ public:
 	void Use() {
 		glUseProgram(id);
 	}
-
+	void SetInt(const std::string& name, int value) {
+		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+	}
 	void SetVec3(std::string name, glm::vec3 value) {
 		glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
 	}

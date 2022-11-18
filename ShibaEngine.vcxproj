@@ -143,14 +143,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\External Libraries\ImGui\imgui.cpp" />
+    <ClCompile Include="..\External Libraries\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="..\External Libraries\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\External Libraries\ImGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\External Libraries\ImGui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\External Libraries\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="..\External Libraries\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui_demo.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui_draw.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui_tables.cpp" />
-    <ClCompile Include="External Libraries\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="SceneManager.cpp" />
@@ -159,24 +159,25 @@
     <ClCompile Include="Time.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\External Libraries\ImGui\imconfig.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imgui.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imgui_internal.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imstb_textedit.h" />
+    <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentArray.h" />
     <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EntityManager.h" />
-    <ClInclude Include="External Libraries\ImGui\imconfig.h" />
-    <ClInclude Include="External Libraries\ImGui\imgui.h" />
-    <ClInclude Include="External Libraries\ImGui\imgui_impl_glfw.h" />
-    <ClInclude Include="External Libraries\ImGui\imgui_impl_opengl3.h" />
-    <ClInclude Include="External Libraries\ImGui\imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="External Libraries\ImGui\imgui_internal.h" />
-    <ClInclude Include="External Libraries\ImGui\imstb_rectpack.h" />
-    <ClInclude Include="External Libraries\ImGui\imstb_textedit.h" />
-    <ClInclude Include="External Libraries\ImGui\imstb_truetype.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
@@ -187,6 +188,5 @@
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>
