@@ -152,9 +152,9 @@ public:
 		data.appDomain = mono_domain_create_appdomain((char*)"ShibaEngine", nullptr);
 		mono_domain_set(data.appDomain, true);
 
-		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net6.0\\ShibaEngineCore.dll");
+		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
 		componentClass = Class{ "Component", "ShibaEngine", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
-		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net6.0\\ShibaEngineCore.dll");
+		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
 		LoadAssemblyClasses();
 
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::GetTransform", GetTransform);
@@ -278,6 +278,7 @@ public:
 		return data.entities[entity];
 	}
 	static void LoadEntityScripts(unsigned int entity) {
+		data.entities[entity].clear();
 		auto scripts = Engine::GetEntityScripts(entity);
 		for (auto script : scripts) {
 			if (data.components.find(script) != data.components.end())

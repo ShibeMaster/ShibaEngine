@@ -152,8 +152,14 @@
     <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Project.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ModelLoader.h">
-      <Filter>Header Files\Components</Filter>
+      <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
