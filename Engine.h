@@ -28,6 +28,7 @@ public:
 		componentManager.AddScript(entity, component);
 	}
 	static void RemoveScript(unsigned int entity, const std::string& component) {
+		std::cout << "removed script" << std::endl;
 		componentManager.RemoveScript(entity, component);
 	}
 	static std::vector<std::string> GetEntityScripts(unsigned int entity) {
@@ -58,6 +59,7 @@ public:
 	}
 	template<class T>
 	static void RemoveComponent(unsigned int entity) {
+		std::cout << "removed component" << std::endl;
 		componentManager.RemoveComponent<T>(entity);
 	}
 	template<class T>

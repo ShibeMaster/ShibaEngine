@@ -168,7 +168,6 @@ int main() {
 	Scripting::Initialize();
 	project.LoadProjectHierachy();
 
-
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -210,8 +209,6 @@ int main() {
 	colors[ImGuiCol_HeaderHovered] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 
-
-	char addingComponent[64] = "";
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -234,15 +231,18 @@ int main() {
 		Engine::Update();
 
 
-
+		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGui::ShowDemoWindow();
-		ImGui::Begin("Enities", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
-		if (ImGui::BeginListBox("###Entities", ImVec2(280, SceneManager::activeScene.entities.size() * 19))) {
+		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+		ImGui::BeginChild("Entities", ImVec2(ImGui::GetWindowSize().x - 15, 200), true);
+		ImGui::TextUnformatted("Scene");
+		//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+		if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65))) {
 			for (unsigned int entity : SceneManager::activeScene.entities) {
-				if (ImGui::Selectable(std::to_string(entity).c_str())) {
+				if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
 					selectedEntity = entity;
 				}
 			}
@@ -252,7 +252,8 @@ int main() {
 				Engine::CreateEntity();
 			}
 		}
-		ImGui::End();
+		//ImGui::End();
+		ImGui::EndChild();
 
 		// ImGui::Begin("Project", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
@@ -265,6 +266,7 @@ int main() {
 		ImGui::End();
 		*/
 		project.RenderHierachy();
+		ImGui::End();
 		if (selectedEntity != -1) {
 			std::string windowName = std::to_string(selectedEntity);
 			ImGui::Begin(windowName.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysVerticalScrollbar);
@@ -284,42 +286,69 @@ int main() {
 					ImGui::InputFloat3("pivot", &transform->pivot[0]);
 					ImGui::InputFloat3("scale", &transform->scale[0]);
 				}
-				ImGui::Separator();
 
 			}
 
 			if (Engine::HasComponent<MeshRenderer>(selectedEntity)) {
-				if (ImGui::CollapsingHeader("Mesh Renderer")) {
+				bool meshRendererExists = true;
+				if (ImGui::CollapsingHeader("Mesh Renderer", &meshRendererExists)) {
 					MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
-					ImGui::InputText("Model Path", renderer.modelPath, IM_ARRAYSIZE(renderer.modelPath));
+					ImGui::Button(renderer.modelItem.name.c_str());
+					if (ImGui::BeginDragDropTarget()) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_.fbx")) {
+							renderer.modelItem = project.GetItem((const char*)payload->Data);
+							std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
+							renderer.ReloadMesh();
+						}
+						ImGui::EndDragDropTarget();
+					}
 				}
-				ImGui::Separator();
+				if (!meshRendererExists)
+					Engine::RemoveComponent<MeshRenderer>(selectedEntity);
 
 			}
 
 			if (Engine::HasComponent<Camera>(selectedEntity)) {
-				if (ImGui::CollapsingHeader("Camera")) {
+				bool cameraExists = true;
+				if (ImGui::CollapsingHeader("Camera", &cameraExists)) {
 					auto camera = Engine::GetComponent<Camera>(selectedEntity);
 					ImGui::InputFloat("Speed", &camera.speed);
 					ImGui::InputFloat("Sensitivity", &camera.sensitivity);
 				}
-				ImGui::Separator();
-
+				 
+				if (!cameraExists)
+					Engine::RemoveComponent<Camera>(selectedEntity);
 			}
 
 			for (auto script : Scripting::GetEntityComponentInstances(selectedEntity)) {
-				if (ImGui::CollapsingHeader(script.first.c_str())) {
+				bool scriptExists = true;
+				if (ImGui::CollapsingHeader(script.first.c_str(), &scriptExists)) {
 
 					for (auto field : script.second.classData.fields) {
 						RenderField(field.second, script.second);
 					}
-					ImGui::Separator();
+				}
+				if (!scriptExists) {
+					Engine::RemoveScript(selectedEntity, script.first);
 				}
 			}
+			Scripting::LoadEntityScripts(selectedEntity);
 
-
+			ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30));
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
+					Engine::AddScript(selectedEntity, project.GetItem((const char*)payload->Data).name);
+					Scripting::LoadEntityScripts(selectedEntity);
+				}
+				else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
+					std::string name = project.GetItem((const char*)payload->Data).name;
+					if (name == "Camera") Engine::AddComponent<Camera>(selectedEntity, Camera(Engine::GetComponent<Transform>(selectedEntity).position));
+					else if (name == "Mesh Renderer") Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
+				}
+			}
+			/*
 			ImGui::InputText("Component", addingComponent, IM_ARRAYSIZE(addingComponent));
-			if (ImGui::Button("Add Component")) {
+			if (ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x, 30))) {
 				if (std::string(addingComponent) == "MeshRenderer") {
 					Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
 					std::cout << "was mesh renderer" << std::endl;
@@ -327,7 +356,7 @@ int main() {
 				else
 					Engine::AddScript(selectedEntity, addingComponent);
 				Scripting::LoadEntityScripts(selectedEntity);
-			}
+			} */
 
 
 			ImGui::End();

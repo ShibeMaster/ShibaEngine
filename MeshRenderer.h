@@ -5,18 +5,20 @@
 #include "Engine.h"
 #include "Transform.h"
 #include <string>
+#include "ProjectItem.h"
 #include "ModelLoader.h"
 class MeshRenderer : public Component {
 public:
-	char modelPath[128] = "";
-    std::string lastFramePath;
+    ProjectItem modelItem = ProjectItem { "Model Item" };
 	Mesh mesh;
     bool hasModel = false;
 	MeshRenderer(){
-        this->lastFramePath = modelPath;
-        mesh = ModelLoader::LoadModel(modelPath);
-        hasModel = mesh.vertices.size() != 0;
+        ReloadMesh();
 	}
+    void ReloadMesh() {
+        mesh = ModelLoader::LoadModel(modelItem.path);
+        hasModel = mesh.vertices.size() != 0;
+    }
 	void Update() {
         if (hasModel) {
 
@@ -43,12 +45,6 @@ public:
             glActiveTexture(GL_TEXTURE0);*/
 
             mesh.Render();
-        }
-        if (std::string(modelPath) != lastFramePath) {
-            mesh = ModelLoader::LoadModel(std::string(modelPath));
-            hasModel = mesh.vertices.size() != 0;
-            lastFramePath = std::string(modelPath);
-            std::cout << hasModel << std::endl;
         }
 	}
 };
