@@ -9,6 +9,7 @@
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/debug-helpers.h>
 #include <unordered_map>
+#include "Console.h"
 
 enum class FieldType {
 	None,
@@ -162,6 +163,8 @@ public:
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::SetTransform", SetTransform);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::AddComponent", AddComponent);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
+		mono_add_internal_call("ShibaEngineCore.EngineCalls::PrintMessage", PrintMessage);
+		mono_add_internal_call("ShibaEngineCore.EngineCalls::PrintError", PrintError);
 	}
 
 #pragma region Internal Calls 
@@ -191,6 +194,13 @@ public:
 	}
 	static unsigned int CreateEntity() {
 		return Engine::CreateEntity();
+	}
+
+	static void PrintMessage(MonoString* message) {
+		Console::LogMessage(mono_string_to_utf8(message));
+	}
+	static void PrintError(MonoString* error) {
+		Console::LogError(mono_string_to_utf8(error));
 	}
 
 #pragma endregion 
