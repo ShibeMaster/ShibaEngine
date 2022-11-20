@@ -87,7 +87,7 @@ public:
 		}
 	}
 	void RenderHierachy() {
-		ImGui::BeginChild("Project", ImVec2(ImGui::GetWindowSize().x - 15, 435), true);
+		ImGui::BeginChild("Project", ImVec2(0, 0), true);
 		ImGui::TextUnformatted("Project Hierachy");
 		if (ImGui::BeginTable("Project", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, 420))) {
 			float textWidth = ImGui::CalcTextSize("A").x;

@@ -9,6 +9,7 @@
 #include "Scene.h"
 #include <string>
 #include "Engine.h"
+#include "Console.h"
 #include "Scripting.h"
 #include "Camera.h"
 #include <Mono/jit/jit.h>
@@ -16,6 +17,8 @@
 #include <Mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include "Mesh.h"
+#include "Display.h"
+#include "View.h"
 #include <GLFW/glfw3.h>
 #include <assimp/Importer.hpp>
 #include "Time.h"
@@ -23,9 +26,6 @@
 #include "MeshRenderer.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
-
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
 
 GLFWwindow* window;
 
@@ -63,10 +63,11 @@ void main(){
 }
 )GLSL";
 char entryPoint[128];
-Camera camera;
-Camera& activeCamera = camera;
 bool inRuntime = false;
 Project project;
+View sceneView;
+View gameView;
+View* activeView = &sceneView;
 
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
@@ -80,6 +81,10 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			else
 				InputManager::SetMouseLocked();
 		}
+		if (key == GLFW_KEY_F1)
+			Console::LogMessage("test message");
+		if (key == GLFW_KEY_F4)
+			Console::LogError("test error");
 		if (key == GLFW_KEY_F2) {
 			std::string script;
 			std::cin >> script;
@@ -88,11 +93,6 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
 
-			auto camEntities = Engine::FindComponentsInScene<Camera>();
-			if (camEntities.size() > 0) {
-				std::cout << "set camera to entity: " << camEntities[0] << std::endl;
-				activeCamera = Engine::GetComponent<Camera>(camEntities[0]);
-			}
 			inRuntime = true;
 		}
 	}
@@ -101,7 +101,8 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
-	activeCamera.ProcessCameraMouse();
+	if(activeView->hasCamera && (!activeView->cameraInRuntimeOnly || inRuntime))
+		activeView->camera.ProcessCameraMouse();
 }
 
 void RenderField(Field field, ClassInstance& instance) {
@@ -158,8 +159,8 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Shiba Engine", NULL, NULL);
-	glfwMakeContextCurrent(window);
+	window = Display::CreateWindow();
+
 	glewInit();
 	glfwSwapInterval(1);
 
@@ -177,7 +178,8 @@ int main() {
 	Engine::RegisterComponent<Transform>();
 	Engine::RegisterComponent<MeshRenderer>();
 	Engine::RegisterComponent<Camera>();
-	camera = Camera(glm::vec3(0.0f));
+	sceneView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), Camera(glm::vec3(0.0f)), false);
+	gameView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), true);
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
@@ -187,9 +189,9 @@ int main() {
 	unsigned int selectedEntity = -1;
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput);
-	glfwShowWindow(window);
 
-	activeCamera = camera;
+	Display::ShowWindow();
+	
 	ImVec4* colors = ImGui::GetStyle().Colors;
 	colors[ImGuiCol_FrameBg] = ImVec4(0.28f, 0.28f, 0.28f, 0.54f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.33f, 0.33f, 0.33f, 0.54f);
@@ -209,54 +211,85 @@ int main() {
 	colors[ImGuiCol_HeaderHovered] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 
+	bool gameViewOpen;
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
+		activeView->Update(inRuntime);
 
+		Time::currentTime = glfwGetTime();
 		Time::deltaTime = glfwGetTime() - Time::lastFrameTime;
 		Time::lastFrameTime = glfwGetTime();
+
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		if(inRuntime)
 			Scripting::Update();
 
-		activeCamera.position += activeCamera.forward * InputManager::MoveVert() * Time::deltaTime;
-		activeCamera.position += activeCamera.right * InputManager::MoveHorz() * Time::deltaTime;
-		activeCamera.position += activeCamera.worldUp * InputManager::MoveUpDown() * Time::deltaTime;
-		activeCamera.UpdateCameraVectors();
-
-
-		Shaders::activeShader.SetMat4("projection", glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f));
-		Shaders::activeShader.SetMat4("view", activeCamera.GetViewMatrix());
 		Engine::Update();
-
 
 		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
-		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::BeginChild("Entities", ImVec2(ImGui::GetWindowSize().x - 15, 200), true);
-		ImGui::TextUnformatted("Scene");
-		//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65))) {
-			for (unsigned int entity : SceneManager::activeScene.entities) {
-				if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
-					selectedEntity = entity;
+		// ImGui::ShowDemoWindow();
+		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		ImGui::SetWindowPos(ImVec2(0, 0));
+		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height));
+		if (ImGui::BeginChild("Entities", ImVec2(0.0f, -450.0f), true)) {
+			ImGui::TextUnformatted("Scene");
+			//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+			if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65f))) {
+				for (unsigned int entity : SceneManager::activeScene.entities) {
+					if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
+						selectedEntity = entity;
+					}
+				}
+				ImGui::EndListBox();
+
+				if (ImGui::Button("New Entity")) {
+					Engine::CreateEntity();
 				}
 			}
-			ImGui::EndListBox();
-
-			if (ImGui::Button("New Entity")) {
-				Engine::CreateEntity();
-			}
+			//ImGui::End();
+			ImGui::EndChild();
 		}
-		//ImGui::End();
-		ImGui::EndChild();
+		project.RenderHierachy();
+		ImGui::End();
+
 
 		// ImGui::Begin("Project", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+		ImGui::Begin("View", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
+		ImGui::SetWindowPos("View", ImVec2(Display::width * 0.3f, 0.0f));
+		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, Display::height * 0.75f));
+		if (ImGui::BeginTabBar("View", ImGuiTabBarFlags_None)) {
+			if(ImGui::BeginTabItem("Scene")) {
+				if (activeView != &sceneView) {
 
+					activeView = &sceneView;
+					std::cout << "switched to scene view" << std::endl;
+				}
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Game")) {
+				if (!gameView.hasCamera) {
+					auto camEntities = Engine::FindComponentsInScene<Camera>();
+					if (camEntities.size() > 0) {
+						std::cout << "set camera to entity: " << camEntities[0] << std::endl;
+						gameView.camera = Engine::GetComponent<Camera>(camEntities[0]);
+						gameView.hasCamera = true;
+					}
+				}
+
+				if (activeView != &gameView) {
+					activeView = &gameView;
+				}
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+		ImGui::End();
 
 		/*
 		ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -265,18 +298,18 @@ int main() {
 		ImGui::SetWindowSize("Settings", ImVec2(350, 350));
 		ImGui::End();
 		*/
-		project.RenderHierachy();
-		ImGui::End();
+		Console::Render();
+		ImGui::Begin("Components", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoCollapse);
+		ImGui::SetWindowPos("Components", ImVec2(Display::width * 0.75f, 0.0f));
+		ImGui::SetWindowSize("Components", ImVec2(Display::width * 0.25f, Display::height));
+
+
+		// Built-In Component Displays
+		// this shit below was made in a rush, i definitely need to clean this up at some point
+
 		if (selectedEntity != -1) {
-			std::string windowName = std::to_string(selectedEntity);
-			ImGui::Begin(windowName.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysVerticalScrollbar);
-			ImGui::SetWindowSize(windowName.c_str(), ImVec2(350, SCREEN_HEIGHT * 0.9));
-			ImGui::SetWindowPos(windowName.c_str(), ImVec2(SCREEN_WIDTH - 380, 50));
-
-
-			// Built-In Component Displays
-			// this shit below was made in a rush, i definitely need to clean this up at some point
-
+			ImGui::Text(std::to_string(selectedEntity).c_str());
+			ImGui::Separator();
 			if (Engine::HasComponent<Transform>(selectedEntity)) {
 				if (ImGui::CollapsingHeader("Transform")) {
 
@@ -315,7 +348,7 @@ int main() {
 					ImGui::InputFloat("Speed", &camera.speed);
 					ImGui::InputFloat("Sensitivity", &camera.sensitivity);
 				}
-				 
+
 				if (!cameraExists)
 					Engine::RemoveComponent<Camera>(selectedEntity);
 			}
@@ -334,7 +367,7 @@ int main() {
 			}
 			Scripting::LoadEntityScripts(selectedEntity);
 
-			ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30));
+			ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30.0f));
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
 					Engine::AddScript(selectedEntity, project.GetItem((const char*)payload->Data).name);
@@ -346,6 +379,7 @@ int main() {
 					else if (name == "Mesh Renderer") Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
 				}
 			}
+			
 			/*
 			ImGui::InputText("Component", addingComponent, IM_ARRAYSIZE(addingComponent));
 			if (ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x, 30))) {
@@ -359,8 +393,9 @@ int main() {
 			} */
 
 
-			ImGui::End();
 		}
+		ImGui::End();
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
