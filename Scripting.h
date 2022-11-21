@@ -143,6 +143,7 @@ class Scripting {
 public:
 	static ScriptingEngineData data;
 	static Class componentClass;
+	static Class timeClass;
 	static void Initialize() {
 		MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 		if (rootDomain == nullptr) {
@@ -153,9 +154,10 @@ public:
 		data.appDomain = mono_domain_create_appdomain((char*)"ShibaEngine", nullptr);
 		mono_domain_set(data.appDomain, true);
 
-		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
-		componentClass = Class{ "Component", "ShibaEngine", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
-		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
+		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net6.0\\ShibaEngineCore.dll");
+		componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
+		timeClass = Class{ "Time", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Time") };
+		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net6.0\\ShibaEngineCore.dll");
 		LoadAssemblyClasses();
 
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::GetTransform", GetTransform);
@@ -287,13 +289,22 @@ public:
 	static std::unordered_map<std::string, ClassInstance>& GetEntityComponentInstances(unsigned int entity) {
 		return data.entities[entity];
 	}
-	static void LoadEntityScripts(unsigned int entity) {
+	static void ReloadEntityScripts(unsigned int entity) {
 		data.entities[entity].clear();
 		auto scripts = Engine::GetEntityScripts(entity);
 		for (auto script : scripts) {
 			if (data.components.find(script) != data.components.end())
 				data.entities[entity][script] = CreateClassInstance(entity, data.components[script]);
 		}
+	}
+	static void RemoveScriptInstance(unsigned int entity, const std::string& script) {
+		if (data.entities[entity].find(script) != data.entities[entity].end())
+			data.entities[entity].erase(script);
+	}
+	static void LoadEntityScript(unsigned int entity, const std::string& script) {
+
+		if (data.components.find(script) != data.components.end())
+			data.entities[entity][script] = CreateClassInstance(entity, data.components[script]);
 	}
 	static void OnRuntimeStart() {
 		for (auto comp : data.entities) {
@@ -304,6 +315,12 @@ public:
 	}
 	static void Update() {
 
+		void* params[] = {
+			&Time::deltaTime,
+			&Time::currentTime
+		};
+		MonoObject* exception = nullptr;
+		mono_runtime_invoke(timeClass.GetMethod("UpdateTime", 2), nullptr, params, &exception);
 		for (auto comp : data.entities) {
 			for (auto instance : comp.second) {
 				instance.second.InvokeMethod(instance.second.updateMethod, 0);

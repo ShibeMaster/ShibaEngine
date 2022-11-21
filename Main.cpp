@@ -64,14 +64,37 @@ void main(){
 )GLSL";
 char entryPoint[128];
 bool inRuntime = false;
+float runtimeStartTime = 0.0f;
 Project project;
 View sceneView;
 View gameView;
 View* activeView = &sceneView;
 
+template<typename T> 
+bool CreateDragDropTarget(const std::string& targetType, T* outValue) {
+
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(std::string(std::string("DRAG_DROP_") + targetType).c_str())) {
+			*outValue = *(T*)payload->Data;
+			return true;
+		}
+	}
+	return false;
+}
+bool CreateProjectItemDropField(const std::string& fileType, ProjectItem* outItem) {
+
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(std::string("DRAG_DROP_" + fileType).c_str())) {
+			auto script = project.GetItem((const char*)payload->Data);
+			*outItem = script;
+			return true;
+		}
+	}
+	return false;
+}
+
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
-
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_ESCAPE)
 			glfwSetWindowShouldClose(window, true);
@@ -92,7 +115,7 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
-
+			runtimeStartTime = glfwGetTime();
 			inRuntime = true;
 		}
 	}
@@ -110,6 +133,7 @@ void RenderField(Field field, ClassInstance& instance) {
 	float floatVal;
 	double doubleVal;
 	bool boolVal;
+	unsigned int entityValue;
 	std::string stringVal;
 	glm::vec2 vec2Val;
 	glm::vec3 vec3Val;
@@ -132,6 +156,13 @@ void RenderField(Field field, ClassInstance& instance) {
 		ImGui::Checkbox(field.name.c_str(), &boolVal);
 		if (boolVal != instance.GetFieldValue<bool>(field.name))
 			instance.SetFieldValue<bool>(field.name, boolVal);
+		break;
+	case FieldType::UInt:
+		entityValue = instance.GetFieldValue<unsigned int>(field.name);
+		ImGui::Button(std::string(field.name + ": " + std::to_string(entityValue)).c_str());
+		if (CreateDragDropTarget<unsigned int>("Entity", &entityValue)) {
+			instance.SetFieldValue<unsigned int>(field.name, entityValue);
+		}
 		break;
 	case FieldType::Vector2:
 		vec2Val = instance.GetFieldValue<glm::vec2>(field.name);
@@ -216,9 +247,10 @@ int main() {
 		glfwPollEvents();
 		activeView->Update(inRuntime);
 
-		Time::currentTime = glfwGetTime();
+		Time::currentTime = glfwGetTime() - runtimeStartTime;
 		Time::deltaTime = glfwGetTime() - Time::lastFrameTime;
 		Time::lastFrameTime = glfwGetTime();
+
 
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -243,6 +275,10 @@ int main() {
 				for (unsigned int entity : SceneManager::activeScene.entities) {
 					if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
 						selectedEntity = entity;
+					}
+					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+						ImGui::SetDragDropPayload("DRAG_DROP_Entity", &entity, sizeof(unsigned int));
+						ImGui::EndDragDropSource();
 					}
 				}
 				ImGui::EndListBox();
@@ -327,13 +363,11 @@ int main() {
 				if (ImGui::CollapsingHeader("Mesh Renderer", &meshRendererExists)) {
 					MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
 					ImGui::Button(renderer.modelItem.name.c_str());
-					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_.fbx")) {
-							renderer.modelItem = project.GetItem((const char*)payload->Data);
-							std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
-							renderer.ReloadMesh();
-						}
-						ImGui::EndDragDropTarget();
+					ProjectItem item;
+					if (CreateProjectItemDropField(".fbx", &item)) {
+						renderer.modelItem = item;
+						std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
+						renderer.ReloadMesh();
 					}
 				}
 				if (!meshRendererExists)
@@ -353,6 +387,7 @@ int main() {
 					Engine::RemoveComponent<Camera>(selectedEntity);
 			}
 
+			std::vector<std::string> removingScripts;
 			for (auto script : Scripting::GetEntityComponentInstances(selectedEntity)) {
 				bool scriptExists = true;
 				if (ImGui::CollapsingHeader(script.first.c_str(), &scriptExists)) {
@@ -361,25 +396,27 @@ int main() {
 						RenderField(field.second, script.second);
 					}
 				}
-				if (!scriptExists) {
-					Engine::RemoveScript(selectedEntity, script.first);
-				}
+				if (!scriptExists)
+					removingScripts.push_back(script.first);
 			}
-			Scripting::LoadEntityScripts(selectedEntity);
+			for (auto script : removingScripts) {
+				Engine::RemoveScript(selectedEntity, script);
+				Scripting::RemoveScriptInstance(selectedEntity, script);
+			}
 
 			ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30.0f));
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
-					Engine::AddScript(selectedEntity, project.GetItem((const char*)payload->Data).name);
-					Scripting::LoadEntityScripts(selectedEntity);
+					auto script = project.GetItem((const char*)payload->Data).name;
+					Engine::AddScript(selectedEntity, script);
+					Scripting::LoadEntityScript(selectedEntity, script);
 				}
 				else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
-					std::string name = project.GetItem((const char*)payload->Data).name;
+					auto name = project.GetItem((const char*)payload->Data).name;
 					if (name == "Camera") Engine::AddComponent<Camera>(selectedEntity, Camera(Engine::GetComponent<Transform>(selectedEntity).position));
 					else if (name == "Mesh Renderer") Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
 				}
 			}
-			
 			/*
 			ImGui::InputText("Component", addingComponent, IM_ARRAYSIZE(addingComponent));
 			if (ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x, 30))) {

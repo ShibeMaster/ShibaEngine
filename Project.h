@@ -14,7 +14,7 @@ struct HierachyTreeNode {
 
 class Project {
 public:
-	std::filesystem::path baseDirectory = std::filesystem::path("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy");
+	std::filesystem::path baseDirectory = std::filesystem::path("C:\\Users\\tombr\\Downloads\\Test Hierachy");
 	HierachyTreeNode hierachy;
 	HierachyTreeNode scriptHierachy;
 	HierachyTreeNode componentHierachy;
