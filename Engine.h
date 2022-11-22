@@ -8,8 +8,8 @@ private:
 	static EntityManager entityManager;
 	static ComponentManager componentManager;
 public:
-	static void Update() {
-		componentManager.Update();
+	static void Update(bool inRuntime) {
+		componentManager.Update(inRuntime);
 	}
 	static void Start() {
 		componentManager.Start();
@@ -34,7 +34,9 @@ public:
 	static std::vector<std::string> GetEntityScripts(unsigned int entity) {
 		return componentManager.GetEntityScripts(entity);
 	}
-
+	static void DrawEntityComponentGUI(unsigned int entity) {
+		componentManager.DrawEntityComponentGUI(entity);
+	}
 	template<typename T>
 	static std::vector<unsigned int> FindComponentsInScene() {
 		std::vector<unsigned int> entitiesWithComponent;
@@ -56,6 +58,12 @@ public:
 	static 	void AddComponent(unsigned int entity, T component) {
 		component.entity = entity;
 		componentManager.AddComponent<T>(entity, component);
+	}
+	static void AddComponent(unsigned int entity, const std::string& name) {
+		componentManager.AddComponent(entity, name);
+	}
+	static std::vector<std::string> GetRegisteredComponents() {
+		return componentManager.GetRegisteredComponents();
 	}
 	template<class T>
 	static void RemoveComponent(unsigned int entity) {

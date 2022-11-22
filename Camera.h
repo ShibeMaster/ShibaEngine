@@ -25,6 +25,21 @@ public:
 		pitch = p;
 		UpdateCameraVectors();
 	}
+	static void DrawGUI(unsigned int selectedEntity) {
+
+		if (Engine::HasComponent<Camera>(selectedEntity)) {
+			bool cameraExists = true;
+			if (ImGui::CollapsingHeader("Camera", &cameraExists)) {
+				auto camera = Engine::GetComponent<Camera>(selectedEntity);
+				ImGui::InputFloat("Speed", &camera.speed);
+				ImGui::InputFloat("Sensitivity", &camera.sensitivity);
+			}
+
+			if (!cameraExists)
+				Engine::RemoveComponent<Camera>(selectedEntity);
+		}
+
+	}
 	void UpdateCameraVectors() {
 		glm::vec3 direction;
 		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));

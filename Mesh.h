@@ -6,7 +6,6 @@
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 normal;
-	glm::vec2 texCoords;
 };
 struct Texture {
 	unsigned int id;
@@ -51,8 +50,8 @@ public:
 		glEnableVertexAttribArray(1);
 
 
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-		glEnableVertexAttribArray(2);
+		//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+		//glEnableVertexAttribArray(2);
 
 		glBindVertexArray(0);
 	}
