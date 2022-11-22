@@ -4,6 +4,7 @@
 #include "Shaders.h"
 #include "Engine.h"
 #include "Transform.h"
+#include "GUIExtensions.h"
 #include <string>
 #include "ProjectItem.h"
 #include "ModelLoader.h"
@@ -15,11 +16,29 @@ public:
 	MeshRenderer(){
         ReloadMesh();
 	}
+    static void DrawGUI(unsigned int selectedEntity) {
+        if (Engine::HasComponent<MeshRenderer>(selectedEntity)) {
+            bool meshRendererExists = true;
+            if (ImGui::CollapsingHeader("Mesh Renderer", &meshRendererExists)) {
+                MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
+                ImGui::Button(renderer.modelItem.name.c_str());
+                ProjectItem item;
+                if (GUIExtensions::CreateProjectItemDropField(".fbx", &item)) {
+                    renderer.modelItem = item;
+                    std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
+                    renderer.ReloadMesh();
+                }
+            }
+            if (!meshRendererExists)
+                Engine::RemoveComponent<MeshRenderer>(selectedEntity);
+
+        }
+    }
     void ReloadMesh() {
         mesh = ModelLoader::LoadModel(modelItem.path);
         hasModel = mesh.vertices.size() != 0;
     }
-	void Update() {
+	void Update(bool inRuntime) {
         if (hasModel) {
 
             auto transform = Engine::GetComponent<Transform>(entity);

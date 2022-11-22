@@ -20,6 +20,10 @@ public:
 	HierachyTreeNode componentHierachy;
 	std::unordered_map<std::string, HierachyTreeNode> hierachyMap;
 
+	Project(){}
+	Project(const std::string& path) {
+		baseDirectory = std::filesystem::path(path);
+	}
 	ProjectItem& GetItem(const std::string& path) {
 		if (hierachyMap.find(path) == hierachyMap.end())
 			return hierachy.item;
@@ -58,8 +62,9 @@ public:
 	}
 	void LoadDefaultComponentHierachy() {
 		componentHierachy.item.name = "Components";
-		CreateHierachyNode("Camera", "Components\\Camera", "Component", componentHierachy);
-		CreateHierachyNode("Mesh Renderer", "Components\\MeshRenderer", "Component", componentHierachy);
+		for (auto comp : Engine::GetRegisteredComponents()) {
+			CreateHierachyNode(comp, "Components\\" + comp, "Component", componentHierachy);
+		}
 		hierachyMap["Components"] = componentHierachy;
 	}
 	void RenderHierachyNode(HierachyTreeNode& node) {

@@ -8,11 +8,15 @@
 #include "InputManager.h"
 #include "Scene.h"
 #include <string>
+#include "ProjectManager.h"
 #include "Engine.h"
+#include "Physics.h"
+#include "BoundingBox.h"
 #include "Console.h"
 #include "Scripting.h"
 #include "Camera.h"
 #include <Mono/jit/jit.h>
+#include "GUIExtensions.h"
 #include "Project.h"
 #include <Mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
@@ -22,10 +26,12 @@
 #include <GLFW/glfw3.h>
 #include <assimp/Importer.hpp>
 #include "Time.h"
+#include "Collisions.h"
 #include "Transform.h"
 #include "MeshRenderer.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
+#include "MeshCollisionBox.h"
 
 GLFWwindow* window;
 
@@ -65,34 +71,9 @@ void main(){
 char entryPoint[128];
 bool inRuntime = false;
 float runtimeStartTime = 0.0f;
-Project project;
 View sceneView;
 View gameView;
 View* activeView = &sceneView;
-
-template<typename T> 
-bool CreateDragDropTarget(const std::string& targetType, T* outValue) {
-
-	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(std::string(std::string("DRAG_DROP_") + targetType).c_str())) {
-			*outValue = *(T*)payload->Data;
-			return true;
-		}
-	}
-	return false;
-}
-bool CreateProjectItemDropField(const std::string& fileType, ProjectItem* outItem) {
-
-	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(std::string("DRAG_DROP_" + fileType).c_str())) {
-			auto script = project.GetItem((const char*)payload->Data);
-			*outItem = script;
-			return true;
-		}
-	}
-	return false;
-}
-
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	if (action == GLFW_PRESS) {
@@ -160,7 +141,7 @@ void RenderField(Field field, ClassInstance& instance) {
 	case FieldType::UInt:
 		entityValue = instance.GetFieldValue<unsigned int>(field.name);
 		ImGui::Button(std::string(field.name + ": " + std::to_string(entityValue)).c_str());
-		if (CreateDragDropTarget<unsigned int>("Entity", &entityValue)) {
+		if (GUIExtensions::CreateDragDropTarget<unsigned int>("Entity", &entityValue)) {
 			instance.SetFieldValue<unsigned int>(field.name, entityValue);
 		}
 		break;
@@ -198,7 +179,6 @@ int main() {
 	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
 
 	Scripting::Initialize();
-	project.LoadProjectHierachy();
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -209,6 +189,11 @@ int main() {
 	Engine::RegisterComponent<Transform>();
 	Engine::RegisterComponent<MeshRenderer>();
 	Engine::RegisterComponent<Camera>();
+	Engine::RegisterComponent<MeshCollisionBox>();
+	Engine::RegisterComponent<Physics>();
+
+	ProjectManager::CreateNewProject("C:\\Users\\tombr\\Downloads\\Test Hierachy");
+
 	sceneView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), Camera(glm::vec3(0.0f)), false);
 	gameView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), true);
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -258,7 +243,10 @@ int main() {
 		if(inRuntime)
 			Scripting::Update();
 
-		Engine::Update();
+		Engine::Update(inRuntime);
+		if(inRuntime)
+			Collisions::HandleCollision();
+
 
 		
 		ImGui_ImplOpenGL3_NewFrame();
@@ -290,7 +278,7 @@ int main() {
 			//ImGui::End();
 			ImGui::EndChild();
 		}
-		project.RenderHierachy();
+		ProjectManager::activeProject.RenderHierachy();
 		ImGui::End();
 
 
@@ -358,34 +346,8 @@ int main() {
 
 			}
 
-			if (Engine::HasComponent<MeshRenderer>(selectedEntity)) {
-				bool meshRendererExists = true;
-				if (ImGui::CollapsingHeader("Mesh Renderer", &meshRendererExists)) {
-					MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
-					ImGui::Button(renderer.modelItem.name.c_str());
-					ProjectItem item;
-					if (CreateProjectItemDropField(".fbx", &item)) {
-						renderer.modelItem = item;
-						std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
-						renderer.ReloadMesh();
-					}
-				}
-				if (!meshRendererExists)
-					Engine::RemoveComponent<MeshRenderer>(selectedEntity);
+			Engine::DrawEntityComponentGUI(selectedEntity);
 
-			}
-
-			if (Engine::HasComponent<Camera>(selectedEntity)) {
-				bool cameraExists = true;
-				if (ImGui::CollapsingHeader("Camera", &cameraExists)) {
-					auto camera = Engine::GetComponent<Camera>(selectedEntity);
-					ImGui::InputFloat("Speed", &camera.speed);
-					ImGui::InputFloat("Sensitivity", &camera.sensitivity);
-				}
-
-				if (!cameraExists)
-					Engine::RemoveComponent<Camera>(selectedEntity);
-			}
 
 			std::vector<std::string> removingScripts;
 			for (auto script : Scripting::GetEntityComponentInstances(selectedEntity)) {
@@ -407,14 +369,13 @@ int main() {
 			ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30.0f));
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
-					auto script = project.GetItem((const char*)payload->Data).name;
+					auto script = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
 					Engine::AddScript(selectedEntity, script);
 					Scripting::LoadEntityScript(selectedEntity, script);
 				}
 				else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
-					auto name = project.GetItem((const char*)payload->Data).name;
-					if (name == "Camera") Engine::AddComponent<Camera>(selectedEntity, Camera(Engine::GetComponent<Transform>(selectedEntity).position));
-					else if (name == "Mesh Renderer") Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
+					auto name = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
+					Engine::AddComponent(selectedEntity, name);
 				}
 			}
 			/*
