@@ -193,6 +193,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectItem.h" />
     <ClInclude Include="ProjectManager.h" />
+    <ClInclude Include="Raycast.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Scripting.h" />

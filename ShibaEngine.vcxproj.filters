@@ -197,6 +197,9 @@
     <ClInclude Include="MeshCollisionBox.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
