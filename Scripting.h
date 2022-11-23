@@ -5,6 +5,7 @@
 #include <Mono/metadata/assembly.h>
 #include "Engine.h"
 #include <fstream>
+#include "InputManager.h"
 #include <glm/glm.hpp>
 #include <mono/metadata/attrdefs.h>
 #include <mono/metadata/debug-helpers.h>
@@ -167,6 +168,8 @@ public:
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::PrintMessage", PrintMessage);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::PrintError", PrintError);
+		mono_add_internal_call("ShibaEngineCore.Input::GetKeyDown", GetKeyDown);
+		mono_add_internal_call("ShibaEngineCore.EngineCalls::FindComponentsInScene", FindComponentsInScene);
 	}
 
 #pragma region Internal Calls 
@@ -174,6 +177,18 @@ public:
 		std::string compName = mono_string_to_utf8(name);
 		Engine::AddScript(entity, compName);
 		data.entities[entity][compName] = CreateClassInstanceFromMonoObject(compName, monoObject);
+	}
+	static bool GetKeyDown(int key) {
+		return InputManager::GetKeyDown(key);
+	}
+	static MonoArray* FindComponentsInScene(MonoString* name) {
+		std::vector<unsigned int> entities = Engine::FindScriptInScene(mono_string_to_utf8(name));
+		MonoArray* arr = mono_array_new(mono_get_root_domain(), mono_get_uint32_class(), entities.size());
+		for (int i = 0; i < entities.size(); i++)
+		{
+			mono_array_set(arr, uint32_t, i, entities[i]);
+		}
+		return arr;
 	}
 
 	static void GetTransform(unsigned int entity, glm::vec3* outPos, glm::vec3* outRot, glm::vec3* outPiv, glm::vec3* outSca) {

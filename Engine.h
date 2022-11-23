@@ -46,6 +46,16 @@ public:
 		}
 		return entitiesWithComponent;
 	}
+
+	static std::vector<unsigned int> FindScriptInScene(const std::string& name) {
+		std::vector<unsigned int> entitiesWithComponent;
+		for (unsigned int entity : SceneManager::activeScene.entities) {
+			const auto& scripts = componentManager.GetEntityScripts(entity);
+			if (std::find(scripts.begin(), scripts.end(), name) != scripts.end())
+				entitiesWithComponent.push_back(entity);
+		}
+		return entitiesWithComponent;
+	}
 	template<class T>
 	static T& GetComponent(unsigned int entity) {
 		return componentManager.GetComponent<T>(entity);

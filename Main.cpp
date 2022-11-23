@@ -12,6 +12,7 @@
 #include "Engine.h"
 #include "Physics.h"
 #include "BoundingBox.h"
+#include "Raycast.h"
 #include "Console.h"
 #include "Scripting.h"
 #include "Camera.h"
@@ -89,15 +90,10 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			Console::LogMessage("test message");
 		if (key == GLFW_KEY_F4)
 			Console::LogError("test error");
-		if (key == GLFW_KEY_F2) {
-			std::string script;
-			std::cin >> script;
-			Engine::AddScript(0, script);
-		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
-			runtimeStartTime = glfwGetTime();
 			inRuntime = true;
+			runtimeStartTime = glfwGetTime();
 		}
 	}
 }
@@ -246,8 +242,6 @@ int main() {
 		Engine::Update(inRuntime);
 		if(inRuntime)
 			Collisions::HandleCollision();
-
-
 		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
