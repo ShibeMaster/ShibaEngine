@@ -89,8 +89,18 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			else
 				InputManager::SetMouseLocked();
 		}
-		if (key == GLFW_KEY_F1)
-			Console::LogMessage("test message");
+		if (key == GLFW_KEY_F1) {
+			auto a = Engine::CreateEntity();
+			Engine::AddComponent<MeshRenderer>(a, MeshRenderer());
+			Engine::AddComponent<Physics>(a, Physics());
+			Engine::AddComponent<MeshCollisionBox>(a, MeshCollisionBox());
+			auto& transform = Engine::GetComponent<Transform>(a);
+			transform.position.y = 5.0f;
+
+			auto b = Engine::CreateEntity();
+			Engine::AddComponent<MeshRenderer>(b, MeshRenderer());
+			Engine::AddComponent<MeshCollisionBox>(b, MeshCollisionBox());
+		}
 		if (key == GLFW_KEY_F4)
 			Console::LogError("test error");
 		if (key == GLFW_KEY_F3) {

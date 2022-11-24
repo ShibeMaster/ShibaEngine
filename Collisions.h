@@ -23,15 +23,11 @@ public:
         for (auto comp : collisions) {
             glm::vec3& aPosition = Engine::GetComponent<Transform>(comp.a).position;
             glm::vec3& bPosition = Engine::GetComponent<Transform>(comp.b).position;
+            MeshCollisionBox& aBox = Engine::GetComponent<MeshCollisionBox>(comp.a);
+            MeshCollisionBox& bBox = Engine::GetComponent<MeshCollisionBox>(comp.b);
 
-            if (Engine::HasComponent<Physics>(comp.a)) {
-                Physics& aPhysics = Engine::GetComponent<Physics>(comp.a);
-                aPosition -= aPhysics.velocity * Time::deltaTime;
-            }
-            if (Engine::HasComponent<Physics>(comp.b)) {
-                Physics& bPhysics = Engine::GetComponent<Physics>(comp.b);
-                bPosition -= bPhysics.velocity * Time::deltaTime;
-            }
+            aPosition += glm::normalize(aPosition - bPosition) * ((aPosition + aBox.min) - (bPosition + bBox.max));
+            bPosition += glm::normalize(bPosition - aPosition) * ((bPosition + bBox.min) - (aPosition + aBox.max));
         }
     }
     static void CheckCollisions(std::vector<Collision>* collisions, unsigned int e, MeshCollisionBox box) {
