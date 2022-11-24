@@ -36,6 +36,14 @@ public:
 			componentArrays[compArr.first]->Update(inRuntime);
 		}
 	}
+	std::vector<std::string> GetEntityComponents(unsigned int entity) {
+		std::vector<std::string> comps;
+		for (auto comp : componentArrays) {
+			if (comp.second->HasComponent(entity))
+				comps.push_back(comp.first);
+		}
+		return comps;
+	}
 	void DrawEntityComponentGUI(unsigned int entity) {
 		for (auto comp : componentArrays) {
 			componentArrays[comp.first]->DrawComponentGUI(entity);

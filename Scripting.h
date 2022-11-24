@@ -181,6 +181,10 @@ public:
 	static bool GetKeyDown(int key) {
 		return InputManager::GetKeyDown(key);
 	}
+	static void OnEntityDestroyed(unsigned int entity) {
+		if (data.entities.find(entity) != data.entities.end())
+			data.entities.erase(entity);
+	}
 	static MonoArray* FindComponentsInScene(MonoString* name) {
 		std::vector<unsigned int> entities = Engine::FindScriptInScene(mono_string_to_utf8(name));
 		MonoArray* arr = mono_array_new(mono_get_root_domain(), mono_get_uint32_class(), entities.size());

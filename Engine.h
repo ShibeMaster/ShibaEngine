@@ -21,6 +21,9 @@ public:
 		return entity;
 	}
 	static void DestroyEntity(unsigned int entity) {
+		auto entPos = std::find(SceneManager::activeScene.entities.begin(), SceneManager::activeScene.entities.end(), entity);
+		if (entPos != SceneManager::activeScene.entities.end())
+			SceneManager::activeScene.entities.erase(entPos);
 		entityManager.DestroyEntity(entity);
 		componentManager.OnEntityDestroyed(entity);
 	}
@@ -74,6 +77,9 @@ public:
 	}
 	static std::vector<std::string> GetRegisteredComponents() {
 		return componentManager.GetRegisteredComponents();
+	}
+	static std::vector<std::string> GetEntityComponents(unsigned int entity) {
+		return componentManager.GetEntityComponents(entity);
 	}
 	template<class T>
 	static void RemoveComponent(unsigned int entity) {
