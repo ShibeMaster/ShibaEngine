@@ -75,6 +75,9 @@ float runtimeStartTime = 0.0f;
 View sceneView;
 View gameView;
 View* activeView = &sceneView;
+int selectedEntity = -1;
+int clipboardEntity = -1;
+
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	if (action == GLFW_PRESS) {
@@ -86,14 +89,40 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			else
 				InputManager::SetMouseLocked();
 		}
-		if (key == GLFW_KEY_F1)
-			Console::LogMessage("test message");
+		if (key == GLFW_KEY_F1) {
+			auto a = Engine::CreateEntity();
+			Engine::AddComponent<MeshRenderer>(a, MeshRenderer());
+			Engine::AddComponent<Physics>(a, Physics());
+			Engine::AddComponent<MeshCollisionBox>(a, MeshCollisionBox());
+			auto& transform = Engine::GetComponent<Transform>(a);
+			transform.position.y = 5.0f;
+
+			auto b = Engine::CreateEntity();
+			Engine::AddComponent<MeshRenderer>(b, MeshRenderer());
+			Engine::AddComponent<MeshCollisionBox>(b, MeshCollisionBox());
+		}
 		if (key == GLFW_KEY_F4)
 			Console::LogError("test error");
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
 			inRuntime = true;
 			runtimeStartTime = glfwGetTime();
+		}
+
+		if (key == GLFW_KEY_D && mods == GLFW_MOD_CONTROL && selectedEntity > -1 ) {
+			unsigned int newEntity = Engine::CreateEntity();
+			for (auto& script : Engine::GetEntityScripts(selectedEntity)) {
+				Engine::AddScript(newEntity, script);
+				Scripting::LoadEntityScript(newEntity, script);
+			}
+			for (auto& comp : Engine::GetEntityComponents(selectedEntity)) {
+				Engine::AddComponent(newEntity, comp);
+			}
+		}
+		if (key == GLFW_KEY_DELETE && selectedEntity > -1) {
+			Engine::DestroyEntity(selectedEntity);
+			Scripting::OnEntityDestroyed(selectedEntity);
+			selectedEntity = -1;
 		}
 	}
 }
@@ -198,7 +227,6 @@ int main() {
 	Shaders::activeShader = Shader(defaultVertexSource, defaultFragmentSource);
 	Shaders::activeShader.Use();
 	Engine::Start();
-	unsigned int selectedEntity = -1;
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput);
 

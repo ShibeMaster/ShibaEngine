@@ -7,9 +7,12 @@
 struct Ray {
 	glm::vec3 origin;
 	glm::vec3 direction;
+	float distance;
 };
 
 bool IntersectsCollider(const Ray& ray, const MeshCollisionBox& collider) {
+	if (glm::distance(ray.origin, Engine::GetComponent<Transform>(collider.entity).position) > ray.distance)
+		return false;
 	float intersectMinX = (collider.min.x - ray.origin.x) / ray.direction.x;
 	float intersectMaxX = (collider.max.x - ray.origin.x) / ray.direction.x;
 
@@ -53,10 +56,9 @@ bool IntersectsCollider(const Ray& ray, const MeshCollisionBox& collider) {
 
 }
 
-bool CheckCollision(Ray& ray, std::vector<unsigned int>* outHit) {
+bool CheckCollision(Ray& ray, std::vector<unsigned int>* outHit, int excludeEntity) {
 	for (auto collider : Engine::FindComponentsInScene<MeshCollisionBox>()) {
-		if (IntersectsCollider(ray, Engine::GetComponent<MeshCollisionBox>(collider))) {
-			Console::LogMessage("collided");
+		if (IntersectsCollider(ray, Engine::GetComponent<MeshCollisionBox>(collider)) && collider != excludeEntity) {
 			outHit->push_back(collider);
 		}
 	}
@@ -64,7 +66,7 @@ bool CheckCollision(Ray& ray, std::vector<unsigned int>* outHit) {
 }
 
 
-bool Raycast(glm::vec3 origin, glm::vec3 direction, float distance, std::vector<unsigned int>* outHits = nullptr) {
-	Ray ray = { origin, direction };
-	return CheckCollision(ray, outHits);
+bool Raycast(glm::vec3 origin, glm::vec3 direction, float distance, std::vector<unsigned int>* outHits = nullptr, int excludeEntity = -1) {
+	Ray ray = { origin, direction, distance };
+	return CheckCollision(ray, outHits, excludeEntity);
 }

@@ -8,6 +8,7 @@ public:
 	virtual void Start() = 0;
 	virtual void Update(bool inRuntime) = 0;
 	virtual void Add(unsigned int entity) = 0;
+	virtual bool HasComponent(unsigned int) = 0;
 	virtual void DrawComponentGUI(unsigned int entity) = 0;
 };
 
@@ -18,11 +19,15 @@ public:
 	std::unordered_map<unsigned int, T> components;
 	void Add(unsigned int entity, T component) {
 		components[entity] = component;
+		components[entity].Start();
 	}
 	void Add(unsigned int entity) {
 		T value;
 		value.entity = entity;
 		components[entity] = value;
+	}
+	bool HasComponent(unsigned int entity) {
+		return components.find(entity) != components.end();
 	}
 	void Remove(unsigned int entity) {
 		components.erase(entity);
