@@ -200,6 +200,9 @@
     <ClInclude Include="Raycast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptingTypes.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

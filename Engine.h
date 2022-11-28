@@ -1,7 +1,9 @@
 #pragma once
+#include "ScriptingTypes.h"
 #include "EntityManager.h"
 #include "ComponentManager.h"
 #include "Transform.h"
+#include <mono/metadata/object.h>
 #include "SceneManager.h"
 class Engine {
 private:
@@ -19,6 +21,12 @@ public:
 		AddComponent<Transform>(entity, Transform{});
 		SceneManager::AddEntity(entity);
 		return entity;
+	}
+	static void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
+		componentManager.GetCoreComponentObject(entity, name, instance);
+	}
+	static void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance) {
+		componentManager.SetCoreComponent(entity, name, instance);
 	}
 	static void DestroyEntity(unsigned int entity) {
 		auto entPos = std::find(SceneManager::activeScene.entities.begin(), SceneManager::activeScene.entities.end(), entity);

@@ -94,4 +94,12 @@ public:
             }
 		}
 	}
+    void GetObject(ClassInstance* instance) {
+        instance->SetFieldValue<glm::vec3>("min", min);
+        instance->SetFieldValue<glm::vec3>("max", max);
+    }
+    void SetObject(ClassInstance* instance) {
+        min = instance->GetFieldValue<glm::vec3>("min");
+        max = instance->GetFieldValue<glm::vec3>("max");
+    }
 };

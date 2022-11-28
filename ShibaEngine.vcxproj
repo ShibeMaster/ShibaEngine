@@ -197,6 +197,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Scripting.h" />
+    <ClInclude Include="ScriptingTypes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Time.h" />
