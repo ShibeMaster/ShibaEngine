@@ -8,85 +8,13 @@
 #include "InputManager.h"
 #include <glm/glm.hpp>
 #include <mono/metadata/attrdefs.h>
+#include "ScriptingTypes.h"
 #include <mono/metadata/debug-helpers.h>
 #include <unordered_map>
 #include "Console.h"
-
-enum class FieldType {
-	None,
-	Float,
-	Double,
-	Bool,
-	Char,
-	String,
-	Byte,
-	Short,
-	Int,
-	Long,
-	UByte,
-	UShort,
-	UInt,
-	ULong,
-	Vector2,
-	Vector3,
-	Vector4
-};
-
-struct Field {
-	std::string name;
-	FieldType type;
-	MonoClassField* classField;
-};
-struct Class {
-	std::string name;
-	std::string nameSpace;
-	MonoClass* monoClass;
-	std::unordered_map<std::string, Field> fields;
-
-	MonoMethod* GetMethod(const std::string& name, int parameterCount) {
-		return mono_class_get_method_from_name(monoClass, name.c_str(), parameterCount);
-	}
-};
-struct ClassInstance {
-	Class classData;
-	MonoObject* instance;
-	
-	MonoMethod* startMethod;
-	MonoMethod* updateMethod;
-
-	ClassInstance(){}
-	ClassInstance(Class klass) {
-		this->classData = klass;
-		startMethod = classData.GetMethod("Start", 0);
-		updateMethod = classData.GetMethod("Update", 0);
-	}
-	void InvokeMethod(MonoMethod* method, int parameterCount, void** params = nullptr) {
-		MonoObject* exception = nullptr;
-		mono_runtime_invoke(method, instance, params, &exception);
-	}
+#include "ProjectItem.h"
 
 
-
-	template<typename T>
-	T GetFieldValue(const std::string& fieldName) {
-		if (classData.fields.find(fieldName) == classData.fields.end())
-			return T();
-
-		T value;
-
-		mono_field_get_value(instance, classData.fields[fieldName].classField, &value);
-
-		return value;
-	}
-
-	template<typename T>
-	void SetFieldValue(const std::string& fieldName, T value) {
-		if (classData.fields.find(fieldName) == classData.fields.end())
-			return;
-
-		mono_field_set_value(instance, classData.fields[fieldName].classField, &value);
-	}
-};
 struct ScriptingEngineData {
 	MonoDomain* rootDomain;
 	MonoDomain* appDomain;
@@ -94,7 +22,9 @@ struct ScriptingEngineData {
 	MonoAssembly* coreAssembly;
 
 	std::unordered_map<std::string, Class> components;
+	std::unordered_map<std::string, Class> coreComponentClasses;
 	std::unordered_map<unsigned int, std::unordered_map<std::string, ClassInstance>> entities;
+	std::unordered_map<unsigned int, std::unordered_map<std::string, ClassInstance>> entitiesComponentScripts;
 };
 class Utils {
 public:
@@ -145,6 +75,7 @@ public:
 	static ScriptingEngineData data;
 	static Class componentClass;
 	static Class timeClass;
+	static Class coreComponentClass;
 	static void Initialize() {
 		MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 		if (rootDomain == nullptr) {
@@ -158,6 +89,7 @@ public:
 		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net6.0\\ShibaEngineCore.dll");
 		componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
 		timeClass = Class{ "Time", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Time") };
+		coreComponentClass = Class{ "CoreComponent", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "CoreComponent") };
 		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net6.0\\ShibaEngineCore.dll");
 		LoadAssemblyClasses();
 
@@ -170,6 +102,8 @@ public:
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::PrintError", PrintError);
 		mono_add_internal_call("ShibaEngineCore.Input::GetKeyDown", GetKeyDown);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::FindComponentsInScene", FindComponentsInScene);
+		mono_add_internal_call("ShibaEngineCore.EngineCalls::GetCoreComponent", GetCoreComponent);
+		mono_add_internal_call("ShibaEngineCore.EngineCalls::SetCoreComponent", SetCoreComponent);
 	}
 
 #pragma region Internal Calls 
@@ -177,6 +111,25 @@ public:
 		std::string compName = mono_string_to_utf8(name);
 		Engine::AddScript(entity, compName);
 		data.entities[entity][compName] = CreateClassInstanceFromMonoObject(compName, monoObject);
+	}
+	static void SetCoreComponent(unsigned int entity, MonoString* compName, MonoObject* monoObject) {
+		std::string name = mono_string_to_utf8(compName);
+		if (data.entitiesComponentScripts[entity].find("class " + name) == data.entitiesComponentScripts[entity].end()) {
+			std::cout << "core component not added to entity" << std::endl;
+			return;
+		}
+		data.entitiesComponentScripts[entity]["class " + name].instance = monoObject;
+		Engine::SetCoreComponent(entity, name, &data.entitiesComponentScripts[entity]["class " + name]);
+	}
+	static MonoObject* GetCoreComponent(unsigned int entity, MonoString* monoName) {
+		std::string name = mono_string_to_utf8(monoName);
+		if (data.entitiesComponentScripts[entity].find("class " + name) == data.entitiesComponentScripts[entity].end()) {
+			std::cout << "core component not added to entity" << std::endl;
+			return nullptr;
+
+		}
+		Engine::GetCoreComponentObject(entity, name, &data.entitiesComponentScripts[entity]["class " + name]);
+		return data.entitiesComponentScripts[entity]["class " + name].instance;
 	}
 	static bool GetKeyDown(int key) {
 		return InputManager::GetKeyDown(key);
@@ -226,6 +179,17 @@ public:
 
 #pragma endregion 
 
+	static void OnAddComponent(unsigned int entity, const std::string& name) {
+		if (data.coreComponentClasses.find(name) == data.coreComponentClasses.end()) {
+			std::cout << "class does not exist" << std::endl;
+			return;
+		}
+		auto instance = ClassInstance(data.coreComponentClasses[name], true);
+		instance.instance = Instantiate(instance.classData.monoClass);
+		instance.SetFieldValue<unsigned int>("entity", entity);
+		data.entitiesComponentScripts[entity][name] = instance;
+	}
+
 	static MonoAssembly* LoadAssembly(const std::string& path) {
 		uint32_t size = 0;
 		char* fileData = Utils::ReadBytes(path, &size);
@@ -252,7 +216,21 @@ public:
 			std::cout << "failed to get class" << std::endl;
 			return nullptr;
 		}
+
 		return klass;
+	}
+	static void SetupClassFields(Class* klass, bool getPrivate = false) {
+		int fieldCount = mono_class_num_fields(klass->monoClass);
+		void* iterator = nullptr;
+		while (MonoClassField* field = mono_class_get_fields(klass->monoClass, &iterator)) {
+			const char* fieldName = mono_field_get_name(field);
+			uint32_t flags = mono_field_get_flags(field);
+			if (flags & MONO_FIELD_ATTR_PUBLIC || getPrivate) {
+				MonoType* monoType = mono_field_get_type(field);
+				FieldType type = Utils::MonoTypeToFieldType(monoType);
+				klass->fields[std::string(fieldName)] = Field{ std::string(fieldName), type, field };
+			}
+		}
 	}
 	static ClassInstance CreateClassInstance(unsigned int entity, Class klass) {
 		ClassInstance instance = ClassInstance(klass);
@@ -280,28 +258,25 @@ public:
 			std::cout << fullname << std::endl;
 			MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
 
-			if (monoClass == componentClass.monoClass)
+			if (monoClass == componentClass.monoClass || monoClass == coreComponentClass.monoClass)
 				continue;
 			
 			bool isComponent = mono_class_is_subclass_of(monoClass, componentClass.monoClass, false);
-			if (!isComponent)
+			if (isComponent) {
+
+				Class klass = Class{ name, nameSpace, monoClass };
+
+				SetupClassFields(&klass);
+				data.components[fullname] = klass;
+			}
+			else if (mono_class_is_subclass_of(monoClass, coreComponentClass.monoClass, false)) {
+				Class klass = Class{ name, nameSpace, monoClass };
+				SetupClassFields(&klass, true);
+				data.coreComponentClasses["class " + std::string(name)] = klass;
+			}
+			else
 				continue;
 
-			Class klass = Class{ name, nameSpace, monoClass };
-
-			int fieldCount = mono_class_num_fields(monoClass);
-			void* iterator = nullptr;
-			while (MonoClassField* field = mono_class_get_fields(monoClass, &iterator)) {
-				const char* fieldName = mono_field_get_name(field);
-				uint32_t flags = mono_field_get_flags(field);
-				if (flags & MONO_FIELD_ATTR_PUBLIC) {
-					std::cout << fieldName << " is public" << std::endl;
-					MonoType* monoType = mono_field_get_type(field);
-					FieldType type = Utils::MonoTypeToFieldType(monoType);
-					klass.fields[std::string(fieldName)] = Field { std::string(fieldName), type, field };
-				}
-			}
-			data.components[fullname] = klass;
 
 		}
 	}
@@ -340,8 +315,8 @@ public:
 		};
 		MonoObject* exception = nullptr;
 		mono_runtime_invoke(timeClass.GetMethod("UpdateTime", 2), nullptr, params, &exception);
-		for (auto comp : data.entities) {
-			for (auto instance : comp.second) {
+		for (auto& comp : data.entities) {
+			for (auto& instance : comp.second) {
 				instance.second.InvokeMethod(instance.second.updateMethod, 0);
 			}
 		}

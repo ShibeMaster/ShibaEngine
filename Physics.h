@@ -69,5 +69,21 @@ public:
 
 		}
 	}
+	void GetObject(ClassInstance* instance) {
+		instance->SetFieldValue<glm::vec3>("velocity", velocity);
+		instance->SetFieldValue<bool>("useGravity", useGravity);
+		instance->SetFieldValue<float>("gravity", gravity);
+		instance->SetFieldValue<glm::vec3>("gravityDirection", gravityDirection);
+		instance->SetFieldValue<bool>("useDrag", useDrag);
+		instance->SetFieldValue<float>("drag", drag);
+	}
+	void SetObject(ClassInstance* instance) {
+		velocity = instance->GetFieldValue<glm::vec3>("velocity");
+		useGravity = instance->GetFieldValue<bool>("useGravity");
+		gravity = instance->GetFieldValue<float>("gravity");
+		gravityDirection = instance->GetFieldValue<glm::vec3>("gravityDirection");
+		useDrag = instance->GetFieldValue<bool>("useDrag");
+		drag = instance->GetFieldValue<float>("drag");
+	}
 
 };

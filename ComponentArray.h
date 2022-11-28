@@ -1,4 +1,5 @@
 #pragma once
+#include <mono/metadata/object.h>
 #include <unordered_map>
 #include <iostream>
 class ComponentArray {
@@ -10,6 +11,8 @@ public:
 	virtual void Add(unsigned int entity) = 0;
 	virtual bool HasComponent(unsigned int) = 0;
 	virtual void DrawComponentGUI(unsigned int entity) = 0;
+	virtual void GetObject(unsigned int entity, ClassInstance* instance) = 0;
+	virtual void SetObject(unsigned int entity, ClassInstance* instance) = 0;
 };
 
 template<typename T>
@@ -48,6 +51,12 @@ public:
 		for (auto component : components) {
 			components[component.first].Update(inRuntime);
 		}
+	}
+	void GetObject(unsigned int entity, ClassInstance* instance) {
+		components[entity].GetObject(instance);
+	}
+	void SetObject(unsigned int entity, ClassInstance* instance) {
+		components[entity].SetObject(instance);
 	}
 	void OnEntityDestroyed(unsigned int entity) {
 		if (components.find(entity) != components.end())

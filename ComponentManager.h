@@ -2,6 +2,7 @@
 #include "ComponentArray.h"
 #include <unordered_map>
 #include <memory>
+#include "ScriptingTypes.h"
 #include <iostream>
 #include <typeinfo>
 class ComponentManager {
@@ -19,8 +20,8 @@ public:
 	void RegisterComponent() {
 		const char* name = typeid(T).name();
 		if (componentArrays.find(name) == componentArrays.end()) {
-			componentArrays.insert({ name, std::make_shared<Components<T>>() });
-			registeredComponents.push_back(name);
+			componentArrays.insert({ std::string(name), std::make_shared<Components<T>>() });
+			registeredComponents.push_back(std::string(name));
 		}
 	}
 	std::vector<std::string> GetRegisteredComponents() {
@@ -35,6 +36,12 @@ public:
 		for (auto compArr : componentArrays) {
 			componentArrays[compArr.first]->Update(inRuntime);
 		}
+	}
+	void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance) {
+		componentArrays["class " + name]->SetObject(entity, instance);
+	}
+	void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
+		componentArrays["class " + name]->GetObject(entity, instance);
 	}
 	std::vector<std::string> GetEntityComponents(unsigned int entity) {
 		std::vector<std::string> comps;

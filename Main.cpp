@@ -187,6 +187,8 @@ void RenderField(Field field, ClassInstance& instance) {
 		ImGui::InputInt(field.name.c_str(), &intValue);
 		if (intValue != instance.GetFieldValue<int>(field.name.c_str()))
 			instance.SetFieldValue<int>(field.name, intValue);
+		break;
+
 	}
 }
 
@@ -398,6 +400,8 @@ int main() {
 				else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
 					auto name = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
 					Engine::AddComponent(selectedEntity, name);
+					std::cout << name << std::endl;
+					Scripting::OnAddComponent(selectedEntity, name);
 				}
 			}
 			/*
