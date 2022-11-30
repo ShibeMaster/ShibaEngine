@@ -17,13 +17,15 @@ public:
 		}
 		return false;
 	}
-	static bool CreateProjectItemDropField(const std::string& fileType, ProjectItem* outItem) {
+	static bool CreateProjectItemDropField(std::vector<std::string> fileTypes, ProjectItem* outItem) {
 
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(std::string("DRAG_DROP_" + fileType).c_str())) {
-				auto script = ProjectManager::activeProject.GetItem((const char*)payload->Data);
-				*outItem = script;
-				return true;
+			for (auto& type : fileTypes) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(std::string("DRAG_DROP_" + type).c_str())) {
+					auto script = ProjectManager::activeProject.GetItem((const char*)payload->Data);
+					*outItem = script;
+					return true;
+				}
 			}
 		}
 		return false;

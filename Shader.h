@@ -36,6 +36,9 @@ public:
 	void Use() {
 		glUseProgram(id);
 	}
+	void SetBool(const std::string& name, bool value) {
+		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+	}
 	void SetInt(const std::string& name, int value) {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 	}

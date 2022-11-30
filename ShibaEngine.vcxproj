@@ -172,6 +172,7 @@
     <ClInclude Include="..\External Libraries\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\External Libraries\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h" />
+    <ClInclude Include="..\External Libraries\stb_image.h" />
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collisions.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshCollisionBox.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Physics.h" />
@@ -200,6 +202,8 @@
     <ClInclude Include="ScriptingTypes.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shaders.h" />
+    <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="View.h" />
