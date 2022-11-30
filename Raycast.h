@@ -9,10 +9,13 @@ struct Ray {
 	glm::vec3 direction;
 	float distance;
 };
-
-bool IntersectsCollider(const Ray& ray, const MeshCollisionBox& collider) {
-	if (glm::distance(ray.origin, Engine::GetComponent<Transform>(collider.entity).position) > ray.distance)
+// also must fix, since the bounding boxes have multiple meshes
+bool IntersectsCollider(const Ray& ray, BoundingBox collider, int entity = -1) {
+	if (glm::distance(ray.origin, Engine::GetComponent<Transform>(entity).position) > ray.distance) {
+		std::cout << "too far" << std::endl;
 		return false;
+
+	}
 	float intersectMinX = (collider.min.x - ray.origin.x) / ray.direction.x;
 	float intersectMaxX = (collider.max.x - ray.origin.x) / ray.direction.x;
 
@@ -53,13 +56,16 @@ bool IntersectsCollider(const Ray& ray, const MeshCollisionBox& collider) {
 		intersectMaxX = intersectMaxZ;
 
 	return true;
-
 }
 
-bool CheckCollision(Ray& ray, std::vector<unsigned int>* outHit, int excludeEntity) {
+bool CheckCollision(Ray& ray, std::vector<unsigned int>* outHit, int excludeEntity = -1) {
 	for (auto collider : Engine::FindComponentsInScene<MeshCollisionBox>()) {
-		if (IntersectsCollider(ray, Engine::GetComponent<MeshCollisionBox>(collider)) && collider != excludeEntity) {
-			outHit->push_back(collider);
+		auto& meshCollider = Engine::GetComponent<MeshCollisionBox>(collider);
+		for (auto& box : meshCollider.boundingBoxes) {
+			if (IntersectsCollider(ray, box, collider) && collider != excludeEntity) {
+				outHit->push_back(collider);
+				std::cout << "intersects" << std::endl;
+			}
 		}
 	}
 	return outHit->size() > 0;

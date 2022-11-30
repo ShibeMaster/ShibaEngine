@@ -33,6 +33,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include "MeshCollisionBox.h"
+#include "SpriteRenderer.h"
 
 GLFWwindow* window;
 
@@ -46,7 +47,9 @@ const char* defaultVertexSource = R"GLSL(
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
-layout (location = 2) in vec3 texCoords;
+layout (location = 2) in vec2 texCoords;
+
+out vec2 TexCoords;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -54,6 +57,7 @@ uniform mat4 projection;
 
 void main(){
 	gl_Position = projection * view * model * vec4(position, 1.0);
+	TexCoords = texCoords;
 }
 
 )GLSL";
@@ -63,10 +67,14 @@ const char* defaultFragmentSource = R"GLSL(
 
 
 out vec4 FragColor;
+in vec2 TexCoords;
+
+uniform bool hasTexture;
+uniform sampler2D texture_diffuse1;
 
 
 void main(){
-	FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	FragColor = hasTexture ? texture(texture_diffuse1, TexCoords) : vec4(1.0, 1.0, 1.0, 1.0);
 }
 )GLSL";
 char entryPoint[128];
@@ -101,8 +109,10 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			Engine::AddComponent<MeshRenderer>(b, MeshRenderer());
 			Engine::AddComponent<MeshCollisionBox>(b, MeshCollisionBox());
 		}
-		if (key == GLFW_KEY_F4)
-			Console::LogError("test error");
+		if (key == GLFW_KEY_F4) {
+			std::vector<unsigned int> outHits;
+			std::cout << Raycast(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 5.0f, &outHits) << std::endl;;
+		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
 			inRuntime = true;
@@ -218,6 +228,7 @@ int main() {
 	Engine::RegisterComponent<Camera>();
 	Engine::RegisterComponent<MeshCollisionBox>();
 	Engine::RegisterComponent<Physics>();
+	Engine::RegisterComponent<SpriteRenderer>();
 
 	ProjectManager::CreateNewProject("C:\\Users\\tombr\\Downloads\\Test Hierachy");
 
@@ -254,6 +265,7 @@ int main() {
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 
 	bool gameViewOpen;
+	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		activeView->Update(inRuntime);
@@ -264,7 +276,7 @@ int main() {
 
 
 		glClearColor(color[0], color[1], color[2], color[3]);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		if(inRuntime)
 			Scripting::Update();

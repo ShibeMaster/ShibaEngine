@@ -8,13 +8,14 @@ struct Collision {
 public:
     unsigned int a;
     unsigned int b;
-    MeshCollisionBox& bbA;
-    MeshCollisionBox& bbB;
+    BoundingBox& bbA;
+    BoundingBox& bbB;
 
     bool operator==(Collision rhs) {
         return a == rhs.a && b == rhs.b;
     }
 };
+// Note - Must fix to allow the multiple meshes in the collision boxes (probably later)
 class Collisions {
 public:
     static void HandleCollision() {
@@ -22,20 +23,20 @@ public:
         ResolveCollision(collisions);
     }
     static void ResolveCollision(std::vector<Collision> collisions) {
-        for (auto comp : collisions) {
+        for (auto& comp : collisions) {
             glm::vec3& aPosition = Engine::GetComponent<Transform>(comp.a).position;
             glm::vec3& bPosition = Engine::GetComponent<Transform>(comp.b).position;
 
             if (Engine::HasComponent<Physics>(comp.a)) {
                 auto& physicsA = Engine::GetComponent<Physics>(comp.a);
                 if(!Engine::HasComponent<Physics>(comp.b) || abs(glm::length(physicsA.velocity)) > abs(glm::length(Engine::GetComponent<Physics>(comp.b).velocity)))
-                    aPosition += glm::normalize(aPosition - bPosition) * ((((aPosition + comp.bbA.min) - (bPosition + comp.bbB.max))) + glm::vec3(0.001f));
+                   aPosition += glm::normalize(aPosition - bPosition) * ((((aPosition + comp.bbA.min) - (bPosition + comp.bbB.max))) + glm::vec3(0.001f));
             }
             if (Engine::HasComponent<Physics>(comp.b)) {
 
                 auto& physicsB = Engine::GetComponent<Physics>(comp.b);
                 if (!Engine::HasComponent<Physics>(comp.a) || abs(glm::length(physicsB.velocity)) > abs(glm::length(Engine::GetComponent<Physics>(comp.a).velocity)))
-                    bPosition += glm::normalize(bPosition - aPosition) * ((((bPosition + comp.bbB.min) - (aPosition + comp.bbA.max))) + glm::vec3(0.001f));
+                  bPosition += glm::normalize(bPosition - aPosition) * ((((bPosition + comp.bbB.min) - (aPosition + comp.bbA.max))) + glm::vec3(0.001f));
             }
         }
     }
@@ -45,10 +46,17 @@ public:
             if (e != otherComp) {
                 auto& otherTransform = Engine::GetComponent<Transform>(otherComp);
                 auto& otherBoundingBox = Engine::GetComponent<MeshCollisionBox>(otherComp);
-                if (Collides(transform.position, otherTransform.position, box, otherBoundingBox)) {
-                    if (std::find(collisions->begin(), collisions->end(), Collision{ otherComp, e, box, otherBoundingBox }) == collisions->end()) {
-                        Console::LogMessage("collided");
-                        collisions->push_back({ e, otherComp, box, otherBoundingBox });
+                if (ShouldCheckCollisions(transform.position, otherTransform.position, box, otherBoundingBox)) {
+                    for (auto& aBox : box.boundingBoxes) {
+                        for (auto& bBox : box.boundingBoxes) {
+                            if (Collides(transform.position, otherTransform.position, aBox, bBox)) {
+                                if (std::find(collisions->begin(), collisions->end(), Collision{ otherComp, e, aBox, bBox }) == collisions->end()) {
+                                    Console::LogMessage("collided");
+                                    collisions->push_back({ e, otherComp, aBox, bBox });
+                                    
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -65,7 +73,20 @@ public:
 
         return collisions;
     }
-	static bool Collides(glm::vec3 positionA, glm::vec3 positionB, MeshCollisionBox a, MeshCollisionBox b) {
+    static bool ShouldCheckCollisions(glm::vec3 positionA, glm::vec3 positionB, MeshCollisionBox a, MeshCollisionBox b) {
+        a.min += positionA;
+        a.max += positionA;
+        b.min += positionB;
+        b.max += positionB;
+        return (
+            a.min.x <= b.max.x &&
+            a.max.x >= b.min.x &&
+            a.min.y <= b.max.y &&
+            a.max.y >= b.min.y &&
+            a.min.z <= b.max.y &&
+            a.max.z >= b.min.z);
+    }
+	static bool Collides(glm::vec3 positionA, glm::vec3 positionB, BoundingBox a, BoundingBox b) {
         a.min += positionA;
         a.max += positionA;
         b.min += positionB;

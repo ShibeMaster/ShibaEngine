@@ -12,7 +12,7 @@
 class MeshRenderer : public Component {
 public:
     ProjectItem modelItem = ProjectItem { "Model Item" };
-	Mesh mesh;
+	Model model;
     bool hasModel = false;
 	MeshRenderer(){
         ReloadMesh();
@@ -24,7 +24,7 @@ public:
                 MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
                 ImGui::Button(renderer.modelItem.name.c_str());
                 ProjectItem item;
-                if (GUIExtensions::CreateProjectItemDropField(".fbx", &item)) {
+                if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
                     renderer.modelItem = item;
                     std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
                     renderer.ReloadMesh();
@@ -36,15 +36,15 @@ public:
         }
     }
     void ReloadMesh() {
-        mesh = ModelLoader::LoadModel(modelItem.path);
-        hasModel = mesh.vertices.size() != 0;
+        model = ModelLoader::LoadModel(modelItem.path);
+        hasModel = model.meshes.size() != 0;
     }
 	void Update(bool inRuntime) {
         if (hasModel) {
 
-            auto transform = Engine::GetComponent<Transform>(entity);
-            glm::mat4 model = transform.GetMatrix();
-            Shaders::activeShader.SetMat4("model", model);
+            auto& transform = Engine::GetComponent<Transform>(entity);
+            glm::mat4 modelMat = transform.GetMatrix();
+            Shaders::activeShader.SetMat4("model", modelMat);
 
             /*unsigned int diffuseNr = 1;
             unsigned int specularNr = 1;
@@ -64,7 +64,8 @@ public:
             }
             glActiveTexture(GL_TEXTURE0);*/
 
-            mesh.Render();
+            for (auto& mesh : model.meshes)
+                mesh.Render();
         }
 	}
     void GetObject(ClassInstance* instance) {
