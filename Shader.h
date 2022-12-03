@@ -14,14 +14,14 @@ public:
 		glShaderSource(vertex, 1, &vertexSource, NULL);
 		glCompileShader(vertex);
 		int vertexStatus;
-		glGetProgramiv(vertex, GL_COMPILE_STATUS, &vertexStatus);
+		glGetShaderiv(vertex, GL_COMPILE_STATUS, &vertexStatus);
 		std::cout << "vertex status: " << vertexStatus << std::endl;
 
 		GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fragmentSource, NULL);
 		glCompileShader(fragment);
 		int fragmentStatus;
-		glGetProgramiv(fragment, GL_COMPILE_STATUS, &fragmentStatus);
+		glGetShaderiv(fragment, GL_COMPILE_STATUS, &fragmentStatus);
 		std::cout << "fragment status: " << fragmentStatus << std::endl;
 
 		id = glCreateProgram();
@@ -38,6 +38,9 @@ public:
 	}
 	void SetBool(const std::string& name, bool value) {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+	}
+	void SetFloat(const std::string& name, float value) {
+		glUniform1f(glGetUniformLocation(id, name.c_str()), value);
 	}
 	void SetInt(const std::string& name, int value) {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), value);

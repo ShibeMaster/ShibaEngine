@@ -185,6 +185,7 @@
     <ClInclude Include="EntityManager.h" />
     <ClInclude Include="GUIExtensions.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshCollisionBox.h" />
     <ClInclude Include="MeshRenderer.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="ProjectItem.h" />
     <ClInclude Include="ProjectManager.h" />
     <ClInclude Include="Raycast.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Scripting.h" />
@@ -210,6 +212,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Sprite_Camera_Icon.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,9 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include "Sprite.h"
+#include "ModelLoader.h"
+
 class Camera : public Component
 {
 public:
@@ -17,6 +20,7 @@ public:
 	float speed;
 	float sensitivity;
 
+	Sprite icon;
 	Camera() {}
 	Camera(glm::vec3 pos, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : speed(5.5f), sensitivity(0.1f) {
 		position = pos;
@@ -24,6 +28,7 @@ public:
 		yaw = y;
 		pitch = p;
 		UpdateCameraVectors();
+		icon = ModelLoader::LoadSprite("Sprite_Camera_Icon.png");
 	}
 	static void DrawGUI(unsigned int selectedEntity) {
 
