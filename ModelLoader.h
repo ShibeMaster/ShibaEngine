@@ -160,24 +160,27 @@ public:
 			if (!skip) {
 				Texture texture;
 				texture.id = GenerateTexture(str.C_Str(), model->directory);
-				texture.type = typeName;
-				texture.path = str.C_Str();
-				model->textures.push_back(texture);
+				if (texture.id != -1) {
+					texture.type = typeName;
+					texture.path = str.C_Str();
+					model->textures.push_back(texture);
+				}
 			}
 		}
 		return textures;
 	}
-	static unsigned int GenerateTexture(const char* path, const std::string& directory) {
+	static int GenerateTexture(const char* path, const std::string& directory) {
 		auto filename = std::string(path);
 		filename = directory + "\\" + filename;
 
-		unsigned int id;
-		glGenTextures(1, &id);
 		int width, height, comps;
 		std::cout << filename << std::endl;
 		stbi_set_flip_vertically_on_load(true);
 		unsigned char* data = stbi_load(filename.c_str(), &width, &height, &comps, 0);
 		if (data) {
+			unsigned int id;
+			glGenTextures(1, &id);
+
 			GLenum format;
 			if (comps == 1)
 				format = GL_RED;
@@ -198,8 +201,9 @@ public:
 		else {
 			std::cout << "failed to load image" << std::endl;
 		}
+		
 		stbi_image_free(data);
-		return id;
+		return -1;
 	}
 
 };

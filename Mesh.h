@@ -2,7 +2,9 @@
 #include <GL/glew.h>
 #include <assimp/mesh.h>
 #include <string>
+#include <iostream>
 #include <glm/glm.hpp>
+#include "glm/gtc/quaternion.hpp"
 #include <vector>
 struct Vertex {
 	glm::vec3 position;
@@ -36,6 +38,7 @@ public:
 		this->textures = textures;
 
 		hasTextures = textures.size() != 0;
+
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);

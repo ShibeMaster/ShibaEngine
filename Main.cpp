@@ -13,6 +13,8 @@
 #include "Physics.h"
 #include "BoundingBox.h"
 #include "Raycast.h"
+#include "GameView.h"
+#include "SceneView.h"
 #include "Console.h"
 #include "Scripting.h"
 #include "Camera.h"
@@ -31,6 +33,7 @@
 #include "Transform.h"
 #include "MeshRenderer.h"
 #include <glm/ext/matrix_transform.hpp>
+#include "Light.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include "MeshCollisionBox.h"
 #include "SpriteRenderer.h"
@@ -49,15 +52,39 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texCoords;
 
+
 out vec2 TexCoords;
+out vec3 FragPos;
+out vec3 Normal;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform bool billboard;
 
 void main(){
-	gl_Position = projection * view * model * vec4(position, 1.0);
+	FragPos = vec3(model * vec4(position, 1.0));
+	Normal = mat3(transpose(inverse(model))) * normal;
 	TexCoords = texCoords;
+	if(billboard){
+		mat4 modelView = view * model;
+		modelView[0][0] = 1.0;
+		modelView[0][1] = 0.0;
+		modelView[0][2] = 0.0;
+
+		modelView[1][0] = 0.0;
+		modelView[1][1] = 1.0;
+		modelView[1][2] = 0.0;
+		
+		modelView[2][0] = 0.0;
+		modelView[2][1] = 0.0;
+		modelView[2][2] = 1.0;
+
+		gl_Position = projection * modelView * vec4(position, 1.0);
+
+	} else{
+		gl_Position = projection * view * model * vec4(position, 1.0);
+	}
 }
 
 )GLSL";
@@ -65,24 +92,51 @@ void main(){
 const char* defaultFragmentSource = R"GLSL(
 #version 330 core
 
-
 out vec4 FragColor;
+
 in vec2 TexCoords;
+in vec3 FragPos;
+in vec3 Normal;
+
 
 uniform bool hasTexture;
 uniform sampler2D texture_diffuse1;
 
+uniform vec3 lightColour;
+uniform vec3 viewPos;
+uniform vec3 lightPos;
+uniform bool lightEffected;
 
 void main(){
-	FragColor = hasTexture ? texture(texture_diffuse1, TexCoords) : vec4(1.0, 1.0, 1.0, 1.0);
+	vec4 colour = hasTexture ? texture(texture_diffuse1, TexCoords) : vec4(1.0, 1.0, 1.0, 1.0);
+	
+	if(colour.a < 0.1)
+		discard;
+	if(lightEffected){
+
+
+		float ambientStrength = 0.1;
+		vec3 ambient = ambientStrength * lightColour;
+
+		vec3 norm = normalize(Normal);
+		vec3 lightDir = normalize(lightPos - FragPos);
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = diff * lightColour;
+
+		vec3 result = (ambient + diffuse) * vec3(colour);
+		FragColor = vec4(result, 1.0);
+	} else {
+		FragColor = colour;
+	}
+
 }
 )GLSL";
 char entryPoint[128];
 bool inRuntime = false;
 float runtimeStartTime = 0.0f;
-View sceneView;
-View gameView;
-View* activeView = &sceneView;
+SceneView sceneView;
+GameView gameView;
+bool sceneViewActive = true;
 int selectedEntity = -1;
 int clipboardEntity = -1;
 
@@ -140,8 +194,10 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
-	if(activeView->hasCamera && (!activeView->cameraInRuntimeOnly || inRuntime))
-		activeView->camera.ProcessCameraMouse();
+	if (sceneViewActive)
+		sceneView.sceneCam.ProcessCameraMouse();
+	else if (inRuntime)
+		gameView.view.camera->ProcessCameraMouse();
 }
 
 void RenderField(Field field, ClassInstance& instance) {
@@ -229,11 +285,9 @@ int main() {
 	Engine::RegisterComponent<MeshCollisionBox>();
 	Engine::RegisterComponent<Physics>();
 	Engine::RegisterComponent<SpriteRenderer>();
+	Engine::RegisterComponent<Light>();
 
-	ProjectManager::CreateNewProject("C:\\Users\\tombr\\Downloads\\Test Hierachy");
-
-	sceneView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), Camera(glm::vec3(0.0f)), false);
-	gameView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), true);
+	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy");
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
@@ -241,7 +295,7 @@ int main() {
 	Shaders::activeShader.Use();
 	Engine::Start();
 	glfwSetKeyCallback(window, ProcessInput);
-	glfwSetCursorPosCallback(window, HandleMouseInput);
+	glfwSetCursorPosCallback(window, HandleMouseInput); 
 
 	Display::ShowWindow();
 	
@@ -266,9 +320,17 @@ int main() {
 
 	bool gameViewOpen;
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-		activeView->Update(inRuntime);
+
+		for (auto& source : Engine::FindComponentsInScene<Light>()) {
+			auto& light = Engine::GetComponent<Light>(source);
+			auto& transform = Engine::GetComponent<Transform>(source);
+			Shaders::activeShader.SetVec3("lightColour", light.colour);
+			Shaders::activeShader.SetVec3("lightPos", transform.position);
+		}
 
 		Time::currentTime = glfwGetTime() - runtimeStartTime;
 		Time::deltaTime = glfwGetTime() - Time::lastFrameTime;
@@ -278,6 +340,13 @@ int main() {
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		if (sceneViewActive) {
+			sceneView.Update(inRuntime);
+		}
+		else
+		{
+			gameView.Update(inRuntime);
+		}
 		if(inRuntime)
 			Scripting::Update();
 
@@ -324,27 +393,14 @@ int main() {
 		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, Display::height * 0.75f));
 		if (ImGui::BeginTabBar("View", ImGuiTabBarFlags_None)) {
 			if(ImGui::BeginTabItem("Scene")) {
-				if (activeView != &sceneView) {
-
-					activeView = &sceneView;
-					std::cout << "switched to scene view" << std::endl;
-				}
+				if(!sceneViewActive)
+					sceneViewActive = true;
 				ImGui::EndTabItem();
 			}
 
 			if (ImGui::BeginTabItem("Game")) {
-				if (!gameView.hasCamera) {
-					auto camEntities = Engine::FindComponentsInScene<Camera>();
-					if (camEntities.size() > 0) {
-						std::cout << "set camera to entity: " << camEntities[0] << std::endl;
-						gameView.camera = Engine::GetComponent<Camera>(camEntities[0]);
-						gameView.hasCamera = true;
-					}
-				}
-
-				if (activeView != &gameView) {
-					activeView = &gameView;
-				}
+				if(sceneViewActive)
+					sceneViewActive = false;
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();

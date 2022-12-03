@@ -1,10 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include "Sprite.h"
+#include "ModelLoader.h"
+
 class Camera : public Component
 {
 public:
-	glm::vec3 position;
+	Transform* transform;
 	glm::vec3 worldUp;
 
 	glm::vec3 forward;
@@ -17,9 +20,20 @@ public:
 	float speed;
 	float sensitivity;
 
+	Sprite icon;
 	Camera() {}
-	Camera(glm::vec3 pos, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : speed(5.5f), sensitivity(0.1f) {
-		position = pos;
+	void Initialize() {
+		transform = Engine::GetComponentPointer<Transform>(entity);
+		worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		yaw = -90.0f;
+		pitch = 0.0f;
+		speed = 10.0f;
+		sensitivity = 0.1f;
+		UpdateCameraVectors();
+		icon = ModelLoader::LoadSprite("Sprite_Camera_Icon.png");
+	}
+	Camera(Transform* transform, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : speed(10.0f), sensitivity(0.1f) {
+		this->transform = transform;
 		worldUp = wUp;
 		yaw = y;
 		pitch = p;
@@ -62,6 +76,6 @@ public:
 		UpdateCameraVectors();
 	}
 	glm::mat4 GetViewMatrix() {
-		return glm::lookAt(position, position + forward, up);
+		return glm::lookAt(transform->position, transform->position + forward, up);
 	}
 };

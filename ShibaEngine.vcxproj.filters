@@ -28,6 +28,9 @@
     <Filter Include="Resource Files\ImGui">
       <UniqueIdentifier>{77274ffa-dc55-4a67-b601-b501e06a6966}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Engine\Views">
+      <UniqueIdentifier>{2acf4406-e17c-49ef-bc90-7568877c94ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -215,8 +218,25 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneView.h">
+      <Filter>Header Files\Engine\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="GameView.h">
+      <Filter>Header Files\Engine\Views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Image Include="Sprite_Camera_Icon.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Sprite_Light_Icon.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

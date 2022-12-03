@@ -72,6 +72,10 @@ public:
 		return componentManager.GetComponent<T>(entity);
 	}
 	template<class T>
+	static T* GetComponentPointer(unsigned int entity) {
+		return componentManager.GetComponentPointer<T>(entity);
+	}
+	template<class T>
 	static void RegisterComponent() {
 		componentManager.RegisterComponent<T>();
 	}
