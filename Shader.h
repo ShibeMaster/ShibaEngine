@@ -36,22 +36,22 @@ public:
 	void Use() {
 		glUseProgram(id);
 	}
-	void SetBool(const std::string& name, bool value) {
+	void SetBool(const std::string& name, const bool& value) {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 	}
-	void SetFloat(const std::string& name, float value) {
+	void SetFloat(const std::string& name, const float& value) {
 		glUniform1f(glGetUniformLocation(id, name.c_str()), value);
 	}
-	void SetInt(const std::string& name, int value) {
+	void SetInt(const std::string& name, const int& value) {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 	}
-	void SetVec3(std::string name, glm::vec3 value) {
+	void SetVec3(std::string name, const glm::vec3& value) {
 		glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
 	}
-	void SetVec4(std::string name, glm::vec4 value) {
+	void SetVec4(std::string name, const glm::vec4& value) {
 		glUniform4fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
 	}
-	void SetMat4(std::string name, glm::mat4 value) {
+	void SetMat4(std::string name, const glm::mat4& value) {
 		glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &value[0][0]);
 	}
 };

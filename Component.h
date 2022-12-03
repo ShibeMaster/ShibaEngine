@@ -6,6 +6,10 @@ public:
 	unsigned int entity;
 	virtual void Start(){};
 	virtual void Update(bool inRuntime){};
+	/// <summary>
+	/// Called after the entity variable is set, just allows the component to set up variables that require the entity value
+	/// </summary>
+	virtual void Initialize() {};
 	static void DrawGUI(unsigned int selectedEntity) {};
 	/// <summary>
 	/// This is called when the scripting system requests a core component of a specific type, it basically just loads the latest data of this object into the c# equivalent.

@@ -13,6 +13,8 @@
 #include "Physics.h"
 #include "BoundingBox.h"
 #include "Raycast.h"
+#include "GameView.h"
+#include "SceneView.h"
 #include "Console.h"
 #include "Scripting.h"
 #include "Camera.h"
@@ -132,30 +134,12 @@ void main(){
 char entryPoint[128];
 bool inRuntime = false;
 float runtimeStartTime = 0.0f;
-View sceneView;
-View gameView;
-View* activeView = &sceneView;
+SceneView sceneView;
+GameView gameView;
+bool sceneViewActive = true;
 int selectedEntity = -1;
 int clipboardEntity = -1;
 
-void RenderSceneSprites() {
-	if (!inRuntime) {
-		Shaders::activeShader.SetBool("billboard", true);
-		Shaders::activeShader.SetBool("lightEffected", false);
-		for (auto cam : Engine::FindComponentsInScene<Camera>()) {
-			auto& camera = Engine::GetComponent<Camera>(cam);
-
-			glm::mat4 model = glm::mat4(1.0f);
-			auto& transform = Engine::GetComponent<Transform>(cam);
-			model = glm::translate(model, transform.position);
-			activeView->camera.icon.Render();
-
-		}
-		Shaders::activeShader.SetBool("billboard", false);
-		Shaders::activeShader.SetBool("lightEffected", true);
-
-	}
-}
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	if (action == GLFW_PRESS) {
@@ -210,8 +194,10 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
-	if(activeView->hasCamera && (!activeView->cameraInRuntimeOnly || inRuntime))
-		activeView->camera.ProcessCameraMouse();
+	if (sceneViewActive)
+		sceneView.sceneCam.ProcessCameraMouse();
+	else if (inRuntime)
+		gameView.view.camera->ProcessCameraMouse();
 }
 
 void RenderField(Field field, ClassInstance& instance) {
@@ -301,10 +287,7 @@ int main() {
 	Engine::RegisterComponent<SpriteRenderer>();
 	Engine::RegisterComponent<Light>();
 
-	ProjectManager::CreateNewProject("C:\\Users\\tombr\\Downloads\\Test Hierachy");
-
-	sceneView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), Camera(glm::vec3(0.0f)), false);
-	gameView = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), true);
+	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy");
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
@@ -341,12 +324,12 @@ int main() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-		activeView->Update(inRuntime);
 
 		for (auto& source : Engine::FindComponentsInScene<Light>()) {
 			auto& light = Engine::GetComponent<Light>(source);
+			auto& transform = Engine::GetComponent<Transform>(source);
 			Shaders::activeShader.SetVec3("lightColour", light.colour);
-			Shaders::activeShader.SetVec3("lightPos", light.position);
+			Shaders::activeShader.SetVec3("lightPos", transform.position);
 		}
 
 		Time::currentTime = glfwGetTime() - runtimeStartTime;
@@ -357,8 +340,13 @@ int main() {
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		RenderSceneSprites();
-
+		if (sceneViewActive) {
+			sceneView.Update(inRuntime);
+		}
+		else
+		{
+			gameView.Update(inRuntime);
+		}
 		if(inRuntime)
 			Scripting::Update();
 
@@ -405,27 +393,14 @@ int main() {
 		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, Display::height * 0.75f));
 		if (ImGui::BeginTabBar("View", ImGuiTabBarFlags_None)) {
 			if(ImGui::BeginTabItem("Scene")) {
-				if (activeView != &sceneView) {
-
-					activeView = &sceneView;
-					std::cout << "switched to scene view" << std::endl;
-				}
+				if(!sceneViewActive)
+					sceneViewActive = true;
 				ImGui::EndTabItem();
 			}
 
 			if (ImGui::BeginTabItem("Game")) {
-				if (!gameView.hasCamera) {
-					auto camEntities = Engine::FindComponentsInScene<Camera>();
-					if (camEntities.size() > 0) {
-						std::cout << "set camera to entity: " << camEntities[0] << std::endl;
-						gameView.camera = Engine::GetComponent<Camera>(camEntities[0]);
-						gameView.hasCamera = true;
-					}
-				}
-
-				if (activeView != &gameView) {
-					activeView = &gameView;
-				}
+				if(sceneViewActive)
+					sceneViewActive = false;
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();

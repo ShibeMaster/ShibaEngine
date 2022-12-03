@@ -27,6 +27,7 @@ public:
 	void Add(unsigned int entity) {
 		T value;
 		value.entity = entity;
+		value.Initialize();
 		components[entity] = value;
 	}
 	bool HasComponent(unsigned int entity) {
@@ -37,6 +38,9 @@ public:
 	}
 	T& Get(unsigned int entity) {
 		return components[entity];
+	}
+	T* GetPointer(unsigned int entity) {
+		return &components[entity];
 	}
 	void DrawComponentGUI(unsigned int entity) {
 		if (components.find(entity) != components.end())

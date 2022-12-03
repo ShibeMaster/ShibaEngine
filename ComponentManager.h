@@ -94,6 +94,10 @@ public:
 		return GetComponents<T>()->Get(entity);
 	}
 	template<typename T>
+	T* GetComponentPointer(unsigned int entity) {
+		return GetComponents<T>()->GetPointer(entity);
+	}
+	template<typename T>
 	bool HasComponent(unsigned int entity) {
 		auto comps = GetComponents<T>()->components;
 		return comps.find(entity) != comps.end();
