@@ -7,7 +7,6 @@
 class Camera : public Component
 {
 public:
-	Transform* transform;
 	glm::vec3 worldUp;
 
 	glm::vec3 forward;
@@ -23,7 +22,7 @@ public:
 	Sprite icon;
 	Camera() {}
 	void Initialize() {
-		transform = Engine::GetComponentPointer<Transform>(entity);
+		Component::Initialize();
 		worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 		yaw = -90.0f;
 		pitch = 0.0f;
@@ -40,19 +39,9 @@ public:
 		UpdateCameraVectors();
 	}
 	static void DrawGUI(unsigned int selectedEntity) {
-
-		if (Engine::HasComponent<Camera>(selectedEntity)) {
-			bool cameraExists = true;
-			if (ImGui::CollapsingHeader("Camera", &cameraExists)) {
-				auto camera = Engine::GetComponent<Camera>(selectedEntity);
-				ImGui::InputFloat("Speed", &camera.speed);
-				ImGui::InputFloat("Sensitivity", &camera.sensitivity);
-			}
-
-			if (!cameraExists)
-				Engine::RemoveComponent<Camera>(selectedEntity);
-		}
-
+		auto& camera = Engine::GetComponent<Camera>(selectedEntity);
+		ImGui::InputFloat("Speed", &camera.speed);
+		ImGui::InputFloat("Sensitivity", &camera.sensitivity);
 	}
 	void UpdateCameraVectors() {
 		glm::vec3 direction;

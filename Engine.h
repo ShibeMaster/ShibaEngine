@@ -102,5 +102,8 @@ public:
 	static bool HasComponent(unsigned int entity) {
 		return componentManager.HasComponent<T>(entity);
 	}
+	static bool HasComponent(unsigned int entity, const std::string& name) {
+		return componentManager.HasComponent(entity, name);
+	}
 
 };

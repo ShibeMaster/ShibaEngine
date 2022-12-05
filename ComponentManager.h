@@ -4,6 +4,7 @@
 #include <memory>
 #include "ScriptingTypes.h"
 #include <iostream>
+#include <string>
 #include <typeinfo>
 class ComponentManager {
 private:
@@ -12,48 +13,55 @@ private:
 	std::vector<std::string> registeredComponents;
 	template<typename T>
 	std::shared_ptr<Components<T>> GetComponents() {
-		const char* name = typeid(T).name();
-		return std::static_pointer_cast<Components<T>>(componentArrays[std::string(name)]);
+		auto compName = std::string(typeid(T).name());
+		std::string classTest = std::string("class ");
+		compName.erase(compName.find(classTest), classTest.length());
+		return std::static_pointer_cast<Components<T>>(componentArrays[compName]);
 	}
 public:
 	template<typename T>
 	void RegisterComponent() {
-		const char* name = typeid(T).name();
-		if (componentArrays.find(name) == componentArrays.end()) {
-			componentArrays.insert({ std::string(name), std::make_shared<Components<T>>() });
-			registeredComponents.push_back(std::string(name));
+		auto compName = std::string(typeid(T).name());
+		std::string classTest = std::string("class ");
+		compName.erase(compName.find(classTest), classTest.length());
+		std::cout << compName << std::endl;
+		if (componentArrays.find(compName) == componentArrays.end()) {
+			componentArrays.insert({ compName, std::make_shared<Components<T>>() });
+			componentArrays[compName]->name = compName;
+			registeredComponents.push_back(compName);
 		}
 	}
 	std::vector<std::string> GetRegisteredComponents() {
 		return registeredComponents;
 	}
 	void Start() {
-		for (auto compArr : componentArrays) {
+		for (auto& compArr : componentArrays) {
 			componentArrays[compArr.first]->Start();
 		}
 	}
 	void Update(bool inRuntime) {
-		for (auto compArr : componentArrays) {
+		for (auto& compArr : componentArrays) {
 			componentArrays[compArr.first]->Update(inRuntime);
 		}
 	}
 	void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance) {
-		componentArrays["class " + name]->SetObject(entity, instance);
+		componentArrays[name]->SetObject(entity, instance);
 	}
 	void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
-		componentArrays["class " + name]->GetObject(entity, instance);
+		componentArrays[name]->GetObject(entity, instance);
 	}
 	std::vector<std::string> GetEntityComponents(unsigned int entity) {
 		std::vector<std::string> comps;
-		for (auto comp : componentArrays) {
+		for (auto& comp : componentArrays) {
 			if (comp.second->HasComponent(entity))
 				comps.push_back(comp.first);
 		}
 		return comps;
 	}
 	void DrawEntityComponentGUI(unsigned int entity) {
-		for (auto comp : componentArrays) {
-			componentArrays[comp.first]->DrawComponentGUI(entity);
+		for (auto& comp : componentArrays) {
+			if(comp.second->name != "Transform")
+				componentArrays[comp.first]->DrawComponentGUI(entity);
 		}
 	}
 	void AddScript(unsigned int entity, const std::string& component) {
@@ -101,6 +109,12 @@ public:
 	bool HasComponent(unsigned int entity) {
 		auto comps = GetComponents<T>()->components;
 		return comps.find(entity) != comps.end();
+	}
+	bool HasComponent(unsigned int entity, const std::string& name) {
+		if (componentArrays.find(name) != componentArrays.end()) {
+			std::cout << name << std::endl;
+			return componentArrays[name]->HasComponent(entity);
+		}
 	}
 	void OnEntityDestroyed(unsigned int entity) {
 		for (auto comp : componentArrays) {

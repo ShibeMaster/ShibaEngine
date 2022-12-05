@@ -33,10 +33,9 @@ public:
 			camera.icon.Render();
 		}
 		for (auto ligh : Engine::FindComponentsInScene<Light>()) {
-			auto& transform = Engine::GetComponent<Transform>(ligh);
 			auto& light = Engine::GetComponent<Light>(ligh);
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, transform.position);
+			model = glm::translate(model, light.transform->position);
 			Shaders::activeShader.SetMat4("model", model);
 			light.icon.Render();
 		}

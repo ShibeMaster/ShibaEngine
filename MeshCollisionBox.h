@@ -98,8 +98,7 @@ public:
     }
     void Update(bool inRuntime) {
         if (debugDraw) {
-            auto& transform = Engine::GetComponent<Transform>(entity);
-            glm::mat4 model = transform.GetMatrix();
+            glm::mat4 model = transform->GetMatrix();
             Shaders::activeShader.SetMat4("model", model);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             for (auto& mesh : debugMeshes) {
@@ -109,24 +108,15 @@ public:
         }
     }
 	static void DrawGUI(unsigned int selectedEntity) {
-		if (Engine::HasComponent<MeshCollisionBox>(selectedEntity)) {
-			bool boundingBoxExists = true;
-			if (ImGui::CollapsingHeader("Mesh Collision", &boundingBoxExists)) {
-				MeshCollisionBox& box = Engine::GetComponent<MeshCollisionBox>(selectedEntity);
-                ImGui::Button(box.meshItem.name.c_str());
-                ProjectItem item;
-                if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
-                    box.meshItem = item;
-                    std::cout << box.meshItem.name << " || " << box.meshItem.path << std::endl;
-                    box.LoadMeshBox();
-                }
-				ImGui::Checkbox("Debug Draw", &box.debugDraw);
-			}
-
-            if (!boundingBoxExists) {
-                Engine::RemoveComponent<MeshCollisionBox>(selectedEntity);
-            }
-		}
+		MeshCollisionBox& box = Engine::GetComponent<MeshCollisionBox>(selectedEntity);
+        ImGui::Button(box.meshItem.name.c_str());
+        ProjectItem item;
+        if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
+            box.meshItem = item;
+            std::cout << box.meshItem.name << " || " << box.meshItem.path << std::endl;
+            box.LoadMeshBox();
+        }
+		ImGui::Checkbox("Debug Draw", &box.debugDraw);
 	}
     void GetObject(ClassInstance* instance) {
     }

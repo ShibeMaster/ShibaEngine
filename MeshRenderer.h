@@ -18,21 +18,13 @@ public:
         ReloadMesh();
 	}
     static void DrawGUI(unsigned int selectedEntity) {
-        if (Engine::HasComponent<MeshRenderer>(selectedEntity)) {
-            bool meshRendererExists = true;
-            if (ImGui::CollapsingHeader("Mesh Renderer", &meshRendererExists)) {
-                MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
-                ImGui::Button(renderer.modelItem.name.c_str());
-                ProjectItem item;
-                if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
-                    renderer.modelItem = item;
-                    std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
-                    renderer.ReloadMesh();
-                }
-            }
-            if (!meshRendererExists)
-                Engine::RemoveComponent<MeshRenderer>(selectedEntity);
-
+        MeshRenderer& renderer = Engine::GetComponent<MeshRenderer>(selectedEntity);
+        ImGui::Button(renderer.modelItem.name.c_str());
+        ProjectItem item;
+        if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
+            renderer.modelItem = item;
+            std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
+            renderer.ReloadMesh();
         }
     }
     void ReloadMesh() {
@@ -42,8 +34,7 @@ public:
 	void Update(bool inRuntime) {
         if (hasModel) {
 
-            auto& transform = Engine::GetComponent<Transform>(entity);
-            glm::mat4 modelMat = transform.GetMatrix();
+            glm::mat4 modelMat = transform->GetMatrix();
             Shaders::activeShader.SetMat4("model", modelMat);
 
             /*unsigned int diffuseNr = 1;

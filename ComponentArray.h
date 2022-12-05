@@ -2,14 +2,16 @@
 #include <mono/metadata/object.h>
 #include <unordered_map>
 #include <iostream>
+#include "imgui.h"
 class ComponentArray {
 public:
+	std::string name;
 	virtual ~ComponentArray() = default;
 	virtual void OnEntityDestroyed(unsigned int entity) = 0;
 	virtual void Start() = 0;
 	virtual void Update(bool inRuntime) = 0;
 	virtual void Add(unsigned int entity) = 0;
-	virtual bool HasComponent(unsigned int) = 0;
+	virtual bool HasComponent(unsigned int entity) = 0;
 	virtual void DrawComponentGUI(unsigned int entity) = 0;
 	virtual void GetObject(unsigned int entity, ClassInstance* instance) = 0;
 	virtual void SetObject(unsigned int entity, ClassInstance* instance) = 0;
@@ -17,7 +19,6 @@ public:
 
 template<typename T>
 class Components : public ComponentArray {
-private:
 public:
 	std::unordered_map<unsigned int, T> components;
 	void Add(unsigned int entity, T component) {
@@ -43,17 +44,25 @@ public:
 		return &components[entity];
 	}
 	void DrawComponentGUI(unsigned int entity) {
-		if (components.find(entity) != components.end())
-			components[entity].DrawGUI(entity);
+		if (HasComponent(entity)) {
+
+			bool componentExists = true;
+			if (ImGui::CollapsingHeader(name.c_str(), &componentExists)) {
+				components[entity].DrawGUI(entity);
+			}
+			if (!componentExists)
+				Remove(entity);
+
+		}
 	}
 	void Start() {
-		for (auto component : components) {
-			components[component.first].Start();
+		for (auto& comp : components) {
+			comp.second.Start();
 		}
 	}
 	void Update(bool inRuntime) {
-		for (auto component : components) {
-			components[component.first].Update(inRuntime);
+		for (auto& comp : components) {
+			comp.second.Update(inRuntime);
 		}
 	}
 	void GetObject(unsigned int entity, ClassInstance* instance) {

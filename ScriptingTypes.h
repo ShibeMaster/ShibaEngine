@@ -44,14 +44,18 @@ struct ClassInstance {
 	MonoObject* instance;
 
 	MonoMethod* startMethod;
+	bool hasStart = false;
 	MonoMethod* updateMethod;
+	bool hasUpdate = false;
 
 	ClassInstance() {}
 	ClassInstance(Class klass, bool core = false) {
 		this->classData = klass;
 		if (!core) {
 			startMethod = classData.GetMethod("Start", 0);
+			hasStart = startMethod != nullptr;
 			updateMethod = classData.GetMethod("Update", 0);
+			hasUpdate = updateMethod != nullptr;
 		}
 	}
 	void InvokeMethod(MonoMethod* method, int parameterCount, void** params = nullptr) {
