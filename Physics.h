@@ -14,25 +14,16 @@ public:
 	bool isGrounded;
 
 	static void DrawGUI(unsigned int selectedEntity) {
-		if (Engine::HasComponent<Physics>(selectedEntity)) {
-			bool physicsExists = true;
-			if (ImGui::CollapsingHeader("Physics", &physicsExists)) {
-				Physics& physics = Engine::GetComponent<Physics>(selectedEntity);
-				ImGui::Checkbox("Apply Drag", &physics.useDrag);
-				if (physics.useDrag)
-					ImGui::DragFloat("Drag", &physics.drag);
-				ImGui::Checkbox("Apply Gravity", &physics.useGravity);
-				if (physics.useGravity) {
-					ImGui::InputFloat3("Gravity Direction", &physics.gravityDirection[0]);
-					ImGui::DragFloat("Gravity", &physics.gravity);
-				}
-				ImGui::DragFloat3("Velocity", &physics.velocity[0], 0.1f);
-			}
-
-			if (!physicsExists)
-				Engine::RemoveComponent<Physics>(selectedEntity);
+		Physics& physics = Engine::GetComponent<Physics>(selectedEntity);
+		ImGui::Checkbox("Apply Drag", &physics.useDrag);
+		if (physics.useDrag)
+			ImGui::DragFloat("Drag", &physics.drag);
+		ImGui::Checkbox("Apply Gravity", &physics.useGravity);
+		if (physics.useGravity) {
+			ImGui::InputFloat3("Gravity Direction", &physics.gravityDirection[0]);
+			ImGui::DragFloat("Gravity", &physics.gravity);
 		}
-
+		ImGui::DragFloat3("Velocity", &physics.velocity[0], 0.1f);
 	}
 	void ApplyDrag() {
 
@@ -56,19 +47,18 @@ public:
 			if (velocity.y < -20.0f)
 				velocity.y = -20.0f;
 
-			auto& transform = Engine::GetComponent<Transform>(entity);
 			auto& boundingBox = Engine::GetComponent<MeshCollisionBox>(entity);
 			std::vector<unsigned int> outHits;
 			// other thing that I must fix
 			for (auto& box : boundingBox.boundingBoxes) {
 
-				isGrounded = Raycast(transform.position, glm::vec3(0.0f, -1.0f, 0.0f), abs(box.min.y) + 0.3f, &outHits, entity);
+				isGrounded = Raycast(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(box.min.y) + 0.3f, &outHits, entity);
 				if (isGrounded && velocity.y < 0.0f) {
 					velocity.y = 0.0f;
 					std::cout << "grounded" << std::endl;
 				}
 			}
-			transform.position += velocity * Time::deltaTime;
+			transform->position += velocity * Time::deltaTime;
 
 
 		}

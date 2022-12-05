@@ -170,6 +170,7 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
 			inRuntime = true;
+			Console::LogMessage("Runtime Started");
 			runtimeStartTime = glfwGetTime();
 		}
 
@@ -327,9 +328,8 @@ int main() {
 
 		for (auto& source : Engine::FindComponentsInScene<Light>()) {
 			auto& light = Engine::GetComponent<Light>(source);
-			auto& transform = Engine::GetComponent<Transform>(source);
 			Shaders::activeShader.SetVec3("lightColour", light.colour);
-			Shaders::activeShader.SetVec3("lightPos", transform.position);
+			Shaders::activeShader.SetVec3("lightPos", light.transform->position);
 		}
 
 		Time::currentTime = glfwGetTime() - runtimeStartTime;
@@ -347,6 +347,7 @@ int main() {
 		{
 			gameView.Update(inRuntime);
 		}
+
 		if(inRuntime)
 			Scripting::Update();
 
@@ -377,7 +378,8 @@ int main() {
 				ImGui::EndListBox();
 
 				if (ImGui::Button("New Entity")) {
-					Engine::CreateEntity();
+					unsigned int newEnt = Engine::CreateEntity();
+					Scripting::OnEntityCreated(newEnt);
 				}
 			}
 			//ImGui::End();
