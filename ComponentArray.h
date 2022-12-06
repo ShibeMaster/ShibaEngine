@@ -23,6 +23,8 @@ public:
 	std::unordered_map<unsigned int, T> components;
 	void Add(unsigned int entity, T component) {
 		components[entity] = component;
+		components[entity].entity = entity;
+		components[entity].Initialize();
 		components[entity].Start();
 	}
 	void Add(unsigned int entity) {

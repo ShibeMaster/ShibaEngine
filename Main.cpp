@@ -10,6 +10,7 @@
 #include <string>
 #include "ProjectManager.h"
 #include "Engine.h"
+#include "imgui_stdlib.h"
 #include "Physics.h"
 #include "BoundingBox.h"
 #include "Raycast.h"
@@ -56,6 +57,7 @@ layout (location = 2) in vec2 texCoords;
 out vec2 TexCoords;
 out vec3 FragPos;
 out vec3 Normal;
+
 
 uniform mat4 model;
 uniform mat4 view;
@@ -107,9 +109,10 @@ uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform bool lightEffected;
 
+
 void main(){
 	vec4 colour = hasTexture ? texture(texture_diffuse1, TexCoords) : vec4(1.0, 1.0, 1.0, 1.0);
-	
+
 	if(colour.a < 0.1)
 		discard;
 	if(lightEffected){
@@ -128,6 +131,7 @@ void main(){
 	} else {
 		FragColor = colour;
 	}
+
 
 }
 )GLSL";
@@ -258,7 +262,90 @@ void RenderField(Field field, ClassInstance& instance) {
 
 	}
 }
+void CreateEntityDragAndDrop(SceneItem* item) {
+	unsigned int entity;
+	if (ImGui::IsItemClicked()) {
+		selectedEntity = item->entity;
+	}
+	if (ImGui::BeginDragDropSource()) {
+		ImGui::SetDragDropPayload("DRAG_DROP_Entity", &item->entity, sizeof(unsigned int));
+		ImGui::Text(item->name.c_str());
+		ImGui::EndDragDropSource();
+	}
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Entity")) {
+			entity = *(unsigned int*)payload->Data;
+			SceneManager::activeScene.MoveEntityToChild(entity, item->entity);
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+void RenderSceneItem(SceneItem* item) {
 
+	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
+	unsigned int entity;
+	if (item->children.size() > 0) {
+		bool open = ImGui::TreeNodeEx(item->name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_SpanFullWidth);
+		CreateEntityDragAndDrop(item);
+
+		for (auto& child : item->children)
+			RenderSceneItem(child);
+		ImGui::TreePop();
+	}
+	else {
+		ImGui::TreeNodeEx(item->name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth);
+		CreateEntityDragAndDrop(item);
+	}
+
+}
+void SetupDefaultScene() {
+
+	unsigned int light = Engine::CreateEntity();
+	Engine::AddComponent<Transform>(light, Transform{});
+	Scripting::OnEntityCreated(light);
+	SceneManager::activeScene.OnCreateEntity(light);
+	SceneManager::activeScene.items[light].name = "Light";
+	Engine::AddComponent<Light>(light, Light());
+}
+void RenderSceneHierachy() {
+	if (ImGui::BeginChild("Entities", ImVec2(0.0f, -450.0f), true)) {
+		ImGui::TextUnformatted("Scene");
+		//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+		if (ImGui::BeginTable("Entities", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, -30))) {
+			float textWidth = ImGui::CalcTextSize("A").x;
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
+			ImGui::TableHeadersRow();
+			for (auto& item : SceneManager::activeScene.hierachy) {
+				RenderSceneItem(item);
+			}
+			ImGui::EndTable();
+		}
+		if (ImGui::Button("New Entity")) {
+			unsigned int newEnt = Engine::CreateEntity();
+			Engine::AddComponent<Transform>(newEnt, Transform{});
+			Scripting::OnEntityCreated(newEnt);
+			SceneManager::activeScene.OnCreateEntity(newEnt);
+		}
+		//if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65f))) {
+		//	for (unsigned int entity : SceneManager::activeScene.entities) {
+		//		if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
+		//			selectedEntity = entity;
+		//		}
+		//		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+		//			ImGui::SetDragDropPayload("DRAG_DROP_Entity", &entity, sizeof(unsigned int));
+		//			ImGui::EndDragDropSource();
+		//		}
+		//	}
+		//	ImGui::EndListBox();
+
+
+		//}
+		//ImGui::End();
+		ImGui::EndChild();
+	}
+}
 int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -294,6 +381,7 @@ int main() {
 
 	Shaders::activeShader = Shader(defaultVertexSource, defaultFragmentSource);
 	Shaders::activeShader.Use();
+	SceneManager::activeScene.LoadSkybox();
 	Engine::Start();
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
@@ -323,6 +411,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	SetupDefaultScene();
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -340,12 +429,26 @@ int main() {
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
 		if (sceneViewActive) {
 			sceneView.Update(inRuntime);
+			glDepthFunc(GL_LEQUAL);
+			SceneManager::activeScene.shader.Use();
+			SceneManager::activeScene.shader.SetMat4("view", glm::mat4(glm::mat3(sceneView.sceneCam.GetViewMatrix())));
+			SceneManager::activeScene.shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), sceneView.view.dimensions.x / sceneView.view.dimensions.y, 0.1f, 100.0f));
+			SceneManager::activeScene.RenderSkybox();
+			Shaders::activeShader.Use();
+			glDepthFunc(GL_LESS);
 		}
 		else
 		{
 			gameView.Update(inRuntime);
+
+			SceneManager::activeScene.shader.Use();
+			SceneManager::activeScene.shader.SetMat4("view", glm::mat4(glm::mat3(gameView.view.camera->GetViewMatrix())));
+			SceneManager::activeScene.shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), gameView.view.dimensions.x / gameView.view.dimensions.y, 0.1f, 100.0f));
+			SceneManager::activeScene.RenderSkybox();
+			Shaders::activeShader.Use();
 		}
 
 		if(inRuntime)
@@ -362,29 +465,8 @@ int main() {
 		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 		ImGui::SetWindowPos(ImVec2(0, 0));
 		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height));
-		if (ImGui::BeginChild("Entities", ImVec2(0.0f, -450.0f), true)) {
-			ImGui::TextUnformatted("Scene");
-			//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-			if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65f))) {
-				for (unsigned int entity : SceneManager::activeScene.entities) {
-					if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
-						selectedEntity = entity;
-					}
-					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-						ImGui::SetDragDropPayload("DRAG_DROP_Entity", &entity, sizeof(unsigned int));
-						ImGui::EndDragDropSource();
-					}
-				}
-				ImGui::EndListBox();
 
-				if (ImGui::Button("New Entity")) {
-					unsigned int newEnt = Engine::CreateEntity();
-					Scripting::OnEntityCreated(newEnt);
-				}
-			}
-			//ImGui::End();
-			ImGui::EndChild();
-		}
+		RenderSceneHierachy();
 		ProjectManager::activeProject.RenderHierachy();
 		ImGui::End();
 
@@ -408,7 +490,6 @@ int main() {
 			ImGui::EndTabBar();
 		}
 		ImGui::End();
-
 		/*
 		ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 		ImGui::SetWindowPos("Settings", ImVec2(20, SCREEN_HEIGHT - 350));
@@ -426,7 +507,7 @@ int main() {
 		// this shit below was made in a rush, i definitely need to clean this up at some point
 
 		if (selectedEntity != -1) {
-			ImGui::Text(std::to_string(selectedEntity).c_str());
+			ImGui::InputText("###Entity_Name", &SceneManager::activeScene.items[selectedEntity].name);
 			ImGui::Separator();
 			if (Engine::HasComponent<Transform>(selectedEntity)) {
 				if (ImGui::CollapsingHeader("Transform")) {

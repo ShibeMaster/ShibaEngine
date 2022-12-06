@@ -31,6 +31,9 @@
     <Filter Include="Header Files\Engine\Views">
       <UniqueIdentifier>{2acf4406-e17c-49ef-bc90-7568877c94ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Default Skybox">
+      <UniqueIdentifier>{936021c7-a3f1-4db4-9b36-de927dfe6244}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -83,6 +86,12 @@
     </ClCompile>
     <ClCompile Include="ProjectManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External Libraries\ImGui\imgui_stdlib.cpp">
+      <Filter>Resource Files\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -212,9 +221,6 @@
     <ClInclude Include="Sprite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\External Libraries\stb_image.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -230,6 +236,12 @@
     <ClInclude Include="GameView.h">
       <Filter>Header Files\Engine\Views</Filter>
     </ClInclude>
+    <ClInclude Include="..\External Libraries\stb_image.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\External Libraries\ImGui\imgui_stdlib.h">
+      <Filter>Resource Files\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprite_Camera_Icon.png">
@@ -237,6 +249,24 @@
     </Image>
     <Image Include="Sprite_Light_Icon.png">
       <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Day_Back.png">
+      <Filter>Resource Files\Default Skybox</Filter>
+    </Image>
+    <Image Include="Day_Down.png">
+      <Filter>Resource Files\Default Skybox</Filter>
+    </Image>
+    <Image Include="Day_Front.png">
+      <Filter>Resource Files\Default Skybox</Filter>
+    </Image>
+    <Image Include="Day_Left.png">
+      <Filter>Resource Files\Default Skybox</Filter>
+    </Image>
+    <Image Include="Day_Right.png">
+      <Filter>Resource Files\Default Skybox</Filter>
+    </Image>
+    <Image Include="Day_Top.png">
+      <Filter>Resource Files\Default Skybox</Filter>
     </Image>
   </ItemGroup>
 </Project>
