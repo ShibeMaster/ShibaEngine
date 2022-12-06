@@ -5,6 +5,7 @@
 #include <Mono/metadata/assembly.h>
 #include "Engine.h"
 #include <fstream>
+#include "Transform.h"
 #include "InputManager.h"
 #include <glm/glm.hpp>
 #include <mono/metadata/attrdefs.h>

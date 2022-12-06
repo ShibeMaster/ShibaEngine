@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <assimp/mesh.h>
 #include <string>
+#include "Shaders.h"
 #include <iostream>
 #include <glm/glm.hpp>
 #include "glm/gtc/quaternion.hpp"

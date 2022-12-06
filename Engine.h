@@ -2,7 +2,6 @@
 #include "ScriptingTypes.h"
 #include "EntityManager.h"
 #include "ComponentManager.h"
-#include "Transform.h"
 #include <mono/metadata/object.h>
 #include "SceneManager.h"
 class Engine {
@@ -18,7 +17,6 @@ public:
 	}
 	static unsigned int CreateEntity() {
 		unsigned int entity = entityManager.CreateEntity();
-		AddComponent<Transform>(entity, Transform{});
 		SceneManager::AddEntity(entity);
 		return entity;
 	}
