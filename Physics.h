@@ -48,15 +48,12 @@ public:
 				velocity.y = -20.0f;
 
 			auto& boundingBox = Engine::GetComponent<MeshCollisionBox>(entity);
-			std::vector<unsigned int> outHits;
-			// other thing that I must fix
-			for (auto& box : boundingBox.boundingBoxes) {
+			std::vector<RayHit> outHits;
+			isGrounded = Raycast(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(boundingBox.min.y) + 0.3f, &outHits, entity);
 
-				isGrounded = Raycast(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(box.min.y) + 0.3f, &outHits, entity);
-				if (isGrounded && velocity.y < 0.0f) {
-					velocity.y = 0.0f;
-					std::cout << "grounded" << std::endl;
-				}
+			if (isGrounded && velocity.y < 0.0f) {
+				velocity.y = 0.0f;
+				std::cout << "grounded" << std::endl;
 			}
 			transform->position += velocity * Time::deltaTime;
 

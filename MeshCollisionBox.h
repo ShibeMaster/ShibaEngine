@@ -4,47 +4,33 @@
 #include "MeshRenderer.h"
 #include "Engine.h"
 #include "ProjectItem.h"
-// must fix to allow multiple boundingBoxes
 class MeshCollisionBox : public Component {
 public:
     Model model;
-    std::vector<BoundingBox> boundingBoxes;
     ProjectItem meshItem = { "meshItem" };
     bool debugDraw;
-    std::vector<Mesh> debugMeshes;
     glm::vec3 max;
-    glm::vec3 min; 
-    // these are the overall max and min positions of all of the mesh bounding boxes
-    // it'll be used to find whether it should check if each of the boxes collide
+    glm::vec3 min;
+    Mesh debugMesh;
+    // (Note) it's going to be more effecient in terms of performance to only have a singular mesh collider rather than several boxes
     void LoadMeshBox() {
         model = ModelLoader::LoadModel(meshItem.path);
         
         for (auto& mesh : model.meshes) {
-            BoundingBox box;
             for (auto& vertex : mesh.vertices) {
 
-                box.max.x = std::max(box.max.x, vertex.position.x);
-                box.min.x = std::min(box.min.x, vertex.position.x);
+                max.x = std::max(max.x, vertex.position.x);
+                min.x = std::min(min.x, vertex.position.x);
 
-                box.max.y = std::max(box.max.y, vertex.position.y);
-                box.min.y = std::min(box.min.y, vertex.position.y);
+                max.y = std::max(max.y, vertex.position.y);
+                min.y = std::min(min.y, vertex.position.y);
 
-                box.max.z = std::max(box.max.z, vertex.position.z);
-                box.min.z = std::min(box.min.z, vertex.position.z);
+                max.z = std::max(max.z, vertex.position.z);
+                min.z = std::min(min.z, vertex.position.z);
             }
-            max.x = std::max(box.max.x, max.x);
-            min.x = std::min(box.min.x, min.x);
-            max.y = std::max(box.max.y, max.y);
-            min.y = std::min(box.min.y, min.y);
-            max.z = std::max(box.max.z, max.z);
-            min.z = std::min(box.min.z, min.z);
-
-            boundingBoxes.push_back(box);
         }
+        debugMesh = GenerateBoundingBoxDebugMesh({ min, max });
 
-        for (auto& box : boundingBoxes) {
-            debugMeshes.push_back(GenerateBoundingBoxDebugMesh(box));
-        }
         
     }
     static Mesh GenerateBoundingBoxDebugMesh(const BoundingBox& box) {
@@ -101,9 +87,7 @@ public:
             glm::mat4 model = transform->GetMatrix();
             Shaders::activeShader.SetMat4("model", model);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            for (auto& mesh : debugMeshes) {
-                mesh.Render();
-            }
+            debugMesh.Render();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
