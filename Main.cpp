@@ -156,19 +156,11 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 				InputManager::SetMouseLocked();
 		}
 		if (key == GLFW_KEY_F1) {
-			auto a = Engine::CreateEntity();
-			Engine::AddComponent<MeshRenderer>(a, MeshRenderer());
-			Engine::AddComponent<Physics>(a, Physics());
-			Engine::AddComponent<MeshCollisionBox>(a, MeshCollisionBox());
-			auto& transform = Engine::GetComponent<Transform>(a);
-			transform.position.y = 5.0f;
-
-			auto b = Engine::CreateEntity();
-			Engine::AddComponent<MeshRenderer>(b, MeshRenderer());
-			Engine::AddComponent<MeshCollisionBox>(b, MeshCollisionBox());
+			std::vector<RayHit> outHits;
+			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
 		}
 		if (key == GLFW_KEY_F4) {
-			std::vector<unsigned int> outHits;
+			std::vector<RayHit> outHits;
 			std::cout << Raycast(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 5.0f, &outHits) << std::endl;;
 		}
 		if (key == GLFW_KEY_F3) {
