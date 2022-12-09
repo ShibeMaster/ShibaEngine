@@ -10,6 +10,7 @@
 #include <string>
 #include "ProjectManager.h"
 #include "Engine.h"
+#include "SceneLoader.h"
 #include "imgui_stdlib.h"
 #include "Physics.h"
 #include "BoundingBox.h"
@@ -160,8 +161,7 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
 		}
 		if (key == GLFW_KEY_F4) {
-			std::vector<RayHit> outHits;
-			std::cout << Raycast(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 5.0f, &outHits) << std::endl;;
+			SceneLoader::SaveScene(SceneManager::activeScene);
 		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();

@@ -25,6 +25,10 @@ public:
 			renderer.ReloadSprite();
 		}
 	}
+	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		json->Key("Sprite");
+		json->String(spriteItem.path.c_str());
+	}
 	void Update(bool inRuntime) {
 		if (hasSprite) {
 			glm::mat4 model = transform->GetMatrix();

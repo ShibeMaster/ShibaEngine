@@ -20,6 +20,7 @@ public:
 	std::vector<SceneItem*> hierachy;
 	Shader shader;
 	Mesh skybox;
+	std::string path;
 	unsigned int skyTexture;
 
 	void OnCreateEntity(unsigned int entity) {
@@ -153,5 +154,6 @@ void main(){
 		if(std::find(hierachy.begin(), hierachy.end(), &items[entity]) != hierachy.end())
 			hierachy.erase(std::find(hierachy.begin(), hierachy.end(), &items[entity]));
 	}
+	
 
 };

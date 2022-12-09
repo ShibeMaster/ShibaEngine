@@ -1,5 +1,6 @@
 #pragma once
 #include "ScriptingTypes.h"
+#include <rapidjson/PrettyWriter.h>
 #include "EntityManager.h"
 #include "ComponentManager.h"
 #include <mono/metadata/object.h>
@@ -45,6 +46,14 @@ public:
 	}
 	static void DrawEntityComponentGUI(unsigned int entity) {
 		componentManager.DrawEntityComponentGUI(entity);
+	}
+	/// <summary>
+	/// This iterates through all components attached to an entity and serializes them into the existing json document
+	/// </summary>
+	/// <param name="entity"></param>
+	/// <param name="json"></param>
+	static void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		componentManager.SerializeEntityComponents(entity, json);
 	}
 	template<typename T>
 	static std::vector<unsigned int> FindComponentsInScene() {

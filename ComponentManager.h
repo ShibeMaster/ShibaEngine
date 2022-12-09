@@ -50,6 +50,18 @@ public:
 	void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
 		componentArrays[name]->GetObject(entity, instance);
 	}
+	void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		for (auto& compArr : componentArrays) {
+			if (compArr.second->HasComponent(entity)) {
+				json->Key(compArr.first.c_str());
+				json->StartObject();
+				std::cout << "here: " << compArr.first << std::endl;
+				compArr.second->SerializeComponent(entity, json);
+				std::cout << "here 2" << std::endl;
+				json->EndObject();
+			}
+		}
+	}
 	std::vector<std::string> GetEntityComponents(unsigned int entity) {
 		std::vector<std::string> comps;
 		for (auto& comp : componentArrays) {

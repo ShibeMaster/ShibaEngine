@@ -102,6 +102,12 @@ public:
         }
 		ImGui::Checkbox("Debug Draw", &box.debugDraw);
 	}
+    void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+        json->Key("Mesh");
+        json->String(meshItem.path.c_str());
+        json->Key("Debug Draw");
+        json->Bool(debugDraw);
+    }
     void GetObject(ClassInstance* instance) {
     }
     void SetObject(ClassInstance* instance) {

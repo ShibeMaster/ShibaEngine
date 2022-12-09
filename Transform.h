@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 #include "ScriptingTypes.h"
 #include "SceneManager.h"
+#include "SerializationUtils.h"
+#include <rapidjson/PrettyWriter.h>
 #include "Engine.h"
 #include <glm/gtc/matrix_transform.hpp>
 class Transform	 {
@@ -48,5 +50,13 @@ public:
 		model = glm::translate(model, -pivot);
 		model = glm::scale(model, scale);
 		return model;
+	}
+
+	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		SerializationUtils::SerializeVec3("position", position, json);
+		SerializationUtils::SerializeVec3("rotation", rotation, json);
+		SerializationUtils::SerializeVec3("pivot", pivot, json);
+		SerializationUtils::SerializeVec3("scale", scale, json);
+
 	}
 };

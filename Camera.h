@@ -67,4 +67,10 @@ public:
 	glm::mat4 GetViewMatrix() {
 		return glm::lookAt(transform->position, transform->position + forward, up);
 	}
+	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		json->Key("Speed");
+		json->Double(speed);
+		json->Key("Sensitivity");
+		json->Double(sensitivity);
+	}
 };

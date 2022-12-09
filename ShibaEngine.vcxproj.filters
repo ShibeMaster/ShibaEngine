@@ -242,6 +242,12 @@
     <ClInclude Include="..\External Libraries\ImGui\imgui_stdlib.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="SceneLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializationUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprite_Camera_Icon.png">
