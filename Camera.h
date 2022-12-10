@@ -73,4 +73,8 @@ public:
 		json->Key("Sensitivity");
 		json->Double(sensitivity);
 	}
+	void Deserialize(rapidjson::Value& obj) {
+		speed = obj["Speed"].GetDouble();
+		sensitivity = obj["Sensitivity"].GetDouble();
+	}
 };

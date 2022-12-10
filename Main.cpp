@@ -136,7 +136,6 @@ void main(){
 
 }
 )GLSL";
-char entryPoint[128];
 bool inRuntime = false;
 float runtimeStartTime = 0.0f;
 SceneView sceneView;
@@ -161,7 +160,15 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
 		}
 		if (key == GLFW_KEY_F4) {
-			SceneLoader::SaveScene(SceneManager::activeScene);
+			SceneLoader::SaveScene(*SceneManager::activeScene);
+		}
+		if (key == GLFW_KEY_F5) {
+			std::string path;
+			std::getline(std::cin, path);
+			SceneLoader::LoadScene(path);
+			for (auto& item : SceneManager::activeScene->hierachy) {
+				std::cout << item->name << std::endl;
+			}
 		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
@@ -267,7 +274,7 @@ void CreateEntityDragAndDrop(SceneItem* item) {
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Entity")) {
 			entity = *(unsigned int*)payload->Data;
-			SceneManager::activeScene.MoveEntityToChild(entity, item->entity);
+			SceneManager::activeScene->MoveEntityToChild(entity, item->entity);
 		}
 		ImGui::EndDragDropTarget();
 	}
@@ -296,8 +303,8 @@ void SetupDefaultScene() {
 	unsigned int light = Engine::CreateEntity();
 	Engine::AddComponent<Transform>(light, Transform{});
 	Scripting::OnEntityCreated(light);
-	SceneManager::activeScene.OnCreateEntity(light);
-	SceneManager::activeScene.items[light].name = "Light";
+	SceneManager::activeScene->OnCreateEntity(light);
+	SceneManager::activeScene->items[light].name = "Light";
 	Engine::AddComponent<Light>(light, Light());
 }
 void RenderSceneHierachy() {
@@ -309,7 +316,7 @@ void RenderSceneHierachy() {
 			float textWidth = ImGui::CalcTextSize("A").x;
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
 			ImGui::TableHeadersRow();
-			for (auto& item : SceneManager::activeScene.hierachy) {
+			for (auto& item : SceneManager::activeScene->hierachy) {
 				RenderSceneItem(item);
 			}
 			ImGui::EndTable();
@@ -318,10 +325,10 @@ void RenderSceneHierachy() {
 			unsigned int newEnt = Engine::CreateEntity();
 			Engine::AddComponent<Transform>(newEnt, Transform{});
 			Scripting::OnEntityCreated(newEnt);
-			SceneManager::activeScene.OnCreateEntity(newEnt);
+			SceneManager::activeScene->OnCreateEntity(newEnt);
 		}
 		//if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65f))) {
-		//	for (unsigned int entity : SceneManager::activeScene.entities) {
+		//	for (unsigned int entity : SceneManager::activeScene->entities) {
 		//		if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
 		//			selectedEntity = entity;
 		//		}
@@ -373,7 +380,9 @@ int main() {
 
 	Shaders::activeShader = Shader(defaultVertexSource, defaultFragmentSource);
 	Shaders::activeShader.Use();
-	SceneManager::activeScene.LoadSkybox();
+	SceneManager::AddScene();
+	SceneManager::ChangeScene(0);
+	SceneManager::activeScene->LoadSkybox();
 	Engine::Start();
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
@@ -425,10 +434,10 @@ int main() {
 		if (sceneViewActive) {
 			sceneView.Update(inRuntime);
 			glDepthFunc(GL_LEQUAL);
-			SceneManager::activeScene.shader.Use();
-			SceneManager::activeScene.shader.SetMat4("view", glm::mat4(glm::mat3(sceneView.sceneCam.GetViewMatrix())));
-			SceneManager::activeScene.shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), sceneView.view.dimensions.x / sceneView.view.dimensions.y, 0.1f, 100.0f));
-			SceneManager::activeScene.RenderSkybox();
+			SceneManager::activeScene->shader.Use();
+			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(sceneView.sceneCam.GetViewMatrix())));
+			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), sceneView.view.dimensions.x / sceneView.view.dimensions.y, 0.1f, 100.0f));
+			SceneManager::activeScene->RenderSkybox();
 			Shaders::activeShader.Use();
 			glDepthFunc(GL_LESS);
 		}
@@ -436,10 +445,10 @@ int main() {
 		{
 			gameView.Update(inRuntime);
 
-			SceneManager::activeScene.shader.Use();
-			SceneManager::activeScene.shader.SetMat4("view", glm::mat4(glm::mat3(gameView.view.camera->GetViewMatrix())));
-			SceneManager::activeScene.shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), gameView.view.dimensions.x / gameView.view.dimensions.y, 0.1f, 100.0f));
-			SceneManager::activeScene.RenderSkybox();
+			SceneManager::activeScene->shader.Use();
+			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(gameView.view.camera->GetViewMatrix())));
+			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), gameView.view.dimensions.x / gameView.view.dimensions.y, 0.1f, 100.0f));
+			SceneManager::activeScene->RenderSkybox();
 			Shaders::activeShader.Use();
 		}
 
@@ -499,7 +508,7 @@ int main() {
 		// this shit below was made in a rush, i definitely need to clean this up at some point
 
 		if (selectedEntity != -1) {
-			ImGui::InputText("###Entity_Name", &SceneManager::activeScene.items[selectedEntity].name);
+			ImGui::InputText("###Entity_Name", &SceneManager::activeScene->items[selectedEntity].name);
 			ImGui::Separator();
 			if (Engine::HasComponent<Transform>(selectedEntity)) {
 				if (ImGui::CollapsingHeader("Transform")) {

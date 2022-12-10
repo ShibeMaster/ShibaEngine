@@ -5,6 +5,7 @@
 #include "SerializationUtils.h"
 #include <rapidjson/PrettyWriter.h>
 #include "Engine.h"
+#include <rapidjson/document.h>
 #include <glm/gtc/matrix_transform.hpp>
 class Transform	 {
 public:
@@ -39,8 +40,8 @@ public:
 	}
 	glm::mat4 GetMatrix() {
 		glm::mat4 model = glm::mat4(1.0f);
-		if (SceneManager::activeScene.items[entity].hasParent) {
-			model = Engine::GetComponentPointer<Transform>(SceneManager::activeScene.items[entity].parent->entity)->GetMatrix();
+		if (SceneManager::activeScene->items[entity].hasParent) {
+			model = Engine::GetComponentPointer<Transform>(SceneManager::activeScene->items[entity].parent->entity)->GetMatrix();
 		}
 		model = glm::translate(model, position);
 		model = glm::translate(model, pivot);
@@ -59,4 +60,11 @@ public:
 		SerializationUtils::SerializeVec3("scale", scale, json);
 
 	}
+	void Deserialize(rapidjson::Value& obj) {
+		position = SerializationUtils::DeserializeVec3(obj["position"]);
+		rotation = SerializationUtils::DeserializeVec3(obj["rotation"]);
+		pivot = SerializationUtils::DeserializeVec3(obj["pivot"]);
+		scale = SerializationUtils::DeserializeVec3(obj["scale"]);
+	}
+
 };

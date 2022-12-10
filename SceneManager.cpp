@@ -1,2 +1,3 @@
 #include "SceneManager.h"
-Scene SceneManager::activeScene;
+std::vector<Scene> SceneManager::scenes;
+Scene* SceneManager::activeScene;

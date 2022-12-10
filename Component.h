@@ -3,6 +3,7 @@
 #include <rapidjson/PrettyWriter.h>
 #include "ScriptingTypes.h"
 #include "Transform.h"
+#include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 class Component {
 public:
@@ -23,6 +24,11 @@ public:
 	/// <param name="entity"></param>
 	/// <param name="json"></param>
 	virtual void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {};
+	/// <summary>
+	/// Deserializes the values in json object to the values in the component
+	/// </summary>
+	/// <param name="obj"></param>
+	virtual void Deserialize(rapidjson::Value& obj) {};
 	/// <summary>
 	/// This is called when the scripting system requests a core component of a specific type, it basically just loads the latest data of this object into the c# equivalent.
 	/// </summary>

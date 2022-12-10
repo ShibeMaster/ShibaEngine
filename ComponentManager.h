@@ -4,6 +4,7 @@
 #include <memory>
 #include "ScriptingTypes.h"
 #include <iostream>
+#include <rapidjson/document.h>
 #include <string>
 #include <typeinfo>
 class ComponentManager {
@@ -49,6 +50,14 @@ public:
 	}
 	void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
 		componentArrays[name]->GetObject(entity, instance);
+	}
+	void DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj) {
+		for (auto& compArr : componentArrays) {
+			if (obj.HasMember(compArr.first.c_str())) {
+				compArr.second->Add(entity);
+				compArr.second->DeserializeComponent(entity, obj[compArr.first.c_str()]);
+			}
+		}
 	}
 	void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
 		for (auto& compArr : componentArrays) {

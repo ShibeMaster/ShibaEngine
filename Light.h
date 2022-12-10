@@ -17,4 +17,7 @@ public:
 	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
 		SerializationUtils::SerializeVec3("colour", colour, json);
 	}
+	void Deserialize(rapidjson::Value& obj) {
+		colour = SerializationUtils::DeserializeVec3(obj["colour"]);
+	}
 };

@@ -108,6 +108,11 @@ public:
         json->Key("Debug Draw");
         json->Bool(debugDraw);
     }
+    void Deserialize(rapidjson::Value& obj) {
+        meshItem = ProjectManager::activeProject.GetItem(obj["Mesh"].GetString());
+        debugDraw = obj["Debug Draw"].GetBool();
+        LoadMeshBox();
+    }
     void GetObject(ClassInstance* instance) {
     }
     void SetObject(ClassInstance* instance) {
