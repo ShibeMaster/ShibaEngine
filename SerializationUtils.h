@@ -20,6 +20,19 @@ public:
 		json->Key(name);
 		SerializationUtils::SerializeVec3(val, json);
 	}
+	static void SerializeVec2(const glm::vec2& val, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		json->StartArray();
+		json->Double(val.x);
+		json->Double(val.y);
+		json->EndArray();
+	}
+	static glm::vec2 DeserializeVec2(rapidjson::Value& obj) {
+		glm::vec2 val;
+		auto arr = obj.GetArray();
+		val.x = arr[0].GetDouble();
+		val.y = arr[1].GetDouble();
+		return val;
+	}
 	static glm::vec3 DeserializeVec3(rapidjson::Value& obj) {
 		glm::vec3 val;
 		auto arr = obj.GetArray();

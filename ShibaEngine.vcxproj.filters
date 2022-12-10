@@ -34,9 +34,6 @@
     <Filter Include="Resource Files\Default Skybox">
       <UniqueIdentifier>{936021c7-a3f1-4db4-9b36-de927dfe6244}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Serialized Scene Examples">
-      <UniqueIdentifier>{82d3da05-189c-4e54-8812-cb200cccb061}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -280,7 +277,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="New Scene.ShbaScene">
-      <Filter>Resource Files\Serialized Scene Examples</Filter>
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "Engine.h"
 #include <fstream>
+#include "Scripting.h"
 #include <rapidjson/PrettyWriter.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
@@ -32,6 +33,7 @@ private:
 		scene->entities.push_back(item.entity);
 		scene->items[item.entity] = item;
 		Engine::DeserializeEntityComponents(item.entity, obj);
+		Scripting::DeserializeEntityScripts(item.entity, obj);
 		if (obj.HasMember("Children")) {
 			for (auto& child : obj["Children"].GetArray()) {
 				scene->items[item.entity].children.push_back(DeserializeSceneHierachyNode(scene, child, &scene->items[item.entity]));
@@ -46,6 +48,7 @@ private:
 		json->Key("hasParent");
 		json->Bool(item->hasParent);
 		Engine::SerializeEntityComponents(item->entity, json);
+		Scripting::SerializeEntityScripts(item->entity, json);
 		if (item->children.size() > 0) {
 			json->Key("Children");
 			json->StartArray();
