@@ -6,7 +6,9 @@
 #include "Engine.h"
 #include <fstream>
 #include "Transform.h"
+#include <rapidjson/prettywriter.h>
 #include "InputManager.h"
+#include <rapidjson/document.h>
 #include <glm/glm.hpp>
 #include <mono/metadata/attrdefs.h>
 #include "ScriptingTypes.h"
@@ -318,6 +320,58 @@ public:
 		for (auto& comp : data.entities) {
 			for (auto& instance : comp.second) {
 				instance.second.InvokeMethod(instance.second.startMethod, 0);
+			}
+		}
+	}
+	static void SerializeEntityScriptField(unsigned int entity, ClassInstance& instance, Field& field, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		json->Key(field.name.c_str());
+		// sorry for this
+		switch (field.type)
+		{
+		case FieldType::Float: json->Double(instance.GetFieldValue<float>(field.name)); break;
+		case FieldType::Double: json->Double(instance.GetFieldValue<double>(field.name)); break;
+		case FieldType::Bool: json->Bool(instance.GetFieldValue<bool>(field.name)); break;
+		case FieldType::UInt: json->Int(instance.GetFieldValue<unsigned int>(field.name)); break;
+		case FieldType::Vector2: SerializationUtils::SerializeVec2(instance.GetFieldValue<glm::vec2>(field.name), json); break;
+		case FieldType::Vector3: SerializationUtils::SerializeVec3(instance.GetFieldValue<glm::vec3>(field.name), json); break;
+		case FieldType::Int: json->Int(instance.GetFieldValue<unsigned int>(field.name)); break;
+		default: break;
+		}
+	}
+	static void SerializeEntityScripts(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		for (auto& instance : data.entities[entity]) {
+			json->Key(instance.second.classData.name.c_str());
+			json->StartObject();
+			for (auto& field : instance.second.classData.fields) {
+				SerializeEntityScriptField(entity, instance.second, field.second, json);
+			}
+			json->EndObject();
+		}
+	}
+	static void DeserializeEntityScriptField(unsigned int entity, ClassInstance& instance, Field& field, rapidjson::Value& obj) {
+		switch (field.type)
+		{
+		case FieldType::Float: instance.SetFieldValue<float>(field.name, obj.GetDouble()); break;
+		case FieldType::Double: instance.SetFieldValue<double>(field.name, obj.GetDouble()); break;
+		case FieldType::Bool: instance.SetFieldValue<bool>(field.name, obj.GetBool()); break;
+		case FieldType::UInt: instance.SetFieldValue<unsigned int>(field.name, obj.GetInt()); break;
+		case FieldType::Vector2: instance.SetFieldValue<glm::vec2>(field.name, SerializationUtils::DeserializeVec2(obj)); break;
+		case FieldType::Vector3: instance.SetFieldValue<glm::vec3>(field.name, SerializationUtils::DeserializeVec3(obj)); break;
+		case FieldType::Int: instance.SetFieldValue<int>(field.name, obj.GetInt()); break;
+		default: break;
+		}
+	}
+	static void DeserializeEntityScripts(unsigned int entity, rapidjson::Value& obj) {
+		
+		for (auto& script : data.components) {
+			if (obj.HasMember(script.first.c_str())) {
+				Engine::AddScript(entity, script.first);
+				Scripting::LoadEntityScript(entity, script.first);
+				for (auto& field : script.second.fields) {
+					if(obj[script.first.c_str()].HasMember(field.first.c_str()))
+						DeserializeEntityScriptField(entity, data.entities[entity][script.first], field.second, obj[script.first.c_str()][field.first.c_str()]);
+
+				}
 			}
 		}
 	}

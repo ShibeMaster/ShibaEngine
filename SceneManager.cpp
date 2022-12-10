@@ -1,2 +1,3 @@
 #include "SceneManager.h"
-Scene SceneManager::activeScene;
+std::unordered_map<std::string, Scene> SceneManager::scenes;
+Scene* SceneManager::activeScene;

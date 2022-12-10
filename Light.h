@@ -14,4 +14,10 @@ public:
 		auto& light = Engine::GetComponent<Light>(selectedEntity);
 		ImGui::ColorEdit3("Colour", &light.colour[0]);
 	}
+	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		SerializationUtils::SerializeVec3("colour", colour, json);
+	}
+	void Deserialize(rapidjson::Value& obj) {
+		colour = SerializationUtils::DeserializeVec3(obj["colour"]);
+	}
 };

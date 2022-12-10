@@ -203,10 +203,12 @@
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SceneView.h" />
     <ClInclude Include="Scripting.h" />
     <ClInclude Include="ScriptingTypes.h" />
+    <ClInclude Include="SerializationUtils.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Sprite.h" />
@@ -224,6 +226,9 @@
     <Image Include="Day_Top.png" />
     <Image Include="Sprite_Camera_Icon.png" />
     <Image Include="Sprite_Light_Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="New Scene.ShbaScene" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

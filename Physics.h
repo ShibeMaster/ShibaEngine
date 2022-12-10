@@ -60,6 +60,24 @@ public:
 
 		}
 	}
+	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		json->Key("Use Gravity");
+		json->Bool(useGravity);
+		SerializationUtils::SerializeVec3("Gravity Direction", gravityDirection, json);
+		json->Key("Gravity");
+		json->Double(gravity);
+		json->Key("Use Drag");
+		json->Bool(useDrag);
+		json->Key("Drag");
+		json->Double(drag);
+	}
+	void Deserialize(rapidjson::Value& obj) {
+		useGravity = obj["Use Gravity"].GetBool();
+		gravityDirection = SerializationUtils::DeserializeVec3(obj["Gravity Direction"]);
+		gravity = obj["Gravity"].GetDouble();
+		useDrag = obj["Use Drag"].GetBool();
+		drag = obj["Drag"].GetDouble();
+	}
 	void GetObject(ClassInstance* instance) {
 		instance->SetFieldValue<glm::vec3>("velocity", velocity);
 		instance->SetFieldValue<bool>("useGravity", useGravity);

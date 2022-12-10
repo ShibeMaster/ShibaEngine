@@ -1,5 +1,6 @@
 #pragma once
 #include "ScriptingTypes.h"
+#include <rapidjson/PrettyWriter.h>
 #include "EntityManager.h"
 #include "ComponentManager.h"
 #include <mono/metadata/object.h>
@@ -27,9 +28,9 @@ public:
 		componentManager.SetCoreComponent(entity, name, instance);
 	}
 	static void DestroyEntity(unsigned int entity) {
-		auto entPos = std::find(SceneManager::activeScene.entities.begin(), SceneManager::activeScene.entities.end(), entity);
-		if (entPos != SceneManager::activeScene.entities.end())
-			SceneManager::activeScene.entities.erase(entPos);
+		auto entPos = std::find(SceneManager::activeScene->entities.begin(), SceneManager::activeScene->entities.end(), entity);
+		if (entPos != SceneManager::activeScene->entities.end())
+			SceneManager::activeScene->entities.erase(entPos);
 		entityManager.DestroyEntity(entity);
 		componentManager.OnEntityDestroyed(entity);
 	}
@@ -46,10 +47,21 @@ public:
 	static void DrawEntityComponentGUI(unsigned int entity) {
 		componentManager.DrawEntityComponentGUI(entity);
 	}
+	/// <summary>
+	/// This iterates through all components attached to an entity and serializes them into the existing json document
+	/// </summary>
+	/// <param name="entity"></param>
+	/// <param name="json"></param>
+	static void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		componentManager.SerializeEntityComponents(entity, json);
+	}
+	static void DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj) {
+		componentManager.DeserializeEntityComponents(entity, obj);
+	}
 	template<typename T>
 	static std::vector<unsigned int> FindComponentsInScene() {
 		std::vector<unsigned int> entitiesWithComponent;
-		for (unsigned int entity : SceneManager::activeScene.entities) {
+		for (unsigned int entity : SceneManager::activeScene->entities) {
 			if (Engine::HasComponent<T>(entity))
 				entitiesWithComponent.push_back(entity);
 		}
@@ -58,7 +70,7 @@ public:
 
 	static std::vector<unsigned int> FindScriptInScene(const std::string& name) {
 		std::vector<unsigned int> entitiesWithComponent;
-		for (unsigned int entity : SceneManager::activeScene.entities) {
+		for (unsigned int entity : SceneManager::activeScene->entities) {
 			const auto& scripts = componentManager.GetEntityScripts(entity);
 			if (std::find(scripts.begin(), scripts.end(), name) != scripts.end())
 				entitiesWithComponent.push_back(entity);

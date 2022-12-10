@@ -59,6 +59,15 @@ public:
                 mesh.Render();
         }
 	}
+    void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+        json->Key("Model");
+        json->String(modelItem.path.c_str());
+    }
+    void Deserialize(rapidjson::Value& obj) {
+        modelItem = ProjectManager::activeProject.GetItem(obj["Model"].GetString());
+        ReloadMesh();
+
+    }
     void GetObject(ClassInstance* instance) {
         instance->SetFieldValue<MonoString>("modelPath", mono_string_new(Scripting::data.appDomain, modelItem.path.c_str()));
     }

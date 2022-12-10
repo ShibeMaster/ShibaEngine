@@ -3,6 +3,8 @@
 #include "imgui.h"
 #include <filesystem>
 #include "ProjectItem.h"
+#include "SceneLoader.h"
+#include "SceneManager.h"
 #include "Scripting.h"
 #include <unordered_map>
 #include <iostream>
@@ -38,9 +40,11 @@ public:
 			IterateDirectory(hierachyMap[node.item.path]);
 		return hierachyMap[node.item.path];
 	}
-
+	void CreateNewSceneNode(const std::string& name, const std::string& path) {
+		CreateHierachyNode(name, path, ".ShbaScene", hierachy);
+	}
 	void IterateDirectory(HierachyTreeNode& directoryNode) {
-		for (auto file : std::filesystem::directory_iterator(directoryNode.item.path)) {
+		for (auto& file : std::filesystem::directory_iterator(directoryNode.item.path)) {
 			CreateHierachyNode(file.path().stem().string(), file.path().string(), file.is_directory() ? "" : file.path().extension().string(), directoryNode, file.is_directory());
 		}
 	}
@@ -86,6 +90,14 @@ public:
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
 				ImGui::SetDragDropPayload((std::string("DRAG_DROP_") + node.item.type).c_str(), node.item.path.c_str(), node.item.path.length() * sizeof(char*));
 				ImGui::EndDragDropSource();
+			}
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				if (node.item.type == ".ShbaScene") {
+					if (!SceneManager::IsSceneLoaded(node.item.path))
+						SceneLoader::LoadScene(node.item.path);
+
+					SceneManager::ChangeScene(node.item.path);
+				}
 			}
 			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(node.item.type.c_str());

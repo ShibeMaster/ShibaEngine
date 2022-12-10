@@ -2,6 +2,7 @@
 #include <mono/metadata/object.h>
 #include <unordered_map>
 #include <iostream>
+#include <rapidjson/document.h>
 #include "imgui.h"
 class ComponentArray {
 public:
@@ -13,6 +14,8 @@ public:
 	virtual void Add(unsigned int entity) = 0;
 	virtual bool HasComponent(unsigned int entity) = 0;
 	virtual void DrawComponentGUI(unsigned int entity) = 0;
+	virtual void DeserializeComponent(unsigned int entity, rapidjson::Value& obj) = 0;
+	virtual void SerializeComponent(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) = 0;
 	virtual void GetObject(unsigned int entity, ClassInstance* instance) = 0;
 	virtual void SetObject(unsigned int entity, ClassInstance* instance) = 0;
 };
@@ -38,6 +41,12 @@ public:
 	}
 	void Remove(unsigned int entity) {
 		components.erase(entity);
+	}
+	void DeserializeComponent(unsigned int entity, rapidjson::Value& obj) {
+		components[entity].Deserialize(obj);
+	}
+	void SerializeComponent(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+		components[entity].Serialize(json);
 	}
 	T& Get(unsigned int entity) {
 		return components[entity];
