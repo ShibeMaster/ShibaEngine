@@ -1,3 +1,3 @@
 #include "SceneManager.h"
-std::vector<Scene> SceneManager::scenes;
+std::unordered_map<std::string, Scene> SceneManager::scenes;
 Scene* SceneManager::activeScene;

@@ -159,8 +159,14 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			std::vector<RayHit> outHits;
 			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
 		}
-		if (key == GLFW_KEY_F4) {
-			SceneLoader::SaveScene(*SceneManager::activeScene);
+		if (key == GLFW_KEY_S && mods == GLFW_MOD_CONTROL) {
+			std::cout << "Saving Scene" << std::endl;
+			std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.baseDirectory.string() + "\\" + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
+			std::cout << path << std::endl;
+			if(SceneManager::activeScene->path == "No Path")
+				ProjectManager::activeProject.CreateNewSceneNode(SceneManager::activeScene->name, path);
+
+			SceneLoader::SaveScene(*SceneManager::activeScene, path);
 		}
 		if (key == GLFW_KEY_F5) {
 			std::string path;
@@ -190,6 +196,7 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_DELETE && selectedEntity > -1) {
 			Engine::DestroyEntity(selectedEntity);
 			Scripting::OnEntityDestroyed(selectedEntity);
+			SceneManager::OnEntityDestroyed(selectedEntity);
 			selectedEntity = -1;
 		}
 	}
@@ -380,8 +387,8 @@ int main() {
 
 	Shaders::activeShader = Shader(defaultVertexSource, defaultFragmentSource);
 	Shaders::activeShader.Use();
-	SceneManager::AddScene();
-	SceneManager::ChangeScene(0);
+	SceneManager::AddScene("temp.ShbaScene");
+	SceneManager::ChangeScene("temp.ShbaScene");
 	SceneManager::activeScene->LoadSkybox();
 	Engine::Start();
 	glfwSetKeyCallback(window, ProcessInput);

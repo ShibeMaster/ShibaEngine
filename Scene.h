@@ -14,13 +14,13 @@ struct SceneItem {
 };
 class Scene {
 public:
-	std::string name;
+	std::string name = "New Scene";
 	std::vector<unsigned int> entities;
 	std::unordered_map<unsigned int, SceneItem> items;
 	std::vector<SceneItem*> hierachy;
 	Shader shader;
 	Mesh skybox;
-	std::string path;
+	std::string path = "No Path";
 	unsigned int skyTexture;
 
 	void OnCreateEntity(unsigned int entity) {
@@ -34,8 +34,22 @@ public:
 		items[entity] = item;
 		hierachy.push_back(&items[entity]);
 	}
+	void DestroyEntityHierachyInstances(unsigned int entity, SceneItem* item) {
+		if (item->entity == entity)
+			if (!item->hasParent)
+				hierachy.erase(std::find(hierachy.begin(), hierachy.end(), item));
+			else
+				item->parent->children.erase(std::find(item->parent->children.begin(), item->parent->children.end(), item));
+		else if (item->children.size() > 0)
+			for (auto& child : item->children)
+				DestroyEntityHierachyInstances(entity, child);
+			
+	}
 	void OnDestroyEntity(unsigned int entity) {
 		DestroyChildren(entity);
+		for (auto& item : hierachy) {
+			DestroyEntityHierachyInstances(entity, item);
+		}
 		entities.erase(std::find(entities.begin(), entities.end(), entity));
 		items.erase(entity);
 	}

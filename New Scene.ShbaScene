@@ -1,0 +1,155 @@
+{
+    "Name": "New Scene",
+    "Hierachy": [
+        {
+            "name": "Light",
+            "hasParent": false,
+            "Transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Light": {
+                "colour": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Children": [
+                {
+                    "name": "New Entity (3)",
+                    "hasParent": true,
+                    "Transform": {
+                        "position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "pivot": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "New Entity",
+            "hasParent": false,
+            "Transform": {
+                "position": [
+                    0.0,
+                    5.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Camera": {
+                "Speed": 10.0,
+                "Sensitivity": 0.10000000149011612
+            },
+            "Children": [
+                {
+                    "name": "New Entity (1)",
+                    "hasParent": true,
+                    "MeshRenderer": {
+                        "Model": "C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\geo_char_accessory_crown.fbx"
+                    },
+                    "Transform": {
+                        "position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "rotation": [
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "pivot": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1.0,
+                            2.0,
+                            3.0
+                        ]
+                    },
+                    "Children": [
+                        {
+                            "name": "the cool entity",
+                            "hasParent": true,
+                            "Transform": {
+                                "position": [
+                                    0.0,
+                                    5.0,
+                                    0.0
+                                ],
+                                "rotation": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "pivot": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "scale": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

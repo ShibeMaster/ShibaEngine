@@ -227,5 +227,8 @@
     <Image Include="Sprite_Camera_Icon.png" />
     <Image Include="Sprite_Light_Icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="New Scene.ShbaScene" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

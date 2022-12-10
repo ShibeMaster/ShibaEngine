@@ -6,6 +6,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <cstdio>
+#include "SerializationUtils.h"
 #include <rapidjson/filereadstream.h>
 
 class SceneLoader {
@@ -67,20 +68,23 @@ private:
 public:
 	static void LoadScene(const std::string& path) {
 		rapidjson::Document doc;
-		SceneManager::AddScene();
-		SceneManager::ChangeScene(1);
+		SceneManager::AddScene(path);
+		SceneManager::ChangeScene(path);
 		doc.Parse(SerializationUtils::ReadFile(path).c_str());
 		SceneManager::activeScene->name = doc["Name"].GetString();
+		SceneManager::activeScene->path = path;
 		DeserializeSceneHierachy(SceneManager::activeScene, doc["Hierachy"].GetArray());
 		SceneManager::activeScene->LoadSkybox();
 	}
-	static void SaveScene(const Scene& scene) {
+	static void SaveScene(const Scene& scene, const std::string& path) {
 		rapidjson::StringBuffer str;
 		rapidjson::PrettyWriter<rapidjson::StringBuffer> json = rapidjson::PrettyWriter(str);
 		json.StartObject();
 		SerializeSceneInfo(scene, &json);
 		SerializeSceneHierachy(scene, &json);
 		json.EndObject();
-		std::cout << str.GetString() << std::endl;
+		auto file = std::ofstream(path, std::ofstream::out | std::ofstream::trunc);
+		file << str.GetString();
+		file.close();
 	}
 };

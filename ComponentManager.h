@@ -64,9 +64,7 @@ public:
 			if (compArr.second->HasComponent(entity)) {
 				json->Key(compArr.first.c_str());
 				json->StartObject();
-				std::cout << "here: " << compArr.first << std::endl;
 				compArr.second->SerializeComponent(entity, json);
-				std::cout << "here 2" << std::endl;
 				json->EndObject();
 			}
 		}
