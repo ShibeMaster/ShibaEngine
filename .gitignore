@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Day_Top.png
+/Day_Right.png
+/Day_Left.png
+/Day_Front.png
+/Day_Down.png
+/Day_Back.png

@@ -21,7 +21,8 @@ enum class FieldType {
 	ULong,
 	Vector2,
 	Vector3,
-	Vector4
+	Vector4,
+	Instance
 };
 
 struct Field {
@@ -64,7 +65,6 @@ struct ClassInstance {
 	}
 
 
-
 	template<typename T>
 	T GetFieldValue(const std::string& fieldName) {
 		if (classData.fields.find(fieldName) == classData.fields.end())
@@ -86,6 +86,7 @@ struct ClassInstance {
 
 		mono_field_set_value(instance, classData.fields[fieldName].classField, &value);
 	}
+
 	template<typename T>
 	void SetFieldValue(const std::string& fieldName, T* value) {
 		if (classData.fields.find(fieldName) == classData.fields.end()) {

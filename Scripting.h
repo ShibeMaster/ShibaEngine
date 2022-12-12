@@ -17,7 +17,12 @@
 #include "Console.h"
 #include "ProjectItem.h"
 
-
+struct Instance {
+	unsigned int entity;
+	ClassInstance instance;
+	std::unordered_map<std::string, ClassInstance> scripts;
+	std::unordered_map<std::string, ClassInstance> coreComponents;
+};
 struct ScriptingEngineData {
 	MonoDomain* rootDomain;
 	MonoDomain* appDomain;
@@ -26,8 +31,7 @@ struct ScriptingEngineData {
 
 	std::unordered_map<std::string, Class> components;
 	std::unordered_map<std::string, Class> coreComponentClasses;
-	std::unordered_map<unsigned int, std::unordered_map<std::string, ClassInstance>> entities;
-	std::unordered_map<unsigned int, std::unordered_map<std::string, ClassInstance>> entitiesComponentScripts;
+	std::unordered_map<unsigned int, Instance> entities;
 };
 class Utils {
 public:
@@ -71,6 +75,7 @@ public:
 		else if (name == "System.Numerics.Vector2") return FieldType::Vector2;
 		else if (name == "System.Numerics.Vector3") return FieldType::Vector3;
 		else if (name == "System.Numerics.Vector4") return FieldType::Vector4;
+		else if (name == "ShibaEngineCore.Instance") return FieldType::Instance;
 	}
 };
 class Scripting {
@@ -79,6 +84,7 @@ public:
 	static Class componentClass;
 	static Class timeClass;
 	static Class coreComponentClass;
+	static Class instanceClass;
 	static void Initialize() {
 		MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 		if (rootDomain == nullptr) {
@@ -91,12 +97,15 @@ public:
 
 		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
 		componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
+		SetupClassFields(&componentClass, componentClass.monoClass, true);
 		timeClass = Class{ "Time", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Time") };
 		coreComponentClass = Class{ "CoreComponent", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "CoreComponent") };
+		SetupClassFields(&coreComponentClass, coreComponentClass.monoClass, true);
+		instanceClass = Class{ "Instance", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Instance") };
+		SetupClassFields(&instanceClass, instanceClass.monoClass, true);
 		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
 		LoadAssemblyClasses();
 
-		mono_add_internal_call("ShibaEngineCore.EngineCalls::GetTransform", GetTransform);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::AddComponent", AddComponent);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::PrintMessage", PrintMessage);
@@ -106,41 +115,50 @@ public:
 		mono_add_internal_call("ShibaEngineCore.Components::UpdateExternCoreComponent", UpdateExternCoreComponent);
 		mono_add_internal_call("ShibaEngineCore.Components::UpdateCoreComponent", UpdateCoreComponent);
 		mono_add_internal_call("ShibaEngineCore.Components::GetCoreComponent", GetCoreComponent);
+		mono_add_internal_call("ShibaEngineCore.Instance::GetName", GetName);
+		mono_add_internal_call("ShibaEngineCore.Components::GetEntityInstance", GetInstance);
+
 
 	}
 
 #pragma region Internal Calls 
+	static MonoString* GetName(unsigned int entity) {
+		return mono_string_new(data.appDomain, SceneManager::activeScene->items[entity].name.c_str());
+	}
+	static MonoObject* GetInstance(unsigned int entity) {
+		return data.entities[entity].instance.instance;
+	}
 	static void AddComponent(unsigned int entity, MonoString* name, MonoObject* monoObject) {
 		std::string compName = mono_string_to_utf8(name);
 		Engine::AddScript(entity, compName);
-		data.entities[entity][compName] = CreateClassInstanceFromMonoObject(compName, monoObject);
+		data.entities[entity].scripts[compName] = CreateClassInstanceFromMonoObject(compName, monoObject);
 	}
 	static void UpdateExternCoreComponent(unsigned int entity, MonoString* compName, MonoObject* monoObject) {
 		std::string name = mono_string_to_utf8(compName);
-		if (data.entitiesComponentScripts[entity].find(name) == data.entitiesComponentScripts[entity].end()) {
-			std::cout << "core component not added to entity" << std::endl;
+		if (data.entities[entity].coreComponents.find(name) == data.entities[entity].coreComponents.end()) {
+			std::cout << "core component " << name << " was not added to entity " << entity << std::endl;
 			return;
 		}
-		data.entitiesComponentScripts[entity][name].instance = monoObject;
-		Engine::SetCoreComponent(entity, name, &data.entitiesComponentScripts[entity][name]);
+		data.entities[entity].coreComponents[name].instance = monoObject;
+		Engine::SetCoreComponent(entity, name, &data.entities[entity].coreComponents[name]);
 	}
 	static void UpdateCoreComponent(unsigned int entity, MonoString* monoName) {
 		std::string name = mono_string_to_utf8(monoName);
-		if (data.entitiesComponentScripts[entity].find(name) == data.entitiesComponentScripts[entity].end()) {
-			std::cout << "core component not added to entity" << std::endl;
+		if (data.entities[entity].coreComponents.find(name) == data.entities[entity].coreComponents.end()) {
+			std::cout << "core component " << name << " was not added to entity " << entity << std::endl;
 			return;
 		}
-		Engine::GetCoreComponentObject(entity, name, &data.entitiesComponentScripts[entity][name]);
+		Engine::GetCoreComponentObject(entity, name, &data.entities[entity].coreComponents[name]);
 	}
 	static MonoObject* GetCoreComponent(unsigned int entity, MonoString* monoName) {
 		std::string name = mono_string_to_utf8(monoName);
-		if (data.entitiesComponentScripts[entity].find(name) == data.entitiesComponentScripts[entity].end()) {
-			std::cout << "core component not added to entity" << std::endl;
+		if (data.entities[entity].coreComponents.find(name) == data.entities[entity].coreComponents.end()) {
+			std::cout << "core component " << name << " was not added to entity " << entity << std::endl;
 			return nullptr;
 
 		}
-		Engine::GetCoreComponentObject(entity, name, &data.entitiesComponentScripts[entity][name]);
-		return data.entitiesComponentScripts[entity][name].instance;
+		Engine::GetCoreComponentObject(entity, name, &data.entities[entity].coreComponents[name]);
+		return data.entities[entity].coreComponents[name].instance;
 	}
 	static bool GetKeyDown(int key) {
 		return InputManager::GetKeyDown(key);
@@ -154,24 +172,8 @@ public:
 		}
 		return arr;
 	}
-
-	static void GetTransform(unsigned int entity, glm::vec3* outPos, glm::vec3* outRot, glm::vec3* outPiv, glm::vec3* outSca) {
-		Transform& transform = Engine::GetComponent<Transform>(entity);
-		*outPos = transform.position;
-		*outRot = transform.rotation;
-		*outPiv = transform.pivot;
-		*outSca = transform.scale;
-	}
-	
-	static void SetTransform(unsigned int entity, glm::vec3 outPos, glm::vec3 outRot, glm::vec3 outPiv, glm::vec3 outSca) {
-		Transform& transform = Engine::GetComponent<Transform>(entity);
-		transform.position = outPos;
-		transform.rotation = outRot;
-		transform.pivot = outPiv;
-		transform.scale = outSca;
-	}
 	static MonoObject* GetComponent(unsigned int entity, MonoString* name) {
-		return data.entities[entity][mono_string_to_utf8(name)].instance;
+		return data.entities[entity].scripts[mono_string_to_utf8(name)].instance;
 	}
 	static unsigned int CreateEntity() {
 		return Engine::CreateEntity();
@@ -194,7 +196,8 @@ public:
 		auto instance = ClassInstance(data.coreComponentClasses[name], true);
 		instance.instance = Instantiate(instance.classData.monoClass);
 		instance.SetFieldValue<unsigned int>("entity", entity);
-		data.entitiesComponentScripts[entity][name] = instance;
+		data.entities[entity].coreComponents[name] = instance;
+
 	}
 
 	static void OnEntityDestroyed(unsigned int entity) {
@@ -202,6 +205,7 @@ public:
 			data.entities.erase(entity);
 	}
 	static void OnEntityCreated(unsigned int entity) {
+		data.entities[entity] = { entity, CreateClassInstance(entity, instanceClass) };
 		OnAddComponent(entity, "Transform");
 	}
 	static MonoAssembly* LoadAssembly(const std::string& path) {
@@ -233,23 +237,28 @@ public:
 
 		return klass;
 	}
-	static void SetupClassFields(Class* klass, bool getPrivate = false) {
-		int fieldCount = mono_class_num_fields(klass->monoClass);
+	static void SetupClassFields(Class* klass, MonoClass* classData, bool getParents = false, bool getPrivate = false) {
+		int fieldCount = mono_class_num_fields(classData);
 		void* iterator = nullptr;
-		while (MonoClassField* field = mono_class_get_fields(klass->monoClass, &iterator)) {
+		while (MonoClassField* field = mono_class_get_fields(classData, &iterator)) {
 			const char* fieldName = mono_field_get_name(field);
 			uint32_t flags = mono_field_get_flags(field);
+			
 			if (flags & MONO_FIELD_ATTR_PUBLIC || getPrivate) {
 				MonoType* monoType = mono_field_get_type(field);
 				FieldType type = Utils::MonoTypeToFieldType(monoType);
 				klass->fields[std::string(fieldName)] = Field{ std::string(fieldName), type, field };
 			}
 		}
+		if (mono_class_get_parent(classData) != nullptr && getParents)
+			SetupClassFields(klass, mono_class_get_parent(classData), getPrivate);
 	}
 	static ClassInstance CreateClassInstance(unsigned int entity, Class klass) {
 		ClassInstance instance = ClassInstance(klass);
 		instance.instance = Instantiate(klass.monoClass);
 		MonoClassField* entityField = mono_class_get_field_from_name(klass.monoClass, "entity");
+		if (entityField == nullptr)
+			std::cout << "failed to find entity field" << std::endl;
 		mono_field_set_value(instance.instance, entityField, &entity);
 		return instance;
 	}
@@ -280,12 +289,12 @@ public:
 
 				Class klass = Class{ name, nameSpace, monoClass };
 
-				SetupClassFields(&klass);
+				SetupClassFields(&klass, klass.monoClass);
 				data.components[fullname] = klass;
 			}
 			else if (mono_class_is_subclass_of(monoClass, coreComponentClass.monoClass, false)) {
 				Class klass = Class{ name, nameSpace, monoClass };
-				SetupClassFields(&klass, true);
+				SetupClassFields(&klass, klass.monoClass, true, true);
 				data.coreComponentClasses[name] = klass;
 			}
 			else
@@ -295,33 +304,38 @@ public:
 		}
 	}
 	static std::unordered_map<std::string, ClassInstance>& GetEntityComponentInstances(unsigned int entity) {
-		return data.entities[entity];
+		return data.entities[entity].scripts;
 	}
 	static void ReloadEntityScripts(unsigned int entity) {
-		data.entities[entity].clear();
+		data.entities[entity].scripts.clear();
 		auto scripts = Engine::GetEntityScripts(entity);
 		for (auto script : scripts) {
 			if (data.components.find(script) != data.components.end())
-				data.entities[entity][script] = CreateClassInstance(entity, data.components[script]);
+				data.entities[entity].scripts[script] = CreateClassInstance(entity, data.components[script]);
 		}
 	}
 	static void RemoveScriptInstance(unsigned int entity, const std::string& script) {
-		if (data.entities[entity].find(script) != data.entities[entity].end())
-			data.entities[entity].erase(script);
+		if (data.entities[entity].scripts.find(script) != data.entities[entity].scripts.end())
+			data.entities[entity].scripts.erase(script);
 	}
 	static void LoadEntityScript(unsigned int entity, const std::string& script) {
 
 		if (data.components.find(script) != data.components.end()) {
-			data.entities[entity][script] = CreateClassInstance(entity, data.components[script]);
-			data.entities[entity][script].InvokeMethod(componentClass.GetMethod("Initialize", 0), 0);
+			data.entities[entity].scripts[script] = CreateClassInstance(entity, data.components[script]);
+			data.entities[entity].scripts[script].InvokeMethod(componentClass.GetMethod("Initialize", 0), 0);
 		}
 	}
 	static void OnRuntimeStart() {
 		for (auto& comp : data.entities) {
-			for (auto& instance : comp.second) {
+			for (auto& instance : comp.second.scripts) {
 				instance.second.InvokeMethod(instance.second.startMethod, 0);
 			}
 		}
+	}
+	static std::string GetNameFromInstance(MonoObject* instance) {
+		unsigned int entity;
+		mono_field_get_value(instance, Scripting::instanceClass.fields["entity"].classField, &entity);
+		return SceneManager::activeScene->items[entity].name;
 	}
 	static void SerializeEntityScriptField(unsigned int entity, ClassInstance& instance, Field& field, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
 		json->Key(field.name.c_str());
@@ -335,11 +349,12 @@ public:
 		case FieldType::Vector2: SerializationUtils::SerializeVec2(instance.GetFieldValue<glm::vec2>(field.name), json); break;
 		case FieldType::Vector3: SerializationUtils::SerializeVec3(instance.GetFieldValue<glm::vec3>(field.name), json); break;
 		case FieldType::Int: json->Int(instance.GetFieldValue<unsigned int>(field.name)); break;
+		case FieldType::Instance: json->String(GetNameFromInstance(instance.GetFieldValue<MonoObject*>(field.name)).c_str()); break;
 		default: break;
 		}
 	}
 	static void SerializeEntityScripts(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
-		for (auto& instance : data.entities[entity]) {
+		for (auto& instance : data.entities[entity].scripts) {
 			json->Key(instance.second.classData.name.c_str());
 			json->StartObject();
 			for (auto& field : instance.second.classData.fields) {
@@ -369,7 +384,7 @@ public:
 				Scripting::LoadEntityScript(entity, script.first);
 				for (auto& field : script.second.fields) {
 					if(obj[script.first.c_str()].HasMember(field.first.c_str()))
-						DeserializeEntityScriptField(entity, data.entities[entity][script.first], field.second, obj[script.first.c_str()][field.first.c_str()]);
+						DeserializeEntityScriptField(entity, data.entities[entity].scripts[script.first], field.second, obj[script.first.c_str()][field.first.c_str()]);
 
 				}
 			}
@@ -384,7 +399,7 @@ public:
 		MonoObject* exception = nullptr;
 		mono_runtime_invoke(timeClass.GetMethod("UpdateTime", 2), nullptr, params, &exception);
 		for (auto& comp : data.entities) {
-			for (auto& instance : comp.second) {
+			for (auto& instance : comp.second.scripts) {
 				instance.second.InvokeMethod(instance.second.updateMethod, 0);
 			}
 		}
