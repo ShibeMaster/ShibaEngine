@@ -211,12 +211,20 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 		gameView.view.camera->ProcessCameraMouse();
 }
 
+void CreateInstanceDragDropField(Field field, ClassInstance& instance) {
+	MonoObject* entityValue = instance.GetFieldValue<MonoObject*>(field.name);
+	unsigned int entity;
+	mono_field_get_value(entityValue, Scripting::instanceClass.fields["entity"].classField, &entity);
+	ImGui::Button(SceneManager::activeScene->items[entity].name.c_str());
+	if (GUIExtensions::CreateDragDropTarget<unsigned int>("Entity", &entity)) {
+		instance.SetFieldValue<MonoObject>(field.name, Scripting::data.entities[entity].instance.instance);
+	}
+}
 void RenderField(Field field, ClassInstance& instance) {
 	// im sorrry for making this
 	float floatVal;
 	double doubleVal;
 	bool boolVal;
-	unsigned int entityValue;
 	std::string stringVal;
 	glm::vec2 vec2Val;
 	glm::vec3 vec3Val;
@@ -240,12 +248,8 @@ void RenderField(Field field, ClassInstance& instance) {
 		if (boolVal != instance.GetFieldValue<bool>(field.name))
 			instance.SetFieldValue<bool>(field.name, boolVal);
 		break;
-	case FieldType::UInt:
-		entityValue = instance.GetFieldValue<unsigned int>(field.name);
-		ImGui::Button(std::string(field.name + ": " + std::to_string(entityValue)).c_str());
-		if (GUIExtensions::CreateDragDropTarget<unsigned int>("Entity", &entityValue)) {
-			instance.SetFieldValue<unsigned int>(field.name, entityValue);
-		}
+	case FieldType::Instance:
+		CreateInstanceDragDropField(field, instance);
 		break;
 	case FieldType::Vector2:
 		vec2Val = instance.GetFieldValue<glm::vec2>(field.name);
@@ -270,7 +274,7 @@ void RenderField(Field field, ClassInstance& instance) {
 }
 void CreateEntityDragAndDrop(SceneItem* item) {
 	unsigned int entity;
-	if (ImGui::IsItemClicked()) {
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 		selectedEntity = item->entity;
 	}
 	if (ImGui::BeginDragDropSource()) {

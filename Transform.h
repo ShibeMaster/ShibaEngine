@@ -40,6 +40,7 @@ public:
 	}
 	glm::mat4 GetMatrix() {
 		glm::mat4 model = glm::mat4(1.0f);
+		
 		if (SceneManager::activeScene->items[entity].hasParent) {
 			model = Engine::GetComponentPointer<Transform>(SceneManager::activeScene->items[entity].parent->entity)->GetMatrix();
 		}

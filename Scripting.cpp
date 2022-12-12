@@ -3,3 +3,4 @@ ScriptingEngineData Scripting::data;
 Class Scripting::componentClass;
 Class Scripting::timeClass;
 Class Scripting::coreComponentClass;
+Class Scripting::instanceClass;

@@ -114,7 +114,13 @@ public:
         LoadMeshBox();
     }
     void GetObject(ClassInstance* instance) {
+        instance->SetFieldValue<MonoString>("meshPath", mono_string_new(Scripting::data.appDomain, meshItem.path.c_str()));
+        instance->SetFieldValue<bool>("debugDraw", debugDraw);
     }
     void SetObject(ClassInstance* instance) {
+        meshItem = ProjectManager::activeProject.GetItem(mono_string_to_utf8(instance->GetFieldValue<MonoString*>("meshPath")));
+        debugDraw = instance->GetFieldValue<bool>("debugDraw");
+        LoadMeshBox();
+        
     }
 };

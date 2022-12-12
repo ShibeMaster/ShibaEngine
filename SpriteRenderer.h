@@ -34,6 +34,13 @@ public:
 		ReloadSprite();
 		
 	}
+	void GetObject(ClassInstance* instance) {
+		instance->SetFieldValue<MonoString>("spritePath", mono_string_new(Scripting::data.appDomain, spriteItem.path.c_str()));
+	}
+	void SetObject(ClassInstance* instance) {
+		spriteItem = ProjectManager::activeProject.GetItem(mono_string_to_utf8(instance->GetFieldValue<MonoString*>("spritePath")));
+		ReloadSprite();
+	}
 	void Update(bool inRuntime) {
 		if (hasSprite) {
 			glm::mat4 model = transform->GetMatrix();
