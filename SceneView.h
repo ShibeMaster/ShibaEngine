@@ -11,7 +11,7 @@ public:
 
 	SceneView() {
 		sceneCam = Camera(&cameraTransform);
-		view = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.75f), &this->sceneCam);
+		view = View(glm::vec2(Display::width * 0.3f, Display::height * 0.25f), glm::vec2(Display::width * 0.45f, Display::height * 0.7f), &this->sceneCam);
 	}
 	void Update(bool inRuntime) {
 		view.Update(inRuntime);

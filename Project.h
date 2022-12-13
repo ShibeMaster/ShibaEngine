@@ -58,7 +58,7 @@ public:
 	}
 	void LoadProjectScriptHierachy() {
 		scriptHierachy.item.name = "Scripts";
-		for (auto comp : Scripting::data.components) {
+		for (auto& comp : Scripting::data.components) {
 			CreateHierachyNode(comp.second.name, comp.second.nameSpace + "." + comp.second.name, "Script", scriptHierachy);
 		}
 		hierachyMap["Scripts"] = scriptHierachy;
@@ -66,7 +66,7 @@ public:
 	}
 	void LoadDefaultComponentHierachy() {
 		componentHierachy.item.name = "Components";
-		for (auto comp : Engine::GetRegisteredComponents()) {
+		for (auto& comp : Engine::GetRegisteredComponents()) {
 			CreateHierachyNode(comp, "Components\\" + comp, "Component", componentHierachy);
 		}
 		hierachyMap["Components"] = componentHierachy;

@@ -90,7 +90,7 @@ public:
 		componentManager.RegisterComponent<T>();
 	}
 	template<class T>
-	static 	void AddComponent(unsigned int entity, T component) {
+	static void AddComponent(unsigned int entity, T component = T()) {
 		component.entity = entity;
 		componentManager.AddComponent<T>(entity, component);
 	}

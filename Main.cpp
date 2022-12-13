@@ -14,6 +14,7 @@
 #include "imgui_stdlib.h"
 #include "Physics.h"
 #include "BoundingBox.h"
+#include "Primitives.h"
 #include "Raycast.h"
 #include "GameView.h"
 #include "SceneView.h"
@@ -41,11 +42,6 @@
 #include "SpriteRenderer.h"
 
 GLFWwindow* window;
-
-std::vector<Vertex> vertices = { Vertex{ glm::vec3(0.0f, 0.5f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) },
-					Vertex { glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) },
-					Vertex { glm::vec3(0.5f, -0.5f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f) } 
-};
 
 const char* defaultVertexSource = R"GLSL(
 #version 330 core
@@ -144,6 +140,23 @@ bool sceneViewActive = true;
 int selectedEntity = -1;
 int clipboardEntity = -1;
 
+void SaveScene() {
+	std::cout << "Saving Scene" << std::endl;
+	std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.baseDirectory.string() + "\\" + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
+	std::cout << path << std::endl;
+	if (SceneManager::activeScene->path == "No Path")
+		ProjectManager::activeProject.CreateNewSceneNode(SceneManager::activeScene->name, path);
+
+	SceneLoader::SaveScene(*SceneManager::activeScene, path);
+}
+unsigned int CreateEntity() {
+
+	unsigned int newEnt = Engine::CreateEntity();
+	Engine::AddComponent<Transform>(newEnt, Transform{});
+	Scripting::OnEntityCreated(newEnt);
+	SceneManager::activeScene->OnCreateEntity(newEnt);
+	return newEnt;
+}
 void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	if (action == GLFW_PRESS) {
@@ -158,15 +171,6 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_F1) {
 			std::vector<RayHit> outHits;
 			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
-		}
-		if (key == GLFW_KEY_S && mods == GLFW_MOD_CONTROL) {
-			std::cout << "Saving Scene" << std::endl;
-			std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.baseDirectory.string() + "\\" + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
-			std::cout << path << std::endl;
-			if(SceneManager::activeScene->path == "No Path")
-				ProjectManager::activeProject.CreateNewSceneNode(SceneManager::activeScene->name, path);
-
-			SceneLoader::SaveScene(*SceneManager::activeScene, path);
 		}
 		if (key == GLFW_KEY_F5) {
 			std::string path;
@@ -201,7 +205,32 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 	}
 }
+void RenderMenuBar() {
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Save", "CTRL+S"))
+				SaveScene();
+			if (ImGui::BeginMenu("New", "CTRL+N")) {
+				if (ImGui::BeginMenu("Entity")) {
 
+					if (ImGui::MenuItem("Empty"))
+						CreateEntity();
+					if (ImGui::BeginMenu("Primitives")) {
+						Primitives::RenderPrimitiveSelection();
+						ImGui::EndMenu();
+					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Project")) {
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+}
 void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
@@ -211,67 +240,7 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 		gameView.view.camera->ProcessCameraMouse();
 }
 
-void CreateInstanceDragDropField(Field field, ClassInstance& instance) {
-	MonoObject* entityValue = instance.GetFieldValue<MonoObject*>(field.name);
-	unsigned int entity;
-	mono_field_get_value(entityValue, Scripting::instanceClass.fields["entity"].classField, &entity);
-	ImGui::Button(SceneManager::activeScene->items[entity].name.c_str());
-	if (GUIExtensions::CreateDragDropTarget<unsigned int>("Entity", &entity)) {
-		instance.SetFieldValue<MonoObject>(field.name, Scripting::data.entities[entity].instance.instance);
-	}
-}
-void RenderField(Field field, ClassInstance& instance) {
-	// im sorrry for making this
-	float floatVal;
-	double doubleVal;
-	bool boolVal;
-	std::string stringVal;
-	glm::vec2 vec2Val;
-	glm::vec3 vec3Val;
-	int intValue;
-	switch (field.type) {
-	case FieldType::Float:
-		floatVal = instance.GetFieldValue<float>(field.name);
-		ImGui::InputFloat(field.name.c_str(), &floatVal);
-		if (floatVal != instance.GetFieldValue<float>(field.name))
-			instance.SetFieldValue<float>(field.name, floatVal);
-		break;
-	case FieldType::Double:
-		doubleVal = instance.GetFieldValue<double>(field.name);
-		ImGui::InputDouble(field.name.c_str(), &doubleVal);
-		if (doubleVal != instance.GetFieldValue<double>(field.name))
-			instance.SetFieldValue<double>(field.name, doubleVal);
-		break;
-	case FieldType::Bool:
-		boolVal = instance.GetFieldValue<bool>(field.name);
-		ImGui::Checkbox(field.name.c_str(), &boolVal);
-		if (boolVal != instance.GetFieldValue<bool>(field.name))
-			instance.SetFieldValue<bool>(field.name, boolVal);
-		break;
-	case FieldType::Instance:
-		CreateInstanceDragDropField(field, instance);
-		break;
-	case FieldType::Vector2:
-		vec2Val = instance.GetFieldValue<glm::vec2>(field.name);
-		ImGui::InputFloat2(field.name.c_str(), &vec2Val[0]);
-		if (vec2Val != instance.GetFieldValue<glm::vec2>(field.name))
-			instance.SetFieldValue<glm::vec2>(field.name, vec2Val);
-		break;
-	case FieldType::Vector3:
-		vec3Val = instance.GetFieldValue<glm::vec3>(field.name);
-		ImGui::InputFloat3(field.name.c_str(), &vec3Val[0]);
-		if (vec3Val != instance.GetFieldValue<glm::vec3>(field.name))
-			instance.SetFieldValue<glm::vec3>(field.name, vec3Val);
-		break;
-	case FieldType::Int:
-		intValue = instance.GetFieldValue<int>(field.name);
-		ImGui::InputInt(field.name.c_str(), &intValue);
-		if (intValue != instance.GetFieldValue<int>(field.name.c_str()))
-			instance.SetFieldValue<int>(field.name, intValue);
-		break;
 
-	}
-}
 void CreateEntityDragAndDrop(SceneItem* item) {
 	unsigned int entity;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
@@ -311,10 +280,7 @@ void RenderSceneItem(SceneItem* item) {
 }
 void SetupDefaultScene() {
 
-	unsigned int light = Engine::CreateEntity();
-	Engine::AddComponent<Transform>(light, Transform{});
-	Scripting::OnEntityCreated(light);
-	SceneManager::activeScene->OnCreateEntity(light);
+	unsigned int light = CreateEntity();
 	SceneManager::activeScene->items[light].name = "Light";
 	Engine::AddComponent<Light>(light, Light());
 }
@@ -333,10 +299,7 @@ void RenderSceneHierachy() {
 			ImGui::EndTable();
 		}
 		if (ImGui::Button("New Entity")) {
-			unsigned int newEnt = Engine::CreateEntity();
-			Engine::AddComponent<Transform>(newEnt, Transform{});
-			Scripting::OnEntityCreated(newEnt);
-			SceneManager::activeScene->OnCreateEntity(newEnt);
+			CreateEntity();
 		}
 		//if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65f))) {
 		//	for (unsigned int entity : SceneManager::activeScene->entities) {
@@ -475,8 +438,8 @@ int main() {
 		ImGui::NewFrame();
 		// ImGui::ShowDemoWindow();
 		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-		ImGui::SetWindowPos(ImVec2(0, 0));
-		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height));
+		ImGui::SetWindowPos(ImVec2(0, Display::height*0.0275f));
+		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height*0.9725f));
 
 		RenderSceneHierachy();
 		ProjectManager::activeProject.RenderHierachy();
@@ -484,9 +447,9 @@ int main() {
 
 
 		// ImGui::Begin("Project", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-		ImGui::Begin("View", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
-		ImGui::SetWindowPos("View", ImVec2(Display::width * 0.3f, 0.0f));
-		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, Display::height * 0.75f));
+		ImGui::Begin("View", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+		ImGui::SetWindowPos("View", ImVec2(Display::width * 0.3f, Display::height * 0.0275f));
+		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, 0));
 		if (ImGui::BeginTabBar("View", ImGuiTabBarFlags_None)) {
 			if(ImGui::BeginTabItem("Scene")) {
 				if(!sceneViewActive)
@@ -502,6 +465,7 @@ int main() {
 			ImGui::EndTabBar();
 		}
 		ImGui::End();
+		RenderMenuBar();
 		/*
 		ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 		ImGui::SetWindowPos("Settings", ImVec2(20, SCREEN_HEIGHT - 350));
@@ -542,7 +506,7 @@ int main() {
 				if (ImGui::CollapsingHeader(script.first.c_str(), &scriptExists)) {
 
 					for (auto field : script.second.classData.fields) {
-						RenderField(field.second, script.second);
+						GUIExtensions::RenderField(field.second, script.second);
 					}
 				}
 				if (!scriptExists)
