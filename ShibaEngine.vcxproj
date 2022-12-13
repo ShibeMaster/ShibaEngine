@@ -164,6 +164,7 @@
     <ClCompile Include="Scripting.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="UIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\External Libraries\ImGui\imconfig.h" />
@@ -217,6 +218,7 @@
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="UIManager.h" />
     <ClInclude Include="View.h" />
   </ItemGroup>
   <ItemGroup>

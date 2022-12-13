@@ -36,6 +36,7 @@
 #include "Transform.h"
 #include "MeshRenderer.h"
 #include <glm/ext/matrix_transform.hpp>
+#include "UIManager.h"
 #include "Light.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include "MeshCollisionBox.h"
@@ -136,19 +137,8 @@ bool inRuntime = false;
 float runtimeStartTime = 0.0f;
 SceneView sceneView;
 GameView gameView;
-bool sceneViewActive = true;
-int selectedEntity = -1;
 int clipboardEntity = -1;
 
-void SaveScene() {
-	std::cout << "Saving Scene" << std::endl;
-	std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.baseDirectory.string() + "\\" + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
-	std::cout << path << std::endl;
-	if (SceneManager::activeScene->path == "No Path")
-		ProjectManager::activeProject.CreateNewSceneNode(SceneManager::activeScene->name, path);
-
-	SceneLoader::SaveScene(*SceneManager::activeScene, path);
-}
 unsigned int CreateEntity() {
 
 	unsigned int newEnt = Engine::CreateEntity();
@@ -187,138 +177,40 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			runtimeStartTime = glfwGetTime();
 		}
 
-		if (key == GLFW_KEY_D && mods == GLFW_MOD_CONTROL && selectedEntity > -1 ) {
+		if (key == GLFW_KEY_D && mods == GLFW_MOD_CONTROL && UIManager::selectedEntity > -1 ) {
 			unsigned int newEntity = Engine::CreateEntity();
-			for (auto& script : Engine::GetEntityScripts(selectedEntity)) {
+			for (auto& script : Engine::GetEntityScripts(UIManager::selectedEntity)) {
 				Engine::AddScript(newEntity, script);
 				Scripting::LoadEntityScript(newEntity, script);
 			}
-			for (auto& comp : Engine::GetEntityComponents(selectedEntity)) {
+			for (auto& comp : Engine::GetEntityComponents(UIManager::selectedEntity)) {
 				Engine::AddComponent(newEntity, comp);
 			}
 		}
-		if (key == GLFW_KEY_DELETE && selectedEntity > -1) {
-			Engine::DestroyEntity(selectedEntity);
-			Scripting::OnEntityDestroyed(selectedEntity);
-			SceneManager::OnEntityDestroyed(selectedEntity);
-			selectedEntity = -1;
+		if (key == GLFW_KEY_DELETE && UIManager::selectedEntity > -1) {
+			Engine::DestroyEntity(UIManager::selectedEntity);
+			Scripting::OnEntityDestroyed(UIManager::selectedEntity);
+			SceneManager::OnEntityDestroyed(UIManager::selectedEntity);
+			UIManager::selectedEntity = -1;
 		}
-	}
-}
-void RenderMenuBar() {
-	if (ImGui::BeginMainMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("Save", "CTRL+S"))
-				SaveScene();
-			if (ImGui::BeginMenu("New", "CTRL+N")) {
-				if (ImGui::BeginMenu("Entity")) {
-
-					if (ImGui::MenuItem("Empty"))
-						CreateEntity();
-					if (ImGui::BeginMenu("Primitives")) {
-						Primitives::RenderPrimitiveSelection();
-						ImGui::EndMenu();
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu("Project")) {
-					ImGui::EndMenu();
-				}
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenu();
-		}
-		ImGui::EndMainMenuBar();
 	}
 }
 void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
-	if (sceneViewActive)
+	if (UIManager::sceneViewActive)
 		sceneView.sceneCam.ProcessCameraMouse();
 	else if (inRuntime)
 		gameView.view.camera->ProcessCameraMouse();
 }
 
-
-void CreateEntityDragAndDrop(SceneItem* item) {
-	unsigned int entity;
-	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-		selectedEntity = item->entity;
-	}
-	if (ImGui::BeginDragDropSource()) {
-		ImGui::SetDragDropPayload("DRAG_DROP_Entity", &item->entity, sizeof(unsigned int));
-		ImGui::Text(item->name.c_str());
-		ImGui::EndDragDropSource();
-	}
-	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Entity")) {
-			entity = *(unsigned int*)payload->Data;
-			SceneManager::activeScene->MoveEntityToChild(entity, item->entity);
-		}
-		ImGui::EndDragDropTarget();
-	}
-}
-void RenderSceneItem(SceneItem* item) {
-
-	ImGui::TableNextRow();
-	ImGui::TableNextColumn();
-	unsigned int entity;
-	if (item->children.size() > 0) {
-		bool open = ImGui::TreeNodeEx(item->name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_SpanFullWidth);
-		CreateEntityDragAndDrop(item);
-
-		for (auto& child : item->children)
-			RenderSceneItem(child);
-		ImGui::TreePop();
-	}
-	else {
-		ImGui::TreeNodeEx(item->name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth);
-		CreateEntityDragAndDrop(item);
-	}
-
-}
 void SetupDefaultScene() {
 
 	unsigned int light = CreateEntity();
 	SceneManager::activeScene->items[light].name = "Light";
 	Engine::AddComponent<Light>(light, Light());
 }
-void RenderSceneHierachy() {
-	if (ImGui::BeginChild("Entities", ImVec2(0.0f, -450.0f), true)) {
-		ImGui::TextUnformatted("Scene");
-		//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-		if (ImGui::BeginTable("Entities", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, -30))) {
-			float textWidth = ImGui::CalcTextSize("A").x;
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
-			ImGui::TableHeadersRow();
-			for (auto& item : SceneManager::activeScene->hierachy) {
-				RenderSceneItem(item);
-			}
-			ImGui::EndTable();
-		}
-		if (ImGui::Button("New Entity")) {
-			CreateEntity();
-		}
-		//if (ImGui::BeginListBox("###Entities", ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y * 0.65f))) {
-		//	for (unsigned int entity : SceneManager::activeScene->entities) {
-		//		if (ImGui::Selectable(std::to_string(entity).c_str(), ImGuiSelectableFlags_SpanAllColumns)) {
-		//			selectedEntity = entity;
-		//		}
-		//		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-		//			ImGui::SetDragDropPayload("DRAG_DROP_Entity", &entity, sizeof(unsigned int));
-		//			ImGui::EndDragDropSource();
-		//		}
-		//	}
-		//	ImGui::EndListBox();
-
-
-		//}
-		//ImGui::End();
-		ImGui::EndChild();
-	}
-}
 int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -334,11 +226,7 @@ int main() {
 
 	Scripting::Initialize();
 
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 330 core");
+	UIManager::Initialize();
 
 	Engine::RegisterComponent<Transform>();
 	Engine::RegisterComponent<MeshRenderer>();
@@ -363,24 +251,6 @@ int main() {
 
 	Display::ShowWindow();
 	
-	ImVec4* colors = ImGui::GetStyle().Colors;
-	colors[ImGuiCol_FrameBg] = ImVec4(0.28f, 0.28f, 0.28f, 0.54f);
-	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.33f, 0.33f, 0.33f, 0.54f);
-	colors[ImGuiCol_FrameBgActive] = ImVec4(0.24f, 0.24f, 0.24f, 0.67f);
-	colors[ImGuiCol_TitleBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-	colors[ImGuiCol_TitleBgActive] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
-	colors[ImGuiCol_Tab] = ImVec4(0.28f, 0.28f, 0.28f, 0.80f);
-	colors[ImGuiCol_TabHovered] = ImVec4(0.25f, 0.25f, 0.25f, 0.80f);
-	colors[ImGuiCol_TabActive] = ImVec4(0.41f, 0.41f, 0.41f, 0.80f);
-	colors[ImGuiCol_CheckMark] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-	colors[ImGuiCol_SliderGrab] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
-	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-	colors[ImGuiCol_Button] = ImVec4(0.33f, 0.33f, 0.33f, 0.40f);
-	colors[ImGuiCol_ButtonHovered] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
-	colors[ImGuiCol_ButtonActive] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
-	colors[ImGuiCol_Header] = ImVec4(0.33f, 0.33f, 0.33f, 0.31f);
-	colors[ImGuiCol_HeaderHovered] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
-	colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 
 	bool gameViewOpen;
 	glEnable(GL_DEPTH_TEST);
@@ -405,7 +275,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		if (sceneViewActive) {
+		if (UIManager::sceneViewActive) {
 			sceneView.Update(inRuntime);
 			glDepthFunc(GL_LEQUAL);
 			SceneManager::activeScene->shader.Use();
@@ -433,122 +303,7 @@ int main() {
 		if(inRuntime)
 			Collisions::HandleCollision();
 		
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		// ImGui::ShowDemoWindow();
-		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-		ImGui::SetWindowPos(ImVec2(0, Display::height*0.0275f));
-		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height*0.9725f));
-
-		RenderSceneHierachy();
-		ProjectManager::activeProject.RenderHierachy();
-		ImGui::End();
-
-
-		// ImGui::Begin("Project", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-		ImGui::Begin("View", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
-		ImGui::SetWindowPos("View", ImVec2(Display::width * 0.3f, Display::height * 0.0275f));
-		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, 0));
-		if (ImGui::BeginTabBar("View", ImGuiTabBarFlags_None)) {
-			if(ImGui::BeginTabItem("Scene")) {
-				if(!sceneViewActive)
-					sceneViewActive = true;
-				ImGui::EndTabItem();
-			}
-
-			if (ImGui::BeginTabItem("Game")) {
-				if(sceneViewActive)
-					sceneViewActive = false;
-				ImGui::EndTabItem();
-			}
-			ImGui::EndTabBar();
-		}
-		ImGui::End();
-		RenderMenuBar();
-		/*
-		ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::SetWindowPos("Settings", ImVec2(20, SCREEN_HEIGHT - 350));
-		ImGui::InputText("Entry Point", entryPoint, IM_ARRAYSIZE(entryPoint));
-		ImGui::SetWindowSize("Settings", ImVec2(350, 350));
-		ImGui::End();
-		*/
-		Console::Render();
-		ImGui::Begin("Components", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoCollapse);
-		ImGui::SetWindowPos("Components", ImVec2(Display::width * 0.75f, 0.0f));
-		ImGui::SetWindowSize("Components", ImVec2(Display::width * 0.25f, Display::height));
-
-
-		// Built-In Component Displays
-		// this shit below was made in a rush, i definitely need to clean this up at some point
-
-		if (selectedEntity != -1) {
-			ImGui::InputText("###Entity_Name", &SceneManager::activeScene->items[selectedEntity].name);
-			ImGui::Separator();
-			if (Engine::HasComponent<Transform>(selectedEntity)) {
-				if (ImGui::CollapsingHeader("Transform")) {
-
-					auto transform = &Engine::GetComponent<Transform>(selectedEntity);
-					ImGui::InputFloat3("position", &transform->position[0]);
-					ImGui::InputFloat3("rotation", &transform->rotation[0]);
-					ImGui::InputFloat3("pivot", &transform->pivot[0]);
-					ImGui::InputFloat3("scale", &transform->scale[0]);
-				}
-
-			}
-
-			Engine::DrawEntityComponentGUI(selectedEntity);
-
-
-			std::vector<std::string> removingScripts;
-			for (auto script : Scripting::GetEntityComponentInstances(selectedEntity)) {
-				bool scriptExists = true;
-				if (ImGui::CollapsingHeader(script.first.c_str(), &scriptExists)) {
-
-					for (auto field : script.second.classData.fields) {
-						GUIExtensions::RenderField(field.second, script.second);
-					}
-				}
-				if (!scriptExists)
-					removingScripts.push_back(script.first);
-			}
-			for (auto script : removingScripts) {
-				Engine::RemoveScript(selectedEntity, script);
-				Scripting::RemoveScriptInstance(selectedEntity, script);
-			}
-
-			ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30.0f));
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
-					auto script = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
-					Engine::AddScript(selectedEntity, script);
-					Scripting::LoadEntityScript(selectedEntity, script);
-				}
-				else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
-					auto name = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
-					Engine::AddComponent(selectedEntity, name);
-					std::cout << name << std::endl;
-					Scripting::OnAddComponent(selectedEntity, name);
-				}
-			}
-			/*
-			ImGui::InputText("Component", addingComponent, IM_ARRAYSIZE(addingComponent));
-			if (ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x, 30))) {
-				if (std::string(addingComponent) == "MeshRenderer") {
-					Engine::AddComponent<MeshRenderer>(selectedEntity, MeshRenderer());
-					std::cout << "was mesh renderer" << std::endl;
-				}
-				else
-					Engine::AddScript(selectedEntity, addingComponent);
-				Scripting::LoadEntityScripts(selectedEntity);
-			} */
-
-
-		}
-		ImGui::End();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		UIManager::Update();
 
 		glfwSwapBuffers(window);
 	}
