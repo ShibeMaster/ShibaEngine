@@ -1,6 +1,7 @@
 #pragma once
 #include "View.h"
 #include "Display.h"
+#include "Camera.h"
 #include "Engine.h"
 class GameView {
 public:

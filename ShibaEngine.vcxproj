@@ -165,6 +165,7 @@
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="ViewManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\External Libraries\ImGui\imconfig.h" />
@@ -220,6 +221,7 @@
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="View.h" />
+    <ClInclude Include="ViewManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Day_Back.png" />

@@ -6,7 +6,7 @@
 #include "Scripting.h"
 #include "Primitives.h"
 #include <GLFW/glfw3.h>
-
+#include "ViewManager.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
 #include "Shaders.h"
@@ -237,7 +237,7 @@ public:
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		// ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 		ImGui::SetWindowPos(ImVec2(0, Display::height * 0.0275f));
 		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height * 0.9725f));
@@ -252,9 +252,7 @@ public:
 		Console::Render();
 
 		RenderViewportSelectionUI();
-
 		RenderInspectorUI();
-
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

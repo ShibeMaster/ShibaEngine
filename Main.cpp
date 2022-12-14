@@ -29,6 +29,7 @@
 #include "Mesh.h"
 #include "Display.h"
 #include "View.h"
+#include "ViewManager.h"
 #include <GLFW/glfw3.h>
 #include <assimp/Importer.hpp>
 #include "Time.h"
@@ -135,8 +136,6 @@ void main(){
 )GLSL";
 bool inRuntime = false;
 float runtimeStartTime = 0.0f;
-SceneView sceneView;
-GameView gameView;
 int clipboardEntity = -1;
 
 unsigned int CreateEntity() {
@@ -199,9 +198,9 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
 	if (UIManager::sceneViewActive)
-		sceneView.sceneCam.ProcessCameraMouse();
+		ViewManager::sceneView.sceneCam.ProcessCameraMouse();
 	else if (inRuntime)
-		gameView.view.camera->ProcessCameraMouse();
+		ViewManager::gameView.view.camera->ProcessCameraMouse();
 }
 
 void SetupDefaultScene() {
@@ -274,24 +273,23 @@ int main() {
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 		if (UIManager::sceneViewActive) {
-			sceneView.Update(inRuntime);
+			ViewManager::sceneView.Update(inRuntime);
 			glDepthFunc(GL_LEQUAL);
 			SceneManager::activeScene->shader.Use();
-			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(sceneView.sceneCam.GetViewMatrix())));
-			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), sceneView.view.dimensions.x / sceneView.view.dimensions.y, 0.1f, 100.0f));
+			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
+			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.dimensions.x / ViewManager::sceneView.view.dimensions.y, 0.1f, 100.0f));
 			SceneManager::activeScene->RenderSkybox();
 			Shaders::activeShader.Use();
 			glDepthFunc(GL_LESS);
 		}
 		else
 		{
-			gameView.Update(inRuntime);
+			ViewManager::gameView.Update(inRuntime);
 
 			SceneManager::activeScene->shader.Use();
-			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(gameView.view.camera->GetViewMatrix())));
-			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), gameView.view.dimensions.x / gameView.view.dimensions.y, 0.1f, 100.0f));
+			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
+			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.dimensions.x / ViewManager::gameView.view.dimensions.y, 0.1f, 100.0f));
 			SceneManager::activeScene->RenderSkybox();
 			Shaders::activeShader.Use();
 		}

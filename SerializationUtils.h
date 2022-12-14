@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <rapidjson/PrettyWriter.h>
+#include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
 class SerializationUtils {

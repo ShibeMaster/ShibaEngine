@@ -1,6 +1,7 @@
 #pragma once
 #include "View.h"
 #include "Engine.h"
+#include "Camera.h"
 #include "Light.h"
 #include "Display.h"
 class SceneView {
