@@ -34,6 +34,24 @@
     <Filter Include="Resource Files\Default Skybox">
       <UniqueIdentifier>{936021c7-a3f1-4db4-9b36-de927dfe6244}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Primitive Objects">
+      <UniqueIdentifier>{5beafc6b-a671-4b92-896e-de9002226446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Rendering">
+      <UniqueIdentifier>{56153f0c-56c3-46b6-8b08-b6112f3b6a2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{874b9b8e-e7bb-415a-b33c-4681315c4ccc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Scripting">
+      <UniqueIdentifier>{0663517a-f40a-4f79-892e-7bf60dfd9f00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Scenes">
+      <UniqueIdentifier>{29cc834c-4770-4957-83dc-b87af7243d5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Projects">
+      <UniqueIdentifier>{f8f6789f-9730-4852-85e2-62e373aee47f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -93,23 +111,17 @@
     <ClCompile Include="..\External Libraries\ImGui\imgui_stdlib.cpp">
       <Filter>Resource Files\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Primitives.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Time.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ComponentManager.h">
       <Filter>Header Files\Engine\Component</Filter>
     </ClInclude>
@@ -125,26 +137,14 @@
     <ClInclude Include="Engine.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="MeshRenderer.h">
       <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders.h">
-      <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Scripting.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\External Libraries\ImGui\imconfig.h">
       <Filter>Resource Files\ImGui</Filter>
@@ -173,26 +173,8 @@
     <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Project.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProjectItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Console.h">
       <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Display.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="View.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Collisions.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BoundingBox.h">
       <Filter>Header Files\Components</Filter>
@@ -200,29 +182,11 @@
     <ClInclude Include="Physics.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="GUIExtensions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProjectManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MeshCollisionBox.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Raycast.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ScriptingTypes.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="SpriteRenderer.h">
       <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files\Components</Filter>
@@ -242,11 +206,83 @@
     <ClInclude Include="..\External Libraries\ImGui\imgui_stdlib.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Collisions.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="View.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIExtensions.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Display.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripting.h">
+      <Filter>Header Files\Engine\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptingTypes.h">
+      <Filter>Header Files\Engine\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Project.h">
+      <Filter>Header Files\Engine\Projects</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectItem.h">
+      <Filter>Header Files\Engine\Projects</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectManager.h">
+      <Filter>Header Files\Engine\Projects</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\Engine\Scenes</Filter>
+    </ClInclude>
     <ClInclude Include="SceneLoader.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Engine\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>Header Files\Engine\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="SerializationUtils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewManager.h">
+      <Filter>Header Files\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #pragma once
 #include "Shaders.h"
+#include "Mesh.h"
 class Sprite {
 public:
 	int width;

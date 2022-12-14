@@ -1,8 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include "Component.h"
 #include "Sprite.h"
 #include "ModelLoader.h"
+#include "InputManager.h"
 
 class Camera : public Component
 {
@@ -54,7 +56,7 @@ public:
 		up = glm::normalize(glm::cross(right, forward));
 	}
 	void ProcessCameraMouse() {
-		yaw += InputManager::mouse.xOffset * sensitivity;
+		yaw += InputManager::mouse.xOffset * sensitivity; 
 		pitch += InputManager::mouse.yOffset * sensitivity;
 
 		if (pitch > 89.0f)

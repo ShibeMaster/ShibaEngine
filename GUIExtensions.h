@@ -30,5 +30,66 @@ public:
 		}
 		return false;
 	}
+	static void CreateInstanceDragDropField(Field field, ClassInstance& instance) {
+		MonoObject* entityValue = instance.GetFieldValue<MonoObject*>(field.name);
+		unsigned int entity;
+		mono_field_get_value(entityValue, Scripting::instanceClass.fields["entity"].classField, &entity);
+		ImGui::Button(SceneManager::activeScene->items[entity].name.c_str());
+		if (GUIExtensions::CreateDragDropTarget<unsigned int>("Entity", &entity)) {
+			instance.SetFieldValue<MonoObject>(field.name, Scripting::data.entities[entity].instance.instance);
+		}
+	}
+	static void RenderField(Field field, ClassInstance& instance) {
+		// im sorrry for making this
+		float floatVal;
+		double doubleVal;
+		bool boolVal;
+		std::string stringVal;
+		glm::vec2 vec2Val;
+		glm::vec3 vec3Val;
+		int intValue;
+		switch (field.type) {
+		case FieldType::Float:
+			floatVal = instance.GetFieldValue<float>(field.name);
+			ImGui::InputFloat(field.name.c_str(), &floatVal);
+			if (floatVal != instance.GetFieldValue<float>(field.name))
+				instance.SetFieldValue<float>(field.name, floatVal);
+			break;
+		case FieldType::Double:
+			doubleVal = instance.GetFieldValue<double>(field.name);
+			ImGui::InputDouble(field.name.c_str(), &doubleVal);
+			if (doubleVal != instance.GetFieldValue<double>(field.name))
+				instance.SetFieldValue<double>(field.name, doubleVal);
+			break;
+		case FieldType::Bool:
+			boolVal = instance.GetFieldValue<bool>(field.name);
+			ImGui::Checkbox(field.name.c_str(), &boolVal);
+			if (boolVal != instance.GetFieldValue<bool>(field.name))
+				instance.SetFieldValue<bool>(field.name, boolVal);
+			break;
+		case FieldType::Instance:
+			CreateInstanceDragDropField(field, instance);
+			break;
+		case FieldType::Vector2:
+			vec2Val = instance.GetFieldValue<glm::vec2>(field.name);
+			ImGui::InputFloat2(field.name.c_str(), &vec2Val[0]);
+			if (vec2Val != instance.GetFieldValue<glm::vec2>(field.name))
+				instance.SetFieldValue<glm::vec2>(field.name, vec2Val);
+			break;
+		case FieldType::Vector3:
+			vec3Val = instance.GetFieldValue<glm::vec3>(field.name);
+			ImGui::InputFloat3(field.name.c_str(), &vec3Val[0]);
+			if (vec3Val != instance.GetFieldValue<glm::vec3>(field.name))
+				instance.SetFieldValue<glm::vec3>(field.name, vec3Val);
+			break;
+		case FieldType::Int:
+			intValue = instance.GetFieldValue<int>(field.name);
+			ImGui::InputInt(field.name.c_str(), &intValue);
+			if (intValue != instance.GetFieldValue<int>(field.name.c_str()))
+				instance.SetFieldValue<int>(field.name, intValue);
+			break;
+
+		}
+	}
 
 };
