@@ -9,7 +9,7 @@
 #include "ViewManager.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
-#include "Shaders.h"
+#include "ShaderManager.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 class UIManager {
@@ -17,6 +17,9 @@ public:
 
 	static int selectedEntity;
 	static bool sceneViewActive;
+	static bool sceneViewFrameOpen;
+	static bool gameViewFrameOpen;
+	static glm::vec2 viewportSize;
 	static void RenderMenuBar() {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
@@ -38,6 +41,11 @@ public:
 					}
 					ImGui::EndMenu();
 				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Window")) {
+				ImGui::MenuItem("Scene", "", &sceneViewFrameOpen);
+				ImGui::MenuItem("Game", "", &gameViewFrameOpen);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -100,11 +108,11 @@ public:
 		SceneLoader::SaveScene(*SceneManager::activeScene, path);
 	}
 	static void RenderSceneHierachyUI() {
-		if (ImGui::BeginChild("Entities", ImVec2(0.0f, -450.0f), true)) {
+		if (ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoCollapse)) {
 			ImGui::TextUnformatted("Scene");
 			//ImGui::Begin("Entities", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
-			if (ImGui::BeginTable("Entities", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, -30))) {
+			if (ImGui::BeginTable("EntitiesTable", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, -30))) {
 				float textWidth = ImGui::CalcTextSize("A").x;
 				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
 				ImGui::TableHeadersRow();
@@ -116,38 +124,41 @@ public:
 			if (ImGui::Button("New Entity")) {
 				CreateEntity();
 			}
-			ImGui::EndChild();
+			ImGui::End();
 		}
 	}
 #pragma endregion
 #pragma region Viewports
-	static void RenderViewportSelectionUI() {
-		ImGui::Begin("View", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
-		ImGui::SetWindowPos("View", ImVec2(Display::width * 0.3f, Display::height * 0.0275f));
-		ImGui::SetWindowSize("View", ImVec2(Display::width * 0.45f, 0));
-		if (ImGui::BeginTabBar("View", ImGuiTabBarFlags_None)) {
-			if (ImGui::BeginTabItem("Scene")) {
-				if (!sceneViewActive)
-					sceneViewActive = true;
-				ImGui::EndTabItem();
-			}
+	static void RenderViewportUI() {
+		if (sceneViewFrameOpen) {
 
-			if (ImGui::BeginTabItem("Game")) {
-				if (sceneViewActive)
-					sceneViewActive = false;
-				ImGui::EndTabItem();
-			}
-			ImGui::EndTabBar();
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+			ImGui::Begin("Scene View", &sceneViewFrameOpen);
+			std::cout << ViewManager::sceneView.view.framebuffer.GetTexture() << std::endl;
+
+			ImGui::Image((ImTextureID)ViewManager::sceneView.view.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
+			ImGui::PopStyleVar();
 		}
-		ImGui::End();
+		if (gameViewFrameOpen) {
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+			ImGui::Begin("Game View", &gameViewFrameOpen);
+
+			std::cout << ViewManager::gameView.view.framebuffer.GetTexture() << std::endl;
+
+			ImGui::Image((ImTextureID)ViewManager::gameView.view.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
 	}
+#pragma endregion
+#pragma region Toolbar
 
 #pragma endregion
+
 #pragma region Inspector
 	static void RenderInspectorUI() {
-		ImGui::Begin("Components", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoCollapse);
-		ImGui::SetWindowPos("Components", ImVec2(Display::width * 0.75f, 0.0f));
-		ImGui::SetWindowSize("Components", ImVec2(Display::width * 0.25f, Display::height));
+		ImGui::Begin("Components", nullptr, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoCollapse);
 
 		if (selectedEntity != -1) {
 			ImGui::InputText("###Entity_Name", &SceneManager::activeScene->items[selectedEntity].name);
@@ -166,6 +177,9 @@ public:
 			Engine::DrawEntityComponentGUI(selectedEntity);
 			RenderEntityScriptUI();
 			RenderAddingComponentUI();
+		}
+		else {
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Entity Selected");
 		}
 		ImGui::End();
 
@@ -204,11 +218,30 @@ public:
 			Scripting::RemoveScriptInstance(selectedEntity, script);
 		}
 	}
+#pragma region Dockspace
+	static void StartDockspace() {
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("Dockspace", nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
+		ImGui::PopStyleVar(3);
+		ImGuiID id = ImGui::GetID("Dockspace");
+		ImGui::DockSpace(id, ImVec2(0.0f, 0.0f));
+		ImGui::End();
+
+	}
+#pragma endregion
+
 #pragma endregion
 	static void Initialize() {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		ImGui_ImplGlfw_InitForOpenGL(glfwGetCurrentContext(), true);
 		ImGui_ImplOpenGL3_Init("#version 330 core");
 
@@ -238,21 +271,15 @@ public:
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		//ImGui::ShowDemoWindow();
-		ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-		ImGui::SetWindowPos(ImVec2(0, Display::height * 0.0275f));
-		ImGui::SetWindowSize(ImVec2(Display::width * 0.3f, Display::height * 0.9725f));
+
+		StartDockspace();
 
 		RenderSceneHierachyUI();
 		ProjectManager::activeProject.RenderHierachy();
-		ImGui::End();
-
-
-
 		RenderMenuBar();
 		Console::Render();
-
-		RenderViewportSelectionUI();
 		RenderInspectorUI();
+		RenderViewportUI();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

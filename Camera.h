@@ -32,6 +32,7 @@ public:
 		sensitivity = 0.1f;
 		UpdateCameraVectors();
 		icon = ModelLoader::LoadSprite("Sprite_Camera_Icon.png");
+		icon.shader = "ShibaEngine_Billboard";
 	}
 	Camera(Transform* transform, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : speed(10.0f), sensitivity(0.1f) {
 		this->transform = transform;
@@ -43,6 +44,7 @@ public:
 	static void DrawGUI(unsigned int selectedEntity) {
 		auto& camera = Engine::GetComponent<Camera>(selectedEntity);
 		ImGui::InputFloat("Speed", &camera.speed);
+		ImGui::ImageButton((ImTextureID)camera.icon.texture, ImVec2(camera.icon.width, camera.icon.height));
 		ImGui::InputFloat("Sensitivity", &camera.sensitivity);
 	}
 	void UpdateCameraVectors() {

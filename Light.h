@@ -8,6 +8,7 @@ public:
 	glm::vec3 colour = glm::vec3(1.0f);
 	Light() {
 		icon = ModelLoader::LoadSprite("Sprite_Light_Icon.png");
+		icon.shader = "ShibaEngine_Billboard";
 	}
 	static void DrawGUI(unsigned int selectedEntity) {
 		auto& light = Engine::GetComponent<Light>(selectedEntity);

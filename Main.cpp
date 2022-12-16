@@ -2,7 +2,6 @@
 #include <GL/glew.h>
 #include "Shader.h"
 #include "imgui.h"
-#include "Shaders.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 #include "InputManager.h"
@@ -29,6 +28,7 @@
 #include "Mesh.h"
 #include "Display.h"
 #include "View.h"
+#include "FrameBuffer.h"
 #include "ViewManager.h"
 #include <GLFW/glfw3.h>
 #include <assimp/Importer.hpp>
@@ -45,96 +45,8 @@
 
 GLFWwindow* window;
 
-const char* defaultVertexSource = R"GLSL(
-#version 330 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 texCoords;
-
-
-out vec2 TexCoords;
-out vec3 FragPos;
-out vec3 Normal;
-
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-uniform bool billboard;
-
-void main(){
-	FragPos = vec3(model * vec4(position, 1.0));
-	Normal = mat3(transpose(inverse(model))) * normal;
-	TexCoords = texCoords;
-	if(billboard){
-		mat4 modelView = view * model;
-		modelView[0][0] = 1.0;
-		modelView[0][1] = 0.0;
-		modelView[0][2] = 0.0;
-
-		modelView[1][0] = 0.0;
-		modelView[1][1] = 1.0;
-		modelView[1][2] = 0.0;
-		
-		modelView[2][0] = 0.0;
-		modelView[2][1] = 0.0;
-		modelView[2][2] = 1.0;
-
-		gl_Position = projection * modelView * vec4(position, 1.0);
-
-	} else{
-		gl_Position = projection * view * model * vec4(position, 1.0);
-	}
-}
-
-)GLSL";
-
-const char* defaultFragmentSource = R"GLSL(
-#version 330 core
-
-out vec4 FragColor;
-
-in vec2 TexCoords;
-in vec3 FragPos;
-in vec3 Normal;
-
-
-uniform bool hasTexture;
-uniform sampler2D texture_diffuse1;
-
-uniform vec3 lightColour;
-uniform vec3 viewPos;
-uniform vec3 lightPos;
-uniform bool lightEffected;
-
-
-void main(){
-	vec4 colour = hasTexture ? texture(texture_diffuse1, TexCoords) : vec4(1.0, 1.0, 1.0, 1.0);
-
-	if(colour.a < 0.1)
-		discard;
-	if(lightEffected){
-
-
-		float ambientStrength = 0.1;
-		vec3 ambient = ambientStrength * lightColour;
-
-		vec3 norm = normalize(Normal);
-		vec3 lightDir = normalize(lightPos - FragPos);
-		float diff = max(dot(norm, lightDir), 0.0);
-		vec3 diffuse = diff * lightColour;
-
-		vec3 result = (ambient + diffuse) * vec3(colour);
-		FragColor = vec4(result, 1.0);
-	} else {
-		FragColor = colour;
-	}
-
-
-}
-)GLSL";
 bool inRuntime = false;
+bool isPaused = false;
 float runtimeStartTime = 0.0f;
 int clipboardEntity = -1;
 
@@ -210,6 +122,9 @@ void SetupDefaultScene() {
 	Engine::AddComponent<Light>(light, Light());
 }
 
+void RenderScene() {
+	Engine::Render();
+}
 int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -239,8 +154,7 @@ int main() {
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
-	Shaders::activeShader = Shader(defaultVertexSource, defaultFragmentSource);
-	Shaders::activeShader.Use();
+	ShaderManager::LoadDefaultShaders();
 	SceneManager::AddScene("temp.ShbaScene");
 	SceneManager::ChangeScene("temp.ShbaScene");
 	SceneManager::activeScene->LoadSkybox();
@@ -249,7 +163,10 @@ int main() {
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
 
 	Display::ShowWindow();
-	
+
+	ViewManager::sceneView.view.framebuffer.Generate();
+	ViewManager::gameView.view.framebuffer.Generate();
+
 
 	bool gameViewOpen;
 	glEnable(GL_DEPTH_TEST);
@@ -261,46 +178,60 @@ int main() {
 
 		for (auto& source : Engine::FindComponentsInScene<Light>()) {
 			auto& light = Engine::GetComponent<Light>(source);
-			Shaders::activeShader.SetVec3("lightColour", light.colour);
-			Shaders::activeShader.SetVec3("lightPos", light.transform->position);
+			Renderer::shaderData.lightColour = light.colour;
+			Renderer::shaderData.lightPos = light.transform->position;
 		}
 
 		Time::currentTime = glfwGetTime() - runtimeStartTime;
 		Time::deltaTime = glfwGetTime() - Time::lastFrameTime;
 		Time::lastFrameTime = glfwGetTime();
 
-
-		glClearColor(color[0], color[1], color[2], color[3]);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (UIManager::sceneViewActive) {
+		if (UIManager::sceneViewFrameOpen) {
+			Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
+			Renderer::shaderData.viewPos = ViewManager::sceneView.sceneCam.transform->position;
+			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.framebuffer.dimensions.x / ViewManager::sceneView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+			ViewManager::sceneView.view.framebuffer.Bind();
+
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			ViewManager::sceneView.Update(inRuntime);
+			Renderer::ChangeShader("ShibaEngine_Skybox");
 			glDepthFunc(GL_LEQUAL);
-			SceneManager::activeScene->shader.Use();
-			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
-			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.dimensions.x / ViewManager::sceneView.view.dimensions.y, 0.1f, 100.0f));
+			ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
 			SceneManager::activeScene->RenderSkybox();
-			Shaders::activeShader.Use();
 			glDepthFunc(GL_LESS);
+			RenderScene();
+			ViewManager::sceneView.view.framebuffer.Unbind();
 		}
-		else
-		{
+		if (UIManager::gameViewFrameOpen) {
 			ViewManager::gameView.Update(inRuntime);
-
-			SceneManager::activeScene->shader.Use();
-			SceneManager::activeScene->shader.SetMat4("view", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
-			SceneManager::activeScene->shader.SetMat4("projection", glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.dimensions.x / ViewManager::gameView.view.dimensions.y, 0.1f, 100.0f));
-			SceneManager::activeScene->RenderSkybox();
-			Shaders::activeShader.Use();
+			if (ViewManager::gameView.view.hasCamera) {
+				Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
+				Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
+				Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+				ViewManager::gameView.view.framebuffer.Bind();
+				glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				Renderer::ChangeShader("ShibaEngine_Skybox");
+				glDepthFunc(GL_LEQUAL);
+				ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
+				SceneManager::activeScene->RenderSkybox();
+				glDepthFunc(GL_LESS);
+				RenderScene();
+				ViewManager::gameView.view.framebuffer.Unbind();
+			}
 		}
 
-		if(inRuntime)
+		if (inRuntime) {
 			Scripting::Update();
-
-		Engine::Update(inRuntime);
+			Engine::Update();
+		}
 		if(inRuntime)
 			Collisions::HandleCollision();
-		
+
 		UIManager::Update();
 
 		glfwSwapBuffers(window);

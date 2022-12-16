@@ -37,28 +37,24 @@ public:
 	void ApplyGravity() {
 		velocity += gravityDirection * gravity * Time::deltaTime;
 	}
-	void Update(bool inRuntime) {
-		if (inRuntime) {
-			if (useDrag)
-				ApplyDrag();
-			if (useGravity && !isGrounded)
-				ApplyGravity();
+	void Update() {
+		if (useDrag)
+			ApplyDrag();
+		if (useGravity && !isGrounded)
+			ApplyGravity();
 
-			if (velocity.y < -20.0f)
-				velocity.y = -20.0f;
+		if (velocity.y < -20.0f)
+			velocity.y = -20.0f;
 
-			auto& boundingBox = Engine::GetComponent<MeshCollisionBox>(entity);
-			std::vector<RayHit> outHits;
-			isGrounded = Raycast(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(boundingBox.min.y) + 0.3f, &outHits, entity);
+		auto& boundingBox = Engine::GetComponent<MeshCollisionBox>(entity);
+		std::vector<RayHit> outHits;
+		isGrounded = Raycast(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(boundingBox.min.y) + 0.3f, &outHits, entity);
 
-			if (isGrounded && velocity.y < 0.0f) {
-				velocity.y = 0.0f;
-				std::cout << "grounded" << std::endl;
-			}
-			transform->position += velocity * Time::deltaTime;
-
-
+		if (isGrounded && velocity.y < 0.0f) {
+			velocity.y = 0.0f;
+			std::cout << "grounded" << std::endl;
 		}
+		transform->position += velocity * Time::deltaTime;
 	}
 	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
 		json->Key("Use Gravity");

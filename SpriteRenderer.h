@@ -41,10 +41,11 @@ public:
 		spriteItem = ProjectManager::activeProject.GetItem(mono_string_to_utf8(instance->GetFieldValue<MonoString*>("spritePath")));
 		ReloadSprite();
 	}
-	void Update(bool inRuntime) {
+	void Render() {
 		if (hasSprite) {
+			Renderer::ChangeShader(sprite.shader);
 			glm::mat4 model = transform->GetMatrix();
-			Shaders::activeShader.SetMat4("model", model);
+			Renderer::SetModel(model);
 			sprite.Render();
 		}
 	}

@@ -10,8 +10,9 @@
 class Transform	 {
 public:
 	void Start(){}
-	void Update(bool inRuntime){}
+	void Update(){}
 	void Initialize(){}
+	void Render(){}
 	static void DrawGUI(unsigned int selectedEntity){}
 	void SetObject(ClassInstance* instance) {
 		position = instance->GetFieldValue<glm::vec3>("position");

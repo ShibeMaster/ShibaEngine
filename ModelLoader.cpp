@@ -68,7 +68,7 @@ Sprite ModelLoader::LoadSprite(const std::string& path) {
 		glTexImage2D(GL_TEXTURE_2D, 0, 0x1908, sprite.width, sprite.height, 0, 0x1908, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		sprite.mesh = Mesh(vertices, { 0, 1, 3, 1, 2, 3 }, { tex });
-		sprite.texture1 = texture1;
+		sprite.texture = texture1;
 	}
 	else {
 		std::cout << "loading sprite failed" << std::endl;

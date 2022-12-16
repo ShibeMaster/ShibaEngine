@@ -10,8 +10,8 @@ private:
 	static EntityManager entityManager;
 	static ComponentManager componentManager;
 public:
-	static void Update(bool inRuntime) {
-		componentManager.Update(inRuntime);
+	static void Update() {
+		componentManager.Update();
 	}
 	static void Start() {
 		componentManager.Start();
@@ -116,4 +116,10 @@ public:
 		return componentManager.HasComponent(entity, name);
 	}
 
+	/// <summary>
+	/// We should have this method to seperate the renderering of the meshrenderer and spriterenderer components from the normal updating methods, this will also allow us to not require a "inRuntime" parameter with all of them.
+	/// </summary>
+	static void Render() {
+		componentManager.Render();
+	}
 };

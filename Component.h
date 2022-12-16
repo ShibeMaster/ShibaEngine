@@ -10,7 +10,7 @@ public:
 	unsigned int entity;
 	Transform* transform;
 	virtual void Start(){};
-	virtual void Update(bool inRuntime){};
+	virtual void Update(){};
 	/// <summary>
 	/// Called after the entity variable is set, just allows the component to set up variables that require the entity value
 	/// </summary>
@@ -39,4 +39,8 @@ public:
 	/// </summary>
 	/// <param name="instance"></param>
 	virtual void SetObject(ClassInstance* instance) {};
+	/// <summary>
+	/// This is called only for components that need to be rendered in and outside of runtime
+	/// </summary>
+	virtual void Render() {};
 };
