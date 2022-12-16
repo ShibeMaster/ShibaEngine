@@ -52,6 +52,27 @@
     <Filter Include="Header Files\Engine\Projects">
       <UniqueIdentifier>{f8f6789f-9730-4852-85e2-62e373aee47f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Rendering\UI">
+      <UniqueIdentifier>{a0602ebc-0145-4348-9491-07c65c4d264d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Rendering\Shaders">
+      <UniqueIdentifier>{92bfa758-01b2-42cb-ae07-6950a749da82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Rendering\Models">
+      <UniqueIdentifier>{01be97ab-b4d8-48ce-aba5-aa44d0741ec8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{1184303e-2604-4412-b984-653a56db8fae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Default">
+      <UniqueIdentifier>{a9ce825f-f1ff-44ec-a43a-702b25058fc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Billboard">
+      <UniqueIdentifier>{60b6b448-959b-483e-8626-6b29eba290e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Skybox">
+      <UniqueIdentifier>{24b1c3b3-b8a8-4ffa-8a61-def1048a6bdf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -64,9 +85,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Shaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scripting.cpp">
@@ -118,6 +136,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ViewManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -191,9 +215,6 @@
     <ClInclude Include="Light.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SceneView.h">
       <Filter>Header Files\Engine\Views</Filter>
     </ClInclude>
@@ -208,27 +229,6 @@
     </ClInclude>
     <ClInclude Include="Collisions.h">
       <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="View.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="GUIExtensions.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Display.h">
-      <Filter>Header Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>Header Files\Input</Filter>
@@ -266,12 +266,6 @@
     <ClInclude Include="SerializationUtils.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="Time.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
@@ -281,8 +275,44 @@
     <ClInclude Include="UIManager.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="View.h">
+      <Filter>Header Files\Engine\Views</Filter>
+    </ClInclude>
     <ClInclude Include="ViewManager.h">
+      <Filter>Header Files\Engine\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
       <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIExtensions.h">
+      <Filter>Header Files\Rendering\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files\Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders.h">
+      <Filter>Header Files\Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files\Rendering\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files\Rendering\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Header Files\Rendering\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Display.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>Header Files\Rendering\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderManager.h">
+      <Filter>Header Files\Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderInstanceData.h">
+      <Filter>Header Files\Rendering\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -315,5 +345,25 @@
     <None Include="New Scene.ShbaScene">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="default_vertex.txt">
+      <Filter>Resource Files\Shaders\Default</Filter>
+    </Text>
+    <Text Include="default_fragment.txt">
+      <Filter>Resource Files\Shaders\Default</Filter>
+    </Text>
+    <Text Include="billboard_vertex.txt">
+      <Filter>Resource Files\Shaders\Billboard</Filter>
+    </Text>
+    <Text Include="billboard_fragment.txt">
+      <Filter>Resource Files\Shaders\Billboard</Filter>
+    </Text>
+    <Text Include="skybox_vertex.txt">
+      <Filter>Resource Files\Shaders\Skybox</Filter>
+    </Text>
+    <Text Include="skybox_fragment.txt">
+      <Filter>Resource Files\Shaders\Skybox</Filter>
+    </Text>
   </ItemGroup>
 </Project>

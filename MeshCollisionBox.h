@@ -85,7 +85,7 @@ public:
     void Update(bool inRuntime) {
         if (debugDraw) {
             glm::mat4 model = transform->GetMatrix();
-            Shaders::activeShader.SetMat4("model", model);
+            ShaderManager::shader->SetMat4("model", model);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             debugMesh.Render();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

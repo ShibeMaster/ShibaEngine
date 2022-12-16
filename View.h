@@ -3,7 +3,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include "Camera.h"
-#include "Shaders.h"
+#include "ShaderManager.h"
 #include "Time.h"
 #include "InputManager.h"
 class View {
@@ -27,11 +27,5 @@ public:
 	}
 	void Update(bool inRuntime) {
 		glViewport(position.x, position.y, dimensions.x, dimensions.y);
-
-		Shaders::activeShader.SetMat4("projection", glm::perspective(glm::radians(45.0f), dimensions.x / dimensions.y, 0.1f, 100.0f));
-		
-		if (hasCamera) {
-			Shaders::activeShader.SetMat4("view", camera->GetViewMatrix());
-		}
 	}
 };

@@ -1,12 +1,16 @@
 #pragma once
 #include <GL/glew.h>
+#include "ShaderInstanceData.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
 #include <iostream>
 class Shader {
 public:
 	GLuint id;
-	
+	std::vector<Uniform> uniforms;
+
+
 	Shader(){}
 	Shader(const char* vertexSource, const char* fragmentSource) {
 
@@ -31,8 +35,24 @@ public:
 
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
-	}
 
+		LoadUniforms();
+	}
+	void LoadUniforms() {
+		int count;
+		glGetProgramiv(id, GL_ACTIVE_UNIFORMS, &count);
+		for (int i = 0; i < count; i++) {
+			GLsizei size;
+			GLsizei length;
+			GLchar name[16];
+			Uniform uniform;
+			glGetActiveUniform(id, (GLuint)i, (GLsizei)16, &length, &uniform.size, &uniform.type, name);
+			uniform.name = std::string(name);
+			// just going to manually check whether the name is equal to any reserved uniforms as there isn't all too many
+			if (uniform.name != "lightColour" && uniform.name != "view" && uniform.name != "projection" && uniform.name != "model" && uniform.name != "viewPos" && uniform.name != "lightPos" && uniform.name != "hasTexture")
+				uniforms.push_back(uniform);
+		}
+	}
 	void Use() {
 		glUseProgram(id);
 	}
@@ -45,10 +65,13 @@ public:
 	void SetInt(const std::string& name, const int& value) {
 		glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 	}
-	void SetVec3(std::string name, const glm::vec3& value) {
+	void SetVec2(const std::string& name, const glm::vec2& value) {
+		glUniform2fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
+	}
+	void SetVec3(const std::string& name, const glm::vec3& value) {
 		glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
 	}
-	void SetVec4(std::string name, const glm::vec4& value) {
+	void SetVec4(const std::string& name, const glm::vec4& value) {
 		glUniform4fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
 	}
 	void SetMat4(std::string name, const glm::mat4& value) {

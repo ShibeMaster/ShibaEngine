@@ -43,8 +43,9 @@ public:
 	}
 	void Update(bool inRuntime) {
 		if (hasSprite) {
+			Renderer::ChangeShader(sprite.shader);
 			glm::mat4 model = transform->GetMatrix();
-			Shaders::activeShader.SetMat4("model", model);
+			Renderer::SetModel(model);
 			sprite.Render();
 		}
 	}

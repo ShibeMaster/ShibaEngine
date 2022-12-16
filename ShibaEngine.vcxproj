@@ -160,9 +160,10 @@
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="Primitives.cpp" />
     <ClCompile Include="ProjectManager.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Scripting.cpp" />
-    <ClCompile Include="Shaders.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="ViewManager.cpp" />
@@ -205,7 +206,7 @@
     <ClInclude Include="ProjectItem.h" />
     <ClInclude Include="ProjectManager.h" />
     <ClInclude Include="Raycast.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="SceneManager.h" />
@@ -214,6 +215,8 @@
     <ClInclude Include="ScriptingTypes.h" />
     <ClInclude Include="SerializationUtils.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderInstanceData.h" />
+    <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteRenderer.h" />
@@ -235,6 +238,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="New Scene.ShbaScene" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="billboard_fragment.txt" />
+    <Text Include="billboard_vertex.txt" />
+    <Text Include="default_fragment.txt" />
+    <Text Include="default_vertex.txt" />
+    <Text Include="skybox_fragment.txt" />
+    <Text Include="skybox_vertex.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

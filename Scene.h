@@ -5,6 +5,7 @@
 #include <string>
 #include "GL/glew.h"
 #include "Mesh.h"
+#include "Renderer.h"
 struct SceneItem {
 	unsigned int entity;
 	std::string name = "New Entity";
@@ -54,38 +55,7 @@ public:
 		items.erase(entity);
 	}
 	void LoadSkybox() {
-		const char* skyboxVertex = R"GLSL(
-#version 330 core
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 texCoords;
-
-
-out vec3 TexCoords;
-
-uniform mat4 view;
-uniform mat4 projection;
-
-void main(){
-    TexCoords = position;
-    vec4 pos = projection * view * vec4(position, 1.0);
-    gl_Position = pos.xyww;
-}
-)GLSL";
-		const char* skyboxFragment = R"GLSL(
-#version 330 core
-
-out vec4 FragColor;
-in vec3 TexCoords;
-uniform samplerCube cubemap;
-
-void main(){
-	FragColor = texture(cubemap, TexCoords);
-}
-)GLSL";
-
-		shader = Shader(skyboxVertex, skyboxFragment);
 		std::vector<std::string> faces = {
 			"Day_Right.png",
 			"Day_Left.png",
@@ -139,6 +109,7 @@ void main(){
 			{ glm::vec3( 1.0f, -1.0f,  1.0f)} 
 		};
 		skybox = Mesh(skyboxVertices, { 0 });
+		std::cout << "loaded skybox" << std::endl;
 	
 	}
 	void RenderSkybox() {

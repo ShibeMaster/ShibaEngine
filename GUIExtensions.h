@@ -91,5 +91,20 @@ public:
 
 		}
 	}
+	static void RenderShaderUniforms(const std::string& shader, ShaderUniformData* uniforms) {
+		for (auto& uniform : ShaderManager::shaders[shader].uniforms) {
+			switch (uniform.type)
+			{
+			case GL_FLOAT: ImGui::InputFloat(uniform.name.c_str(), &uniforms->floats[uniform.name]); break;
+			case GL_FLOAT_VEC4: ImGui::DragFloat4(uniform.name.c_str(), &uniforms->vec4s[uniform.name][0], 0.05f); break;
+			case GL_FLOAT_VEC3: ImGui::DragFloat3(uniform.name.c_str(), &uniforms->vec3s[uniform.name][0], 0.05f); break;
+			case GL_FLOAT_VEC2: ImGui::DragFloat2(uniform.name.c_str(), &uniforms->vec2s[uniform.name][0], 0.05f); break;
+			case GL_BOOL: ImGui::Checkbox(uniform.name.c_str(), &uniforms->bools[uniform.name]); break;
+			case GL_INT: ImGui::DragInt(uniform.name.c_str(), &uniforms->ints[uniform.name], 0.05f); break;
+			default:
+				break;
+			}
+		}
+	}
 
 };

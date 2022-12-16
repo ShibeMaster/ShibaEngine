@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <assimp/mesh.h>
 #include <string>
-#include "Shaders.h"
+#include "ShaderManager.h"
 #include <iostream>
 #include <glm/glm.hpp>
 #include "glm/gtc/quaternion.hpp"
@@ -92,11 +92,11 @@ public:
 				else if (name == "texture_height")
 					number = std::to_string(height++);
 
-				Shaders::activeShader.SetInt((name + number).c_str(), i);
+				ShaderManager::shader->SetInt((name + number).c_str(), i);
 				glBindTexture(GL_TEXTURE_2D, textures[i].id);
 			}
 		}
-		Shaders::activeShader.SetBool("hasTexture", textures.size() != 0);
+		ShaderManager::shader->SetBool("hasTexture", textures.size() != 0);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);

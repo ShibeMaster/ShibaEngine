@@ -23,24 +23,21 @@ public:
 		sceneCam.UpdateCameraVectors();
 	}
 	void RenderSceneSprites() {
-		Shaders::activeShader.SetBool("billboard", true);
-		Shaders::activeShader.SetBool("lightEffected", false);
 		for (auto cam : Engine::FindComponentsInScene<Camera>()) {
 			auto& camera = Engine::GetComponent<Camera>(cam);
-
+			Renderer::ChangeShader(camera.icon.shader);
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, camera.transform->position);
-			Shaders::activeShader.SetMat4("model", model);
+			Renderer::SetModel(model);
 			camera.icon.Render();
 		}
 		for (auto ligh : Engine::FindComponentsInScene<Light>()) {
 			auto& light = Engine::GetComponent<Light>(ligh);
+			Renderer::ChangeShader(light.icon.shader);
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, light.transform->position);
-			Shaders::activeShader.SetMat4("model", model);
+			Renderer::SetModel(model);
 			light.icon.Render();
 		}
-		Shaders::activeShader.SetBool("billboard", false);
-		Shaders::activeShader.SetBool("lightEffected", true);
 	}
 };

@@ -1,0 +1,27 @@
+#version 330 core
+
+out vec4 FragColor;
+
+in vec2 TexCoords;
+in vec3 FragPos;
+in vec3 Normal;
+
+
+uniform bool hasTexture;
+uniform sampler2D texture_diffuse1;
+
+uniform vec3 lightColour;
+uniform vec3 viewPos;
+uniform vec3 lightPos;
+uniform bool lightEffected;
+
+
+void main(){
+	vec4 colour = hasTexture ? texture(texture_diffuse1, TexCoords) : vec4(1.0, 1.0, 1.0, 1.0);
+
+	if(colour.a < 0.1)
+		discard;
+	FragColor = colour;
+
+
+}
