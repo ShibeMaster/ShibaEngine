@@ -82,7 +82,7 @@ public:
                 Vertex {glm::vec3(box.min.x, box.max.y, box.min.z), glm::vec3(0.0f)},
             }, indices);
     }
-    void Update(bool inRuntime) {
+    void Render() {
         if (debugDraw) {
             glm::mat4 model = transform->GetMatrix();
             ShaderManager::shader->SetMat4("model", model);

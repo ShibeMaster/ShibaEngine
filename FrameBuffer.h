@@ -11,9 +11,6 @@ private:
 	unsigned int rbo;
 public:
 	glm::vec2 dimensions = glm::vec2(Display::width, Display::height);
-	~FrameBuffer() {
-		glDeleteFramebuffers(1, &fbo);
-	}
 	void Generate() {
 		glGenFramebuffers(1, &fbo);
 		Bind();
@@ -21,8 +18,9 @@ public:
 		AttachTexture();
 		glGenRenderbuffers(1, &rbo);
 		GenerateRenderer();
-		if (!CheckStatus())
+		if (!CheckStatus()) {
 			std::cout << "Framebuffer isn't complete" << std::endl;
+		}
 
 		Unbind();
 	}
@@ -63,7 +61,6 @@ public:
 	}
 	void Bind() {
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		glEnable(GL_DEPTH_TEST);
 	}
 
 	static bool CheckStatus() {

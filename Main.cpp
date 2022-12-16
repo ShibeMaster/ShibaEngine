@@ -28,6 +28,7 @@
 #include "Mesh.h"
 #include "Display.h"
 #include "View.h"
+#include "FrameBuffer.h"
 #include "ViewManager.h"
 #include <GLFW/glfw3.h>
 #include <assimp/Importer.hpp>
@@ -121,6 +122,9 @@ void SetupDefaultScene() {
 	Engine::AddComponent<Light>(light, Light());
 }
 
+void RenderScene() {
+	Engine::Render();
+}
 int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -160,7 +164,8 @@ int main() {
 
 	Display::ShowWindow();
 
-	ViewManager::sceneView.framebuffer.Generate();
+	ViewManager::sceneView.view.framebuffer.Generate();
+	ViewManager::gameView.view.framebuffer.Generate();
 
 
 	bool gameViewOpen;
@@ -181,42 +186,51 @@ int main() {
 		Time::deltaTime = glfwGetTime() - Time::lastFrameTime;
 		Time::lastFrameTime = glfwGetTime();
 
-
-		ViewManager::sceneView.framebuffer.Clear();
-		glClearColor(color[0], color[1], color[2], color[3]);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		ViewManager::sceneView.framebuffer.Bind();
-		if (UIManager::sceneViewActive) {
-			ViewManager::sceneView.Update(inRuntime);
+		if (UIManager::sceneViewFrameOpen) {
 			Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
 			Renderer::shaderData.viewPos = ViewManager::sceneView.sceneCam.transform->position;
-			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.dimensions.x / ViewManager::sceneView.view.dimensions.y, 0.1f, 100.0f);
+			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.framebuffer.dimensions.x / ViewManager::sceneView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+			ViewManager::sceneView.view.framebuffer.Bind();
+
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			ViewManager::sceneView.Update(inRuntime);
 			Renderer::ChangeShader("ShibaEngine_Skybox");
 			glDepthFunc(GL_LEQUAL);
 			ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
 			SceneManager::activeScene->RenderSkybox();
 			glDepthFunc(GL_LESS);
+			RenderScene();
+			ViewManager::sceneView.view.framebuffer.Unbind();
 		}
-		else
-		{
+		if (UIManager::gameViewFrameOpen) {
 			ViewManager::gameView.Update(inRuntime);
-			Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
-			Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
-			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.dimensions.x / ViewManager::sceneView.view.dimensions.y, 0.1f, 100.0f);
-			Renderer::ChangeShader("ShibaEngine_Skybox");
-			ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
-			SceneManager::activeScene->RenderSkybox();
+			if (ViewManager::gameView.view.hasCamera) {
+				Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
+				Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
+				Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+				ViewManager::gameView.view.framebuffer.Bind();
+				glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				Renderer::ChangeShader("ShibaEngine_Skybox");
+				glDepthFunc(GL_LEQUAL);
+				ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
+				SceneManager::activeScene->RenderSkybox();
+				glDepthFunc(GL_LESS);
+				RenderScene();
+				ViewManager::gameView.view.framebuffer.Unbind();
+			}
 		}
 
-		if(inRuntime)
+		if (inRuntime) {
 			Scripting::Update();
-
-		Engine::Update(inRuntime);
+			Engine::Update();
+		}
 		if(inRuntime)
 			Collisions::HandleCollision();
-		
-		ViewManager::sceneView.framebuffer.Unbind();
 
 		UIManager::Update();
 

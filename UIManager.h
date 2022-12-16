@@ -133,20 +133,24 @@ public:
 		if (sceneViewFrameOpen) {
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-			ImGui::Begin("Viewport", &sceneViewFrameOpen);
-			ImGui::Image((ImTextureID)ViewManager::sceneView.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Begin("Scene View", &sceneViewFrameOpen);
+			std::cout << ViewManager::sceneView.view.framebuffer.GetTexture() << std::endl;
+
+			ImGui::Image((ImTextureID)ViewManager::sceneView.view.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 			ImGui::PopStyleVar();
 		}
 		if (gameViewFrameOpen) {
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+			ImGui::Begin("Game View", &gameViewFrameOpen);
 
-			ImGui::Begin("Game", &gameViewFrameOpen, ImGuiWindowFlags_NoCollapse);
+			std::cout << ViewManager::gameView.view.framebuffer.GetTexture() << std::endl;
+
+			ImGui::Image((ImTextureID)ViewManager::gameView.view.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
+			ImGui::PopStyleVar();
 		}
 	}
-	static void RenderView() {
-	}
-
 #pragma endregion
 #pragma region Toolbar
 
@@ -275,7 +279,7 @@ public:
 		RenderMenuBar();
 		Console::Render();
 		RenderInspectorUI();
-		RenderView();
+		RenderViewportUI();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

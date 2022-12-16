@@ -40,9 +40,9 @@ public:
 			componentArrays[compArr.first]->Start();
 		}
 	}
-	void Update(bool inRuntime) {
+	void Update() {
 		for (auto& compArr : componentArrays) {
-			componentArrays[compArr.first]->Update(inRuntime);
+			componentArrays[compArr.first]->Update();
 		}
 	}
 	void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance) {
@@ -136,8 +136,12 @@ public:
 		}
 	}
 	void OnEntityDestroyed(unsigned int entity) {
-		for (auto comp : componentArrays) {
+		for (auto& comp : componentArrays) {
 			comp.second->OnEntityDestroyed(entity);
 		}
+	}
+	void Render() {
+		componentArrays["MeshRenderer"]->Render();
+		componentArrays["SpriteRenderer"]->Render();
 	}
 };

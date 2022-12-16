@@ -41,7 +41,7 @@ public:
         model = ModelLoader::LoadModel(modelItem.path);
         hasModel = model.meshes.size() != 0;
     }
-	void Update(bool inRuntime) {
+	void Render() {
         if (hasModel) {
             Renderer::ChangeShader(shader);
 

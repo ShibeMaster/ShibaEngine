@@ -5,12 +5,14 @@
 #include "Camera.h"
 #include "ShaderManager.h"
 #include "Time.h"
+#include "FrameBuffer.h"
 #include "InputManager.h"
 class View {
 public:
 	glm::vec2 position;
 	glm::vec2 dimensions;
 	bool hasCamera;
+	FrameBuffer framebuffer;
 	Camera* camera;
 
 	View(){}

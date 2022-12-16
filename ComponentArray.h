@@ -10,7 +10,8 @@ public:
 	virtual ~ComponentArray() = default;
 	virtual void OnEntityDestroyed(unsigned int entity) = 0;
 	virtual void Start() = 0;
-	virtual void Update(bool inRuntime) = 0;
+	virtual void Update() = 0;
+	virtual void Render() = 0;
 	virtual void Add(unsigned int entity) = 0;
 	virtual bool HasComponent(unsigned int entity) = 0;
 	virtual void DrawComponentGUI(unsigned int entity) = 0;
@@ -35,6 +36,10 @@ public:
 		value.entity = entity;
 		value.Initialize();
 		components[entity] = value;
+	}
+	void Render() {
+		for (auto& comp : components)
+			comp.second.Render();
 	}
 	bool HasComponent(unsigned int entity) {
 		return components.find(entity) != components.end();
@@ -71,9 +76,9 @@ public:
 			comp.second.Start();
 		}
 	}
-	void Update(bool inRuntime) {
+	void Update() {
 		for (auto& comp : components) {
-			comp.second.Update(inRuntime);
+			comp.second.Update();
 		}
 	}
 	void GetObject(unsigned int entity, ClassInstance* instance) {

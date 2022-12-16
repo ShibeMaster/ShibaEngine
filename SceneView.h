@@ -10,7 +10,6 @@ public:
 	View view;
 	Transform cameraTransform;
 	Camera sceneCam;
-	FrameBuffer framebuffer;
 
 	SceneView() {
 		sceneCam = Camera(&cameraTransform);
