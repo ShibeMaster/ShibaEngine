@@ -104,9 +104,9 @@ public:
 		}
 	}
 	void RenderHierachy() {
-		ImGui::BeginChild("Project", ImVec2(0, 0), true);
+		ImGui::Begin("Project", nullptr, ImGuiWindowFlags_NoCollapse);
 		ImGui::TextUnformatted("Project Hierachy");
-		if (ImGui::BeginTable("Project", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, 420))) {
+		if (ImGui::BeginTable("ProjectTable", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody, ImVec2(ImGui::GetWindowSize().x - 15, 420))) {
 			float textWidth = ImGui::CalcTextSize("A").x;
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
 			ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, textWidth * 12.0f);
@@ -118,6 +118,6 @@ public:
 			// ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, textWidth * 18.0f);
 			ImGui::EndTable();
 		}
-		ImGui::EndChild();
+		ImGui::End();
 	}
 };

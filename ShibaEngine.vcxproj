@@ -190,6 +190,7 @@
     <ClInclude Include="Display.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EntityManager.h" />
+    <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="GameView.h" />
     <ClInclude Include="GUIExtensions.h" />
     <ClInclude Include="InputManager.h" />

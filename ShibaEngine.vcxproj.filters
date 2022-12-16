@@ -73,6 +73,9 @@
     <Filter Include="Resource Files\Shaders\Skybox">
       <UniqueIdentifier>{24b1c3b3-b8a8-4ffa-8a61-def1048a6bdf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Toolbar Icons">
+      <UniqueIdentifier>{65de1fe4-1a69-4831-8ad5-05a416c30272}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -313,6 +316,9 @@
     </ClInclude>
     <ClInclude Include="ShaderInstanceData.h">
       <Filter>Header Files\Rendering\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameBuffer.h">
+      <Filter>Header Files\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

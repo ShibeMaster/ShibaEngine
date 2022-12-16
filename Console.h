@@ -32,9 +32,7 @@ public:
 		messages.clear();
 	}
 	static void Render() {
-		ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-		ImGui::SetWindowPos(ImVec2(Display::width * 0.3f, Display::height * 0.75f));
-		ImGui::SetWindowSize(ImVec2(Display::width * 0.45f, Display::height * 0.25f));
+		ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoCollapse);
 
 		if (ImGui::BeginChild("ScrollingConsole", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar)) {
 

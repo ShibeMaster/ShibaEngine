@@ -44,6 +44,7 @@ public:
 	static void DrawGUI(unsigned int selectedEntity) {
 		auto& camera = Engine::GetComponent<Camera>(selectedEntity);
 		ImGui::InputFloat("Speed", &camera.speed);
+		ImGui::ImageButton((ImTextureID)camera.icon.texture, ImVec2(camera.icon.width, camera.icon.height));
 		ImGui::InputFloat("Sensitivity", &camera.sensitivity);
 	}
 	void UpdateCameraVectors() {

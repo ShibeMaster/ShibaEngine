@@ -45,6 +45,7 @@
 GLFWwindow* window;
 
 bool inRuntime = false;
+bool isPaused = false;
 float runtimeStartTime = 0.0f;
 int clipboardEntity = -1;
 
@@ -158,7 +159,9 @@ int main() {
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
 
 	Display::ShowWindow();
-	
+
+	ViewManager::sceneView.framebuffer.Generate();
+
 
 	bool gameViewOpen;
 	glEnable(GL_DEPTH_TEST);
@@ -179,9 +182,11 @@ int main() {
 		Time::lastFrameTime = glfwGetTime();
 
 
+		ViewManager::sceneView.framebuffer.Clear();
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		ViewManager::sceneView.framebuffer.Bind();
 		if (UIManager::sceneViewActive) {
 			ViewManager::sceneView.Update(inRuntime);
 			Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
@@ -211,6 +216,8 @@ int main() {
 		if(inRuntime)
 			Collisions::HandleCollision();
 		
+		ViewManager::sceneView.framebuffer.Unbind();
+
 		UIManager::Update();
 
 		glfwSwapBuffers(window);
