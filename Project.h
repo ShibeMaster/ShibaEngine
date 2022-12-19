@@ -59,22 +59,58 @@ public:
 		}
 	}
 	void SaveProject() {
-		std::string path = settings.directory + (settings.name == "" ? "New Project" : settings.name) + ".SHBAPROJ";
+		if (settings.name == "")
+			settings.name = "New Project";
+		std::string path = settings.directory + settings.name + ".SHBAPROJ";
 		rapidjson::StringBuffer str;
 		rapidjson::PrettyWriter<rapidjson::StringBuffer> json(str);
 		json.StartObject();
 		json.Key("Name");
-		json.String(settings.name == "" ? "New Project" : settings.name.c_str());
-		json.Key("Assembly Path");
-		json.String(settings.assembly.c_str());
+		json.String(settings.name.c_str());
 		json.Key("Directory");
 		json.String(settings.directory.c_str());
 		json.Key("Last Loaded Scene");
 		json.String(SceneManager::activeScene->path.c_str());
+		json.Key("Has Project");
+		json.Bool(settings.hasProject);
+		if (settings.hasProject) {
+			json.Key("Project Path");
+			json.String(settings.projectPath.c_str());
+		}
+
 		json.EndObject();
 		auto file = std::ofstream(path, std::ofstream::out | std::ofstream::trunc);
 		file << str.GetString();
 		file.close();
+	}
+	void CreateProject() {
+		if(!std::filesystem::exists(settings.directory + "Scripts\\"))
+			std::filesystem::create_directory(settings.directory + "Scripts\\");
+		settings.projectPath = settings.directory + "Scripts\\" + settings.name + ".csproj";
+		settings.hasProject = true;
+		Scripting::CreateVSProject(settings.projectPath);
+		system(std::string("\"" + settings.projectPath + "\"").c_str());
+	}
+	std::string GetAssemblyPath() {
+		return settings.directory + "Scripts\\bin\\Debug\\net5.0\\" + settings.name + ".dll";
+	}
+	void CreateNewScript(const std::string& name) {
+			std::ofstream file(settings.directory + "Scripts\\" + name + ".cs", std::ofstream::out | std::ofstream::trunc);
+			std::string fileData = R"C#(
+using ShibaEngineCore;
+
+class )C#" + name + R"C#( : Component
+{
+	public override void Start(){
+		ShibaEngineCore.Console.LogMessage("Hello World!");
+	}
+
+	public override void Update(){}
+
+}
+)C#";
+			file << fileData;
+			file.close();
 	}
 	void LoadProjectHierachy() {
 		hierachy.item.name = "Assets";
@@ -125,6 +161,9 @@ public:
 						SceneLoader::LoadScene(node.item.path);
 
 					SceneManager::ChangeScene(node.item.path);
+				}
+				else {
+					system(std::string("\"" + node.item.path + "\"").c_str());
 				}
 			}
 			ImGui::TableNextColumn();

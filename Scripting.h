@@ -29,6 +29,7 @@ struct ScriptingEngineData {
 	MonoAssembly* appAssembly;
 	MonoAssembly* coreAssembly;
 
+	std::string coreAssemblyPath;
 	std::unordered_map<std::string, Class> components;
 	std::unordered_map<std::string, Class> coreComponentClasses;
 	std::unordered_map<unsigned int, Instance> entities;
@@ -115,7 +116,8 @@ public:
 		
 		data.appDomain = mono_domain_create_appdomain((char*)"ShibaEngine", nullptr);
 		mono_domain_set(data.appDomain, true);
-		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
+		data.coreAssemblyPath = "C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll";
+		data.coreAssembly = LoadAssembly(data.coreAssemblyPath);
 		componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
 		SetupClassFields(&componentClass, componentClass.monoClass, true);
 		timeClass = Class{ "Time", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Time") };
@@ -281,6 +283,28 @@ public:
 			std::cout << "failed to find entity field" << std::endl;
 		mono_field_set_value(instance.instance, entityField, &entity);
 		return instance;
+	}
+	static void CreateVSProject(const std::string& path) {
+		std::string data = R"XML(
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="ShibaEngineCore">
+      <HintPath>)XML" + Scripting::data.coreAssemblyPath + R"XML(</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
+)XML";
+		std::cout << path << std::endl;
+		std::ofstream file(path, std::ofstream::out | std::ofstream::trunc);
+		file << data;
+		file.close();
+		
 	}
 	static void LoadCoreAssemblyClasses() {
 		data.coreComponentClasses.clear();

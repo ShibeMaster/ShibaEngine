@@ -138,7 +138,7 @@ int main() {
 
 	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
 
-	Scripting::Initialize(ProjectManager::activeProject.settings.assembly);
+	Scripting::Initialize("");
 
 	UIManager::Initialize();
 
@@ -175,7 +175,6 @@ int main() {
 	SetupDefaultScene();
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-
 		for (auto& source : Engine::FindComponentsInScene<Light>()) {
 			auto& light = Engine::GetComponent<Light>(source);
 			Renderer::shaderData.lightColour = light.colour;
