@@ -190,6 +190,7 @@
     <ClInclude Include="Display.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EntityManager.h" />
+    <ClInclude Include="FileExtensions.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="GameView.h" />
     <ClInclude Include="GUIExtensions.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectItem.h" />
     <ClInclude Include="ProjectManager.h" />
+    <ClInclude Include="ProjectSettings.h" />
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />

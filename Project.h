@@ -6,8 +6,12 @@
 #include "SceneLoader.h"
 #include "SceneManager.h"
 #include "Scripting.h"
+#include "ProjectSettings.h"
 #include <unordered_map>
 #include <iostream>
+#include <rapidjson/PrettyWriter.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
 
 struct HierachyTreeNode {
 	ProjectItem item;
@@ -16,7 +20,7 @@ struct HierachyTreeNode {
 
 class Project {
 public:
-	std::filesystem::path baseDirectory = std::filesystem::path("C:\\Users\\tombr\\Downloads\\Test Hierachy");
+	ProjectSettings settings;
 	HierachyTreeNode hierachy;
 	HierachyTreeNode scriptHierachy;
 	HierachyTreeNode componentHierachy;
@@ -24,14 +28,20 @@ public:
 
 	Project(){}
 	Project(const std::string& path) {
-		baseDirectory = std::filesystem::path(path);
+		settings.directory = path;
 	}
 	ProjectItem& GetItem(const std::string& path) {
 		if (hierachyMap.find(path) == hierachyMap.end())
 			return hierachy.item;
 		return hierachyMap[path].item;
 	}
-
+	void ReloadProject() {
+		hierachy = HierachyTreeNode();
+		scriptHierachy = HierachyTreeNode();
+		componentHierachy = HierachyTreeNode();
+		hierachyMap.clear();
+		LoadProjectHierachy();;
+	}
 	HierachyTreeNode& CreateHierachyNode(std::string name, std::string path, std::string type, HierachyTreeNode& parentNode, bool isDirectory = false) {
 		HierachyTreeNode node = { { name, path, type } };
 		hierachyMap[node.item.path] = node;
@@ -48,9 +58,27 @@ public:
 			CreateHierachyNode(file.path().stem().string(), file.path().string(), file.is_directory() ? "" : file.path().extension().string(), directoryNode, file.is_directory());
 		}
 	}
+	void SaveProject() {
+		std::string path = settings.directory + (settings.name == "" ? "New Project" : settings.name) + ".SHBAPROJ";
+		rapidjson::StringBuffer str;
+		rapidjson::PrettyWriter<rapidjson::StringBuffer> json(str);
+		json.StartObject();
+		json.Key("Name");
+		json.String(settings.name == "" ? "New Project" : settings.name.c_str());
+		json.Key("Assembly Path");
+		json.String(settings.assembly.c_str());
+		json.Key("Directory");
+		json.String(settings.directory.c_str());
+		json.Key("Last Loaded Scene");
+		json.String(SceneManager::activeScene->path.c_str());
+		json.EndObject();
+		auto file = std::ofstream(path, std::ofstream::out | std::ofstream::trunc);
+		file << str.GetString();
+		file.close();
+	}
 	void LoadProjectHierachy() {
 		hierachy.item.name = "Assets";
-		hierachy.item.path = baseDirectory.string();
+		hierachy.item.path = settings.directory;
 		IterateDirectory(hierachy);
 		hierachyMap[hierachy.item.path] = hierachy;
 		LoadProjectScriptHierachy();

@@ -320,6 +320,12 @@
     <ClInclude Include="FrameBuffer.h">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="ProjectSettings.h">
+      <Filter>Header Files\Engine\Projects</Filter>
+    </ClInclude>
+    <ClInclude Include="FileExtensions.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprite_Camera_Icon.png">
