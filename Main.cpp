@@ -131,14 +131,14 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = Display::CreateWindow();
+	window = Display::Create();
 
 	glewInit();
 	glfwSwapInterval(1);
 
 	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
 
-	Scripting::Initialize();
+	Scripting::Initialize(ProjectManager::activeProject.settings.assembly);
 
 	UIManager::Initialize();
 
@@ -150,7 +150,7 @@ int main() {
 	Engine::RegisterComponent<SpriteRenderer>();
 	Engine::RegisterComponent<Light>();
 
-	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy");
+	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 

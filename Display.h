@@ -6,7 +6,7 @@ public:
 	static int width;
 	static int height;
 
-	static GLFWwindow* CreateWindow() {
+	static GLFWwindow* Create() {
 		window = glfwCreateWindow(width, height, "Shiba Engine", NULL, NULL);
 		glfwMakeContextCurrent(window);
 		glfwSetWindowSizeCallback(window, Display::HandleWindowResize);

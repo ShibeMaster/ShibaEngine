@@ -85,26 +85,17 @@ public:
 	static Class timeClass;
 	static Class coreComponentClass;
 	static Class instanceClass;
-	static void Initialize() {
+	static void Initialize(const std::string& path) {
 		MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 		if (rootDomain == nullptr) {
 			std::cout << "failed to create rootdomain" << std::endl;
 			return;
 		}
 		data.rootDomain = rootDomain;
-		data.appDomain = mono_domain_create_appdomain((char*)"ShibaEngine", nullptr);
-		mono_domain_set(data.appDomain, true);
 
-		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
-		componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
-		SetupClassFields(&componentClass, componentClass.monoClass, true);
-		timeClass = Class{ "Time", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Time") };
-		coreComponentClass = Class{ "CoreComponent", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "CoreComponent") };
-		SetupClassFields(&coreComponentClass, coreComponentClass.monoClass, true);
-		instanceClass = Class{ "Instance", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Instance") };
-		SetupClassFields(&instanceClass, instanceClass.monoClass, true);
-		data.appAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
-		LoadAssemblyClasses();
+
+		Setup(path);
+		
 
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::AddComponent", AddComponent);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
@@ -119,6 +110,35 @@ public:
 		mono_add_internal_call("ShibaEngineCore.Components::GetEntityInstance", GetInstance);
 
 
+	}
+	static void Setup(const std::string& path) {
+		
+		data.appDomain = mono_domain_create_appdomain((char*)"ShibaEngine", nullptr);
+		mono_domain_set(data.appDomain, true);
+		data.coreAssembly = LoadAssembly("C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll");
+		componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
+		SetupClassFields(&componentClass, componentClass.monoClass, true);
+		timeClass = Class{ "Time", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Time") };
+		coreComponentClass = Class{ "CoreComponent", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "CoreComponent") };
+		SetupClassFields(&coreComponentClass, coreComponentClass.monoClass, true);
+		instanceClass = Class{ "Instance", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Instance") };
+		SetupClassFields(&instanceClass, instanceClass.monoClass, true);
+
+
+		LoadCoreAssemblyClasses();
+		if (path != "") {
+			data.appAssembly = LoadAssembly(path);
+			LoadAssemblyClasses();
+
+		}
+	}
+	static void ReloadAssembly(const std::string& path) {
+		mono_domain_set(mono_get_root_domain(), false);
+		mono_domain_unload(data.appDomain);
+		
+		std::cout << path << std::endl;
+		Setup(path);
+		ReloadAllComponentScripts();
 	}
 
 #pragma region Internal Calls 
@@ -262,6 +282,38 @@ public:
 		mono_field_set_value(instance.instance, entityField, &entity);
 		return instance;
 	}
+	static void LoadCoreAssemblyClasses() {
+		data.coreComponentClasses.clear();
+		MonoImage* image = mono_assembly_get_image(data.coreAssembly);
+		const MonoTableInfo* typeDefTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+		int32_t numTypes = mono_table_info_get_rows(typeDefTable);
+		for (int32_t i = 0; i < numTypes; i++) {
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefTable, i, cols, MONO_TYPEDEF_SIZE);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			std::string fullname;
+			if (strlen(nameSpace))
+				fullname = nameSpace + std::string(".") + name;
+			else
+				fullname = name;
+
+			MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+
+			if (monoClass == coreComponentClass.monoClass)
+				continue;
+
+			bool isComponent = mono_class_is_subclass_of(monoClass, coreComponentClass.monoClass, false);
+			if (isComponent) {
+				Class klass = Class{ name, nameSpace, monoClass };
+				SetupClassFields(&klass, klass.monoClass, true, true);
+				data.coreComponentClasses[name] = klass;
+			}
+			else
+				continue;
+		}
+
+	}
 	static void LoadAssemblyClasses() {
 		data.components.clear();
 		MonoImage* image = mono_assembly_get_image(data.appAssembly);
@@ -281,7 +333,7 @@ public:
 			std::cout << fullname << std::endl;
 			MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
 
-			if (monoClass == componentClass.monoClass || monoClass == coreComponentClass.monoClass)
+			if (monoClass == componentClass.monoClass)
 				continue;
 			
 			bool isComponent = mono_class_is_subclass_of(monoClass, componentClass.monoClass, false);
@@ -291,11 +343,6 @@ public:
 
 				SetupClassFields(&klass, klass.monoClass);
 				data.components[fullname] = klass;
-			}
-			else if (mono_class_is_subclass_of(monoClass, coreComponentClass.monoClass, false)) {
-				Class klass = Class{ name, nameSpace, monoClass };
-				SetupClassFields(&klass, klass.monoClass, true, true);
-				data.coreComponentClasses[name] = klass;
 			}
 			else
 				continue;
@@ -329,6 +376,20 @@ public:
 		for (auto& comp : data.entities) {
 			for (auto& instance : comp.second.scripts) {
 				instance.second.InvokeMethod(instance.second.startMethod, 0);
+			}
+		}
+	}
+	static void ReloadAllComponentScripts() {
+		for (auto& entity : data.entities) {
+			entity.second.instance = CreateClassInstance(entity.first, instanceClass);
+			auto comps = Engine::GetEntityComponents(entity.first);
+			for (auto& comp : comps) {
+				entity.second.coreComponents.erase(comp);
+				OnAddComponent(entity.first, comp);
+			}
+			for (auto& script : Engine::GetEntityScripts(entity.first)) {
+				entity.second.scripts.erase(script);
+				LoadEntityScript(entity.first, script);
 			}
 		}
 	}

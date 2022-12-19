@@ -6,12 +6,16 @@
 #include "Scripting.h"
 #include "Primitives.h"
 #include <GLFW/glfw3.h>
+#include "ProjectManager.h"
 #include "ViewManager.h"
+#include "ProjectItem.h"
 #include "imgui.h"
+#include <Windows.h>
 #include "imgui_stdlib.h"
 #include "ShaderManager.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
+#include "FileExtensions.h"
 class UIManager {
 public:
 
@@ -23,11 +27,18 @@ public:
 	static void RenderMenuBar() {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("Save", "CTRL+S"))
+				if (ImGui::MenuItem("Save", "CTRL+S")) {
 					SaveScene();
+					ProjectManager::activeProject.SaveProject();
+				}
+				if (ImGui::MenuItem("Open", "CTRL+O")) {
+					std::string path;
+					if (FileExtensions::OpenFileDialog("C:\\", ".SHBAPROJ", &path)) {
+						ProjectManager::LoadProject(path);
+					}
+				}
 				if (ImGui::BeginMenu("New", "CTRL+N")) {
 					if (ImGui::BeginMenu("Entity")) {
-
 						if (ImGui::MenuItem("Empty"))
 							CreateEntity();
 						if (ImGui::BeginMenu("Primitives")) {
@@ -36,9 +47,21 @@ public:
 						}
 						ImGui::EndMenu();
 					}
-					if (ImGui::BeginMenu("Project")) {
-						ImGui::EndMenu();
-					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Scripts")) {
+				if (ImGui::MenuItem("Reload Assembly"))
+					Scripting::ReloadAssembly(ProjectManager::activeProject.settings.assembly);
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Project")) {
+				if (ImGui::MenuItem("Reload Project")) {
+					ProjectManager::activeProject.ReloadProject();
+				}
+				if (ImGui::BeginMenu("Settings")) {
+					RenderProjectSettings();
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
@@ -50,6 +73,12 @@ public:
 			}
 			ImGui::EndMainMenuBar();
 		}
+	}
+	static void RenderProjectSettings() {
+		ImGui::BeginChild("Project Settings", ImVec2(180, 60), true);
+		ImGui::InputText("Assembly Path", &ProjectManager::activeProject.settings.assembly);
+		ImGui::InputText("Directory", &ProjectManager::activeProject.settings.directory);
+		ImGui::EndChild();
 	}
 
 	static void CreateEntityDragAndDrop(SceneItem* item) {
@@ -100,7 +129,7 @@ public:
 	}
 	static void SaveScene() {
 		std::cout << "Saving Scene" << std::endl;
-		std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.baseDirectory.string() + "\\" + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
+		std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.settings.directory + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
 		std::cout << path << std::endl;
 		if (SceneManager::activeScene->path == "No Path")
 			ProjectManager::activeProject.CreateNewSceneNode(SceneManager::activeScene->name, path);
@@ -134,7 +163,6 @@ public:
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 			ImGui::Begin("Scene View", &sceneViewFrameOpen);
-			std::cout << ViewManager::sceneView.view.framebuffer.GetTexture() << std::endl;
 
 			ImGui::Image((ImTextureID)ViewManager::sceneView.view.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
@@ -143,8 +171,6 @@ public:
 		if (gameViewFrameOpen) {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 			ImGui::Begin("Game View", &gameViewFrameOpen);
-
-			std::cout << ViewManager::gameView.view.framebuffer.GetTexture() << std::endl;
 
 			ImGui::Image((ImTextureID)ViewManager::gameView.view.framebuffer.GetTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
@@ -189,6 +215,7 @@ public:
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
 				auto script = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
+				std::cout << "adding script " << script << std::endl;
 				Engine::AddScript(selectedEntity, script);
 				Scripting::LoadEntityScript(selectedEntity, script);
 			}
