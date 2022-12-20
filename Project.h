@@ -96,16 +96,19 @@ public:
 	}
 	void CreateNewScript(const std::string& name) {
 			std::ofstream file(settings.directory + "Scripts\\" + name + ".cs", std::ofstream::out | std::ofstream::trunc);
-			std::string fileData = R"C#(
-using ShibaEngineCore;
+			std::string fileData = R"C#(using ShibaEngineCore;
 
 class )C#" + name + R"C#( : Component
 {
-	public override void Start(){
+	public void Start()
+	{
 		ShibaEngineCore.Console.LogMessage("Hello World!");
 	}
 
-	public override void Update(){}
+	public void Update()
+	{
+
+	}
 
 }
 )C#";
