@@ -33,8 +33,13 @@ public:
 	static void CreateInstanceDragDropField(Field field, ClassInstance& instance) {
 		MonoObject* entityValue = instance.GetFieldValue<MonoObject*>(field.name);
 		unsigned int entity;
-		mono_field_get_value(entityValue, Scripting::instanceClass.fields["entity"].classField, &entity);
-		ImGui::Button(SceneManager::activeScene->items[entity].name.c_str());
+		if (entityValue != nullptr) {
+			mono_field_get_value(entityValue, Scripting::instanceClass.fields["entity"].classField, &entity);
+			ImGui::Button(SceneManager::activeScene->items[entity].name.c_str());
+		}
+		else {
+			ImGui::Button("Undefined Instance");
+		}
 		if (GUIExtensions::CreateDragDropTarget<unsigned int>("Entity", &entity)) {
 			instance.SetFieldValue<MonoObject>(field.name, Scripting::data.entities[entity].instance.instance);
 		}

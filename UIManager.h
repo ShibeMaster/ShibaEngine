@@ -23,8 +23,10 @@ public:
 	static bool sceneViewActive;
 	static bool sceneViewFrameOpen;
 	static bool gameViewFrameOpen;
+	static std::string addingScriptName;
 	static glm::vec2 viewportSize;
 	static void RenderMenuBar() {
+		bool addingScriptPopup = false;
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem("Save", "CTRL+S")) {
@@ -47,13 +49,24 @@ public:
 						}
 						ImGui::EndMenu();
 					}
+					if (ImGui::MenuItem("Script")) {
+						if (!ProjectManager::activeProject.settings.hasProject)
+							ProjectManager::activeProject.CreateProject();
+						addingScriptPopup = true;
+
+						
+					}
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Scripts")) {
-				if (ImGui::MenuItem("Reload Assembly"))
-					Scripting::ReloadAssembly(ProjectManager::activeProject.settings.assembly);
+				if (ImGui::MenuItem("Reload Assembly")) {
+					ProjectManager::activeProject.settings.hasAssembly = std::filesystem::exists(ProjectManager::activeProject.GetAssemblyPath());
+					if(ProjectManager::activeProject.settings.hasAssembly)
+						Scripting::ReloadAssembly(ProjectManager::activeProject.GetAssemblyPath());
+
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Project")) {
@@ -73,10 +86,33 @@ public:
 			}
 			ImGui::EndMainMenuBar();
 		}
+		if (addingScriptPopup)
+			ImGui::OpenPopup("Adding Script");
+		RenderAddingScriptPopup();
+
+
+	}
+	static void RenderAddingScriptPopup() {
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		if (ImGui::BeginPopupModal("Adding Script", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::InputText("Name:", &addingScriptName);
+			if (ImGui::Button("Add")) {
+				ProjectManager::activeProject.CreateNewScript(addingScriptName);
+				addingScriptName = "NewScript";
+				ProjectManager::activeProject.settings.hasAssembly = std::filesystem::exists(ProjectManager::activeProject.GetAssemblyPath());
+				if (ProjectManager::activeProject.settings.hasAssembly)
+					Scripting::ReloadAssembly(ProjectManager::activeProject.GetAssemblyPath());
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
 	}
 	static void RenderProjectSettings() {
-		ImGui::BeginChild("Project Settings", ImVec2(180, 60), true);
-		ImGui::InputText("Assembly Path", &ProjectManager::activeProject.settings.assembly);
+		ImGui::BeginChild("Project Settings", ImVec2(360, 60), true);
+		ImGui::InputText("Name", &ProjectManager::activeProject.settings.name);
 		ImGui::InputText("Directory", &ProjectManager::activeProject.settings.directory);
 		ImGui::EndChild();
 	}
@@ -307,6 +343,7 @@ public:
 		Console::Render();
 		RenderInspectorUI();
 		RenderViewportUI();
+
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

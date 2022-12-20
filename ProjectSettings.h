@@ -2,7 +2,9 @@
 #include <string>
 class ProjectSettings {
 public:
-	std::string assembly;
 	std::string directory;
 	std::string name;
+	bool hasProject = false;
+	std::string projectPath;
+	bool hasAssembly = false;
 };

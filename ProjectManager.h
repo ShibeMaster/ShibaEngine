@@ -18,11 +18,16 @@ public:
 		rapidjson::Document doc;
 		doc.Parse(SerializationUtils::ReadFile(path).c_str());
 		settings.name = doc["Name"].GetString();
-		settings.assembly = doc["Assembly Path"].GetString();
 		settings.directory = doc["Directory"].GetString();
+		settings.hasProject = doc["Has Project"].GetBool();
+		if (settings.hasProject)
+			settings.projectPath = doc["Project Path"].GetString();
 		activeProject = Project(path);
 		activeProject.settings = settings;
-		Scripting::ReloadAssembly(settings.assembly);
+		activeProject.settings.hasAssembly = std::filesystem::exists(activeProject.GetAssemblyPath());
+		if (settings.hasAssembly) {
+			Scripting::ReloadAssembly(activeProject.GetAssemblyPath());
+		}
 		activeProject.LoadProjectHierachy();
 
 		std::string lastScenePath = doc["Last Loaded Scene"].GetString();
