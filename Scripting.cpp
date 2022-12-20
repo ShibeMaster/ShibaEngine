@@ -4,3 +4,4 @@ Class Scripting::componentClass;
 Class Scripting::timeClass;
 Class Scripting::coreComponentClass;
 Class Scripting::instanceClass;
+Class Scripting::behaviourManager;

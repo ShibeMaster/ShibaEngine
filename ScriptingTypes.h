@@ -3,6 +3,7 @@
 #include <iostream>
 #include <mono/metadata/object.h>
 #include <unordered_map>
+#include "Time.h"
 
 enum class FieldType {
 	None,
@@ -95,5 +96,22 @@ struct ClassInstance {
 		}
 
 		mono_field_set_value(instance, classData.fields[fieldName].classField, value);
+	}
+};
+/// <summary>
+/// A behaviour is going to be a static class that isn't attached to any entity, it'll also be able to have the update method called at a specified interval instead of being called every frame
+/// It's pretty much going to be an alternative to components but mostly for "game manager" type systems.
+/// </summary>
+struct Behaviour {
+	Class classData;
+	float interval;
+	float lastUpdateTime;
+	bool hasInterval;
+
+	MonoMethod* update;
+	bool hasUpdate;
+
+	bool ShouldUpdate() {
+		return !hasInterval || Time::currentTime - lastUpdateTime > interval;
 	}
 };
