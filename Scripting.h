@@ -13,6 +13,7 @@
 #include <mono/metadata/attrdefs.h>
 #include "ScriptingTypes.h"
 #include <mono/metadata/debug-helpers.h>
+#include "FileExtensions.h"
 #include <unordered_map>
 #include "Console.h"
 #include "ProjectItem.h"
@@ -33,6 +34,7 @@ struct ScriptingEngineData {
 	std::unordered_map<std::string, Class> components;
 	std::unordered_map<std::string, Class> coreComponentClasses;
 	std::unordered_map<unsigned int, Instance> entities;
+	std::unordered_map<std::string, Behaviour> behaviours;
 };
 class Utils {
 public:
@@ -86,6 +88,7 @@ public:
 	static Class timeClass;
 	static Class coreComponentClass;
 	static Class instanceClass;
+	static Class behaviourManager;
 	static void Initialize(const std::string& path) {
 		MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 		if (rootDomain == nullptr) {
@@ -94,9 +97,7 @@ public:
 		}
 		data.rootDomain = rootDomain;
 
-
 		Setup(path);
-		
 
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::AddComponent", AddComponent);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
@@ -125,13 +126,62 @@ public:
 		SetupClassFields(&coreComponentClass, coreComponentClass.monoClass, true);
 		instanceClass = Class{ "Instance", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Instance") };
 		SetupClassFields(&instanceClass, instanceClass.monoClass, true);
+		behaviourManager = Class{ "BehaviourManager", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "BehaviourManager") };
 
 
 		LoadCoreAssemblyClasses();
 		if (path != "") {
 			data.appAssembly = LoadAssembly(path);
 			LoadAssemblyClasses();
+			FindBehaviours();
+		}
+	}
 
+	static void FindBehaviours() {
+		MonoObject* exception = nullptr;
+		
+		void* assemblyParams[1];
+		assemblyParams[0] = mono_assembly_get_object(data.appDomain, data.appAssembly);
+		mono_runtime_invoke(behaviourManager.GetMethod("LoadBehaviours", 1), nullptr, assemblyParams, nullptr);
+		MonoObject* countMono = mono_runtime_invoke(behaviourManager.GetMethod("GetBehaviourCount", 0), nullptr, nullptr, nullptr);
+		int count = *(int*)mono_object_unbox(countMono);
+		MonoMethod* getBehaviourName = behaviourManager.GetMethod("GetBehaviourName", 1);
+		MonoMethod* getBehaviourNamespace = behaviourManager.GetMethod("GetBehaviourNamespace", 1);
+		MonoMethod* getBehaviourInterval = behaviourManager.GetMethod("GetBehaviourInterval", 1);
+		for (int i = 0; i < count; i++) {
+			void* params[1];
+			params[0] = &i;
+			MonoObject* nameObj = mono_runtime_invoke(getBehaviourName, nullptr, params, nullptr);
+			MonoObject* namespaceObj = mono_runtime_invoke(getBehaviourNamespace, nullptr, params, nullptr);
+			
+			std::string typeName = mono_string_to_utf8(mono_object_to_string(nameObj, nullptr));
+			
+			std::string typeNamespace = mono_string_to_utf8(mono_object_to_string(namespaceObj, nullptr));
+			MonoClass* monoClass = GetClass(data.appAssembly, typeNamespace.c_str(), typeName.c_str());
+			
+			
+			Class klass;
+			klass.monoClass = monoClass;
+			klass.name = typeName;
+			klass.nameSpace = typeNamespace;
+			std::cout << "found behaviour: " << klass.name << std::endl;
+			SetupClassFields(&klass, monoClass, false, false);
+			Behaviour behaviour;
+			behaviour.classData = klass;
+			float interval = *(float*)mono_object_unbox(mono_runtime_invoke(getBehaviourInterval, nullptr, params, nullptr));
+			behaviour.hasInterval = interval != 0;
+			behaviour.interval = interval;
+			behaviour.update = klass.GetMethod("Update", 0);
+			behaviour.hasUpdate = behaviour.update != nullptr;
+			data.behaviours[klass.name] = behaviour;
+		}
+	}
+	static void UpdateBehaviours() {
+		for (auto& behaviour : data.behaviours) {
+			if (behaviour.second.ShouldUpdate() && behaviour.second.hasUpdate) {
+				mono_runtime_invoke(behaviour.second.update, nullptr, nullptr, nullptr);
+				behaviour.second.lastUpdateTime = Time::currentTime;
+			}
 		}
 	}
 	static void ReloadAssembly(const std::string& path) {
@@ -301,9 +351,7 @@ public:
 </Project>
 )XML";
 		std::cout << path << std::endl;
-		std::ofstream file(path, std::ofstream::out | std::ofstream::trunc);
-		file << data;
-		file.close();
+		FileExtensions::CreateAndWriteToFile(path, data);
 		
 	}
 	static void LoadCoreAssemblyClasses() {
@@ -483,6 +531,7 @@ public:
 		};
 		MonoObject* exception = nullptr;
 		mono_runtime_invoke(timeClass.GetMethod("UpdateTime", 2), nullptr, params, &exception);
+		UpdateBehaviours();
 		for (auto& comp : data.entities) {
 			for (auto& instance : comp.second.scripts) {
 				instance.second.InvokeMethod(instance.second.updateMethod, 0);
