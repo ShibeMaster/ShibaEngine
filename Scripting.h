@@ -13,6 +13,7 @@
 #include <mono/metadata/attrdefs.h>
 #include "ScriptingTypes.h"
 #include <mono/metadata/debug-helpers.h>
+#include "FileExtensions.h"
 #include <unordered_map>
 #include "Console.h"
 #include "ProjectItem.h"
@@ -96,9 +97,7 @@ public:
 		}
 		data.rootDomain = rootDomain;
 
-
 		Setup(path);
-		
 
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::AddComponent", AddComponent);
 		mono_add_internal_call("ShibaEngineCore.EngineCalls::CreateEntity", CreateEntity);
@@ -352,9 +351,7 @@ public:
 </Project>
 )XML";
 		std::cout << path << std::endl;
-		std::ofstream file(path, std::ofstream::out | std::ofstream::trunc);
-		file << data;
-		file.close();
+		FileExtensions::CreateAndWriteToFile(path, data);
 		
 	}
 	static void LoadCoreAssemblyClasses() {

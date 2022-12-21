@@ -24,6 +24,8 @@ public:
 	static bool sceneViewFrameOpen;
 	static bool gameViewFrameOpen;
 	static std::string addingScriptName;
+	static float addingBehaviourInterval;
+	static bool isAddingBehaviour;
 	static glm::vec2 viewportSize;
 	static void RenderMenuBar() {
 		bool addingScriptPopup = false;
@@ -53,10 +55,22 @@ public:
 						if (!ProjectManager::activeProject.settings.hasProject)
 							ProjectManager::activeProject.CreateProject();
 						addingScriptPopup = true;
-
-						
+						isAddingBehaviour = false;
+					}
+					if (ImGui::MenuItem("Behaviour")) {
+						if (!ProjectManager::activeProject.settings.hasProject)
+							ProjectManager::activeProject.CreateProject();
+						addingScriptPopup = true;
+						isAddingBehaviour = true;
 					}
 					ImGui::EndMenu();
+				}
+				if (ImGui::MenuItem("Reload", "F5")) {
+					ProjectManager::activeProject.settings.hasAssembly = std::filesystem::exists(ProjectManager::activeProject.GetAssemblyPath());
+					if (ProjectManager::activeProject.settings.hasAssembly)
+						Scripting::ReloadAssembly(ProjectManager::activeProject.GetAssemblyPath());
+
+					ProjectManager::activeProject.ReloadProject();
 				}
 				ImGui::EndMenu();
 			}
@@ -93,15 +107,24 @@ public:
 
 	}
 	static void RenderAddingScriptPopup() {
+
 		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopupModal("Adding Script", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::InputText("Name:", &addingScriptName);
+			ImGui::InputText("Name", &addingScriptName);
+			if (isAddingBehaviour)
+				ImGui::InputFloat("Interval", &addingBehaviourInterval);
 			if (ImGui::Button("Add")) {
-				ProjectManager::activeProject.CreateNewScript(addingScriptName);
+				if (!isAddingBehaviour)
+					ProjectManager::activeProject.CreateNewScript(addingScriptName);
+				else
+					ProjectManager::activeProject.CreateNewBehaviour(addingScriptName, addingBehaviourInterval);
 				addingScriptName = "NewScript";
+				addingBehaviourInterval = 0.0f;
 				ProjectManager::activeProject.settings.hasAssembly = std::filesystem::exists(ProjectManager::activeProject.GetAssemblyPath());
 				if (ProjectManager::activeProject.settings.hasAssembly)
 					Scripting::ReloadAssembly(ProjectManager::activeProject.GetAssemblyPath());
+				ProjectManager::activeProject.ReloadProject();
+
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();

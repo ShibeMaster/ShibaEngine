@@ -79,9 +79,7 @@ public:
 		}
 
 		json.EndObject();
-		auto file = std::ofstream(path, std::ofstream::out | std::ofstream::trunc);
-		file << str.GetString();
-		file.close();
+		FileExtensions::CreateAndWriteToFile(path, str.GetString());
 	}
 	void CreateProject() {
 		if(!std::filesystem::exists(settings.directory + "Scripts\\"))
@@ -89,16 +87,13 @@ public:
 		settings.projectPath = settings.directory + "Scripts\\" + settings.name + ".csproj";
 		settings.hasProject = true;
 		Scripting::CreateVSProject(settings.projectPath);
-		system(std::string("\"" + settings.projectPath + "\"").c_str());
 	}
 	std::string GetAssemblyPath() {
 		return settings.directory + "Scripts\\bin\\Debug\\net5.0\\" + settings.name + ".dll";
 	}
 	void CreateNewScript(const std::string& name) {
-			std::ofstream file(settings.directory + "Scripts\\" + name + ".cs", std::ofstream::out | std::ofstream::trunc);
-			std::string fileData = R"C#(using ShibaEngineCore;
-
-class )C#" + name + R"C#( : Component
+		FileExtensions::CreateAndWriteToFile(settings.directory + "Scripts\\" + name + ".cs", R"C#(using ShibaEngineCore;
+public class )C#" + name + R"C#( : Component
 {
 	public void Start()
 	{
@@ -111,9 +106,22 @@ class )C#" + name + R"C#( : Component
 	}
 
 }
-)C#";
-			file << fileData;
-			file.close();
+)C#");
+	}
+	void CreateNewBehaviour(const std::string& name, float interval) {
+		std::stringstream intvStr;
+		intvStr << interval;
+		FileExtensions::CreateAndWriteToFile(settings.directory + "Scripts\\" + name + ".cs", R"C#(using ShibaEngineCore;
+
+[Behaviour()C#" + intvStr.str() + R"C#(f)]
+public static class )C#" + name + R"C#(
+{
+	public static void Update()
+	{
+		Console.LogMessage("Interval Called");
+	}
+}
+)C#");
 	}
 	void LoadProjectHierachy() {
 		hierachy.item.name = "Assets";

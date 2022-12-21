@@ -5,6 +5,7 @@
 #include "Scripting.h"
 #include <rapidjson/PrettyWriter.h>
 #include <rapidjson/document.h>
+#include "FileExtensions.h"
 #include <rapidjson/stringbuffer.h>
 #include <cstdio>
 #include "SerializationUtils.h"
@@ -86,8 +87,6 @@ public:
 		SerializeSceneInfo(scene, &json);
 		SerializeSceneHierachy(scene, &json);
 		json.EndObject();
-		auto file = std::ofstream(path, std::ofstream::out | std::ofstream::trunc);
-		file << str.GetString();
-		file.close();
+		FileExtensions::CreateAndWriteToFile(path, str.GetString());
 	}
 };

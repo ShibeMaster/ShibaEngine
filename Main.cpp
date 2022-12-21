@@ -73,14 +73,6 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			std::vector<RayHit> outHits;
 			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
 		}
-		if (key == GLFW_KEY_F5) {
-			std::string path;
-			std::getline(std::cin, path);
-			SceneLoader::LoadScene(path);
-			for (auto& item : SceneManager::activeScene->hierachy) {
-				std::cout << item->name << std::endl;
-			}
-		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
 			inRuntime = true;
