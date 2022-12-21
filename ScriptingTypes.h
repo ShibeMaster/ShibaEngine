@@ -1,9 +1,8 @@
 #pragma once
 #include <string>
-#include <iostream>
 #include <mono/metadata/object.h>
-#include <unordered_map>
-#include "Time.h"
+#include <iostream>
+#include <map>
 
 enum class FieldType {
 	None,
@@ -35,11 +34,9 @@ struct Class {
 	std::string name;
 	std::string nameSpace;
 	MonoClass* monoClass;
-	std::unordered_map<std::string, Field> fields;
+	std::map<std::string, Field> fields;
 
-	MonoMethod* GetMethod(const std::string& name, int parameterCount) {
-		return mono_class_get_method_from_name(monoClass, name.c_str(), parameterCount);
-	}
+	MonoMethod* GetMethod(const std::string& name, int parameterCount);
 };
 struct ClassInstance {
 	Class classData;
@@ -51,20 +48,8 @@ struct ClassInstance {
 	bool hasUpdate = false;
 
 	ClassInstance() {}
-	ClassInstance(Class klass, bool core = false) {
-		this->classData = klass;
-		if (!core) {
-			startMethod = classData.GetMethod("Start", 0);
-			hasStart = startMethod != nullptr;
-			updateMethod = classData.GetMethod("Update", 0);
-			hasUpdate = updateMethod != nullptr;
-		}
-	}
-	void InvokeMethod(MonoMethod* method, int parameterCount, void** params = nullptr) {
-		MonoObject* exception = nullptr;
-		mono_runtime_invoke(method, instance, params, &exception);
-	}
-
+	ClassInstance(Class klass, bool core = false);
+	void InvokeMethod(MonoMethod* method, int parameterCount, void** params = nullptr);
 
 	template<typename T>
 	T GetFieldValue(const std::string& fieldName) {
@@ -97,6 +82,7 @@ struct ClassInstance {
 
 		mono_field_set_value(instance, classData.fields[fieldName].classField, value);
 	}
+
 };
 /// <summary>
 /// A behaviour is going to be a static class that isn't attached to any entity, it'll also be able to have the update method called at a specified interval instead of being called every frame
@@ -111,7 +97,5 @@ struct Behaviour {
 	MonoMethod* update;
 	bool hasUpdate;
 
-	bool ShouldUpdate() {
-		return !hasInterval || Time::currentTime - lastUpdateTime > interval;
-	}
+	bool ShouldUpdate();
 };

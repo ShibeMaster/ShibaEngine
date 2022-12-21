@@ -22,6 +22,8 @@ private:
 			messages.pop_front();
 	}
 public:
+	static bool isOpen;
+
 	static void LogMessage(const std::string& message) {
 		AddMessage(message, "MSG", ImVec4(1, 1, 1, 1));
 	}
@@ -32,7 +34,7 @@ public:
 		messages.clear();
 	}
 	static void Render() {
-		ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin("Console", &isOpen, ImGuiWindowFlags_NoCollapse);
 
 		if (ImGui::BeginChild("ScrollingConsole", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar)) {
 

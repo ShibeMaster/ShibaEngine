@@ -1,6 +1,7 @@
 #pragma once
 #include "ProjectItem.h"
 #include <string>
+#include "Scripting.h"
 #include "ProjectManager.h"
 #include "imgui.h"
 

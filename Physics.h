@@ -48,7 +48,7 @@ public:
 
 		auto& boundingBox = Engine::GetComponent<MeshCollisionBox>(entity);
 		std::vector<RayHit> outHits;
-		isGrounded = Raycast(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(boundingBox.min.y) + 0.3f, &outHits, entity);
+		isGrounded = Raycast::CheckHit(transform->position, glm::vec3(0.0f, -1.0f, 0.0f), abs(boundingBox.min.y) + 0.3f, &outHits, entity);
 
 		if (isGrounded && velocity.y < 0.0f) {
 			velocity.y = 0.0f;
@@ -70,9 +70,9 @@ public:
 	void Deserialize(rapidjson::Value& obj) {
 		useGravity = obj["Use Gravity"].GetBool();
 		gravityDirection = SerializationUtils::DeserializeVec3(obj["Gravity Direction"]);
-		gravity = obj["Gravity"].GetDouble();
+		gravity = (float)obj["Gravity"].GetDouble();
 		useDrag = obj["Use Drag"].GetBool();
-		drag = obj["Drag"].GetDouble();
+		drag = (float)obj["Drag"].GetDouble();
 	}
 	void GetObject(ClassInstance* instance) {
 		instance->SetFieldValue<glm::vec3>("velocity", velocity);

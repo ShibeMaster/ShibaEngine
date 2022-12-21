@@ -16,8 +16,8 @@ public:
 
 	void MouseCallback(GLFWwindow* window, double xpos, double ypos) {
 		if (firstMouseMove) {
-			lastMouseX = xpos;
-			lastMouseY = ypos;
+			lastMouseX = (float)xpos;
+			lastMouseY = (float)ypos;
 			firstMouseMove = false;
 		}
 		if (!inputLocked) {
@@ -26,13 +26,13 @@ public:
 		}
 		else {
 
-			xOffset = xpos - lastMouseX;
-			yOffset = lastMouseY - ypos;
+			xOffset = (float)xpos - lastMouseX;
+			yOffset = lastMouseY - (float)ypos;
 		}
 
 		position.x = (float)xpos;
 		position.y = (float)ypos;
-		lastMouseX = xpos;
-		lastMouseY = ypos;
+		lastMouseX = (float)xpos;
+		lastMouseY = (float)ypos;
 	}
 };

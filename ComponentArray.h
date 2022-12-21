@@ -2,7 +2,10 @@
 #include <mono/metadata/object.h>
 #include <unordered_map>
 #include <iostream>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
 #include <rapidjson/document.h>
+#include "ScriptingTypes.h"
 #include "imgui.h"
 class ComponentArray {
 public:

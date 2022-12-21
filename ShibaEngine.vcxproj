@@ -152,18 +152,27 @@
     <ClCompile Include="..\External Libraries\ImGui\imgui_stdlib.cpp" />
     <ClCompile Include="..\External Libraries\ImGui\imgui_tables.cpp" />
     <ClCompile Include="..\External Libraries\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Collisions.cpp" />
+    <ClCompile Include="ComponentManager.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="EntityManager.cpp" />
     <ClCompile Include="FileExtensions.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="Primitives.cpp" />
+    <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectManager.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="SceneView.cpp" />
     <ClCompile Include="Scripting.cpp" />
+    <ClCompile Include="ScriptingTypes.cpp" />
+    <ClCompile Include="SerializationUtils.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -189,6 +198,7 @@
     <ClInclude Include="ComponentManager.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Display.h" />
+    <ClInclude Include="EditorFrame.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EntityManager.h" />
     <ClInclude Include="FileExtensions.h" />
@@ -196,6 +206,7 @@
     <ClInclude Include="GameView.h" />
     <ClInclude Include="GUIExtensions.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="InspectorFrame.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshCollisionBox.h" />
@@ -212,6 +223,7 @@
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneHierachyFrame.h" />
     <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SceneView.h" />
@@ -229,6 +241,7 @@
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="ViewManager.h" />
+    <ClInclude Include="ViewportFrame.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Day_Back.png" />

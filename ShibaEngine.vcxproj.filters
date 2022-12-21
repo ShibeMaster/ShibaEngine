@@ -16,12 +16,6 @@
     <Filter Include="Header Files\Engine">
       <UniqueIdentifier>{4bd043b0-4d24-44e9-a9f9-8513c8ee7984}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Engine\Entity">
-      <UniqueIdentifier>{884b84ae-0606-459c-8677-109975f29b22}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Engine\Component">
-      <UniqueIdentifier>{0be02d59-890d-4016-a1e8-f0c07965915c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{36c496b3-757e-45b2-aa93-76a3cab321fd}</UniqueIdentifier>
     </Filter>
@@ -39,9 +33,6 @@
     </Filter>
     <Filter Include="Header Files\Rendering">
       <UniqueIdentifier>{56153f0c-56c3-46b6-8b08-b6112f3b6a2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Input">
-      <UniqueIdentifier>{874b9b8e-e7bb-415a-b33c-4681315c4ccc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Engine\Scripting">
       <UniqueIdentifier>{0663517a-f40a-4f79-892e-7bf60dfd9f00}</UniqueIdentifier>
@@ -76,24 +67,69 @@
     <Filter Include="Resource Files\Toolbar Icons">
       <UniqueIdentifier>{65de1fe4-1a69-4831-8ad5-05a416c30272}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{3840533a-8b9c-45fa-927f-928aab34cb1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Component">
+      <UniqueIdentifier>{86b9b65a-9470-4d8b-997f-8c08d30f087c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Entity">
+      <UniqueIdentifier>{193d114c-e016-4fc9-99c4-70dfeba0baed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Projects">
+      <UniqueIdentifier>{77cb2621-a3a0-4c94-812f-1ee93b37475e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Scenes">
+      <UniqueIdentifier>{dde38a4a-2199-4ad1-b34f-eff170383794}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Scripting">
+      <UniqueIdentifier>{60521a17-f102-47d1-9865-1bba70c4cd2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Views">
+      <UniqueIdentifier>{62dcd8ac-d887-45d6-838f-99cc0d65c1bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Collisions">
+      <UniqueIdentifier>{7899fbd1-a9e5-4ce6-8358-7666026efe13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Collisions">
+      <UniqueIdentifier>{2b2b7f1b-70e0-491a-ba90-255398ffca5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Entity Component System">
+      <UniqueIdentifier>{282d6a3c-22e9-4f3d-aad9-9b5cfcb11010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Entity Component System\Entity">
+      <UniqueIdentifier>{884b84ae-0606-459c-8677-109975f29b22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Entity Component System\Component">
+      <UniqueIdentifier>{0be02d59-890d-4016-a1e8-f0c07965915c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Editor UI">
+      <UniqueIdentifier>{1fd3f148-5e22-4667-85fc-2e88f067fb42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Input">
+      <UniqueIdentifier>{874b9b8e-e7bb-415a-b33c-4681315c4ccc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Extensions">
+      <UniqueIdentifier>{09f20551-48a7-45e7-b50b-f0783a505edf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Input">
+      <UniqueIdentifier>{2fbdc56e-38dd-423c-9cf7-f1af121c8546}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Extensions">
+      <UniqueIdentifier>{569a0bc6-47a4-4882-a5ba-0339153f90e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor UI">
+      <UniqueIdentifier>{bbc2a029-7962-4774-9f83-095564a4f610}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering">
+      <UniqueIdentifier>{e23f6269-b651-4897-91e3-a1bfdee185b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Editor UI\Frames">
+      <UniqueIdentifier>{dfaaee31-8e58-4de9-a349-5775c88961e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Time.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scripting.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\External Libraries\ImGui\imgui.cpp">
@@ -117,49 +153,91 @@
     <ClCompile Include="..\External Libraries\ImGui\imgui_widgets.cpp">
       <Filter>Resource Files\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Display.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ProjectManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\External Libraries\ImGui\imgui_stdlib.cpp">
       <Filter>Resource Files\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Primitives.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ComponentManager.cpp">
+      <Filter>Source Files\Engine\Component</Filter>
     </ClCompile>
-    <ClCompile Include="UIManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="EntityManager.cpp">
+      <Filter>Source Files\Engine\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectManager.cpp">
+      <Filter>Source Files\Engine\Projects</Filter>
+    </ClCompile>
+    <ClCompile Include="Project.cpp">
+      <Filter>Source Files\Engine\Projects</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>Source Files\Engine\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\Engine\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLoader.cpp">
+      <Filter>Source Files\Engine\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripting.cpp">
+      <Filter>Source Files\Engine\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptingTypes.cpp">
+      <Filter>Source Files\Engine\Scripting</Filter>
     </ClCompile>
     <ClCompile Include="ViewManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Engine\Views</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Collisions.cpp">
+      <Filter>Source Files\Engine\Collisions</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files\Engine\Input</Filter>
     </ClCompile>
     <ClCompile Include="FileExtensions.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Engine\Extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializationUtils.cpp">
+      <Filter>Source Files\Engine\Extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="Display.cpp">
+      <Filter>Source Files\Engine\Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>Source Files\Editor UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitives.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="UIManager.cpp">
+      <Filter>Source Files\Editor UI</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneView.cpp">
+      <Filter>Source Files\Engine\Views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComponentManager.h">
-      <Filter>Header Files\Engine\Component</Filter>
+      <Filter>Header Files\Engine\Entity Component System\Component</Filter>
     </ClInclude>
     <ClInclude Include="ComponentArray.h">
-      <Filter>Header Files\Engine\Component</Filter>
+      <Filter>Header Files\Engine\Entity Component System\Component</Filter>
     </ClInclude>
     <ClInclude Include="EntityManager.h">
-      <Filter>Header Files\Engine\Entity</Filter>
+      <Filter>Header Files\Engine\Entity Component System\Entity</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Header Files\Components</Filter>
@@ -203,12 +281,6 @@
     <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Console.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingBox.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
     <ClInclude Include="Physics.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
@@ -233,23 +305,17 @@
     <ClInclude Include="..\External Libraries\ImGui\imgui_stdlib.h">
       <Filter>Resource Files\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Collisions.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="InputManager.h">
-      <Filter>Header Files\Input</Filter>
+      <Filter>Header Files\Engine\Input</Filter>
     </ClInclude>
     <ClInclude Include="Mouse.h">
-      <Filter>Header Files\Input</Filter>
+      <Filter>Header Files\Engine\Input</Filter>
     </ClInclude>
     <ClInclude Include="Scripting.h">
       <Filter>Header Files\Engine\Scripting</Filter>
     </ClInclude>
     <ClInclude Include="ScriptingTypes.h">
       <Filter>Header Files\Engine\Scripting</Filter>
-    </ClInclude>
-    <ClInclude Include="Raycast.h">
-      <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="Project.h">
       <Filter>Header Files\Engine\Projects</Filter>
@@ -269,16 +335,7 @@
     <ClInclude Include="SceneManager.h">
       <Filter>Header Files\Engine\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="SerializationUtils.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Time.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Primitives.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="UIManager.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="View.h">
@@ -308,9 +365,6 @@
     <ClInclude Include="ModelLoader.h">
       <Filter>Header Files\Rendering\Models</Filter>
     </ClInclude>
-    <ClInclude Include="Display.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Sprite.h">
       <Filter>Header Files\Rendering\Models</Filter>
     </ClInclude>
@@ -326,8 +380,44 @@
     <ClInclude Include="ProjectSettings.h">
       <Filter>Header Files\Engine\Projects</Filter>
     </ClInclude>
+    <ClInclude Include="Collisions.h">
+      <Filter>Header Files\Engine\Collisions</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files\Engine\Collisions</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>Header Files\Engine\Collisions</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.h">
+      <Filter>Header Files\Editor UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>Header Files\Editor UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Display.h">
+      <Filter>Header Files\Engine\Views</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitives.h">
+      <Filter>Header Files\Editor UI</Filter>
+    </ClInclude>
     <ClInclude Include="FileExtensions.h">
-      <Filter>Header Files\Engine</Filter>
+      <Filter>Header Files\Engine\Extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializationUtils.h">
+      <Filter>Header Files\Engine\Extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorFrame.h">
+      <Filter>Header Files\Editor UI</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneHierachyFrame.h">
+      <Filter>Header Files\Editor UI\Frames</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewportFrame.h">
+      <Filter>Header Files\Editor UI\Frames</Filter>
+    </ClInclude>
+    <ClInclude Include="InspectorFrame.h">
+      <Filter>Header Files\Editor UI\Frames</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

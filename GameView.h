@@ -2,6 +2,7 @@
 #include "View.h"
 #include "Display.h"
 #include "Camera.h"
+#include "Time.h"
 #include "Engine.h"
 class GameView {
 public:
