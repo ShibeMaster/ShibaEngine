@@ -1,12 +1,11 @@
 #pragma once
 #include "ComponentArray.h"
 #include <unordered_map>
-#include <memory>
 #include "ScriptingTypes.h"
 #include <iostream>
+#include <rapidjson/prettywriter.h>
 #include <rapidjson/document.h>
 #include <string>
-#include <typeinfo>
 class ComponentManager {
 private:
 	std::unordered_map<std::string, std::shared_ptr<ComponentArray>> componentArrays;
@@ -20,6 +19,7 @@ private:
 		return std::static_pointer_cast<Components<T>>(componentArrays[compName]);
 	}
 public:
+
 	template<typename T>
 	void RegisterComponent() {
 		auto compName = std::string(typeid(T).name());
@@ -30,82 +30,6 @@ public:
 			componentArrays.insert({ compName, std::make_shared<Components<T>>() });
 			componentArrays[compName]->name = compName;
 			registeredComponents.push_back(compName);
-		}
-	}
-	std::vector<std::string> GetRegisteredComponents() {
-		return registeredComponents;
-	}
-	void Start() {
-		for (auto& compArr : componentArrays) {
-			componentArrays[compArr.first]->Start();
-		}
-	}
-	void Update() {
-		for (auto& compArr : componentArrays) {
-			componentArrays[compArr.first]->Update();
-		}
-	}
-	void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance) {
-		componentArrays[name]->SetObject(entity, instance);
-	}
-	void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
-		componentArrays[name]->GetObject(entity, instance);
-	}
-	void DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj) {
-		for (auto& compArr : componentArrays) {
-			if (obj.HasMember(compArr.first.c_str())) {
-				compArr.second->Add(entity);
-				compArr.second->DeserializeComponent(entity, obj[compArr.first.c_str()]);
-			}
-		}
-	}
-	void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
-		for (auto& compArr : componentArrays) {
-			if (compArr.second->HasComponent(entity)) {
-				json->Key(compArr.first.c_str());
-				json->StartObject();
-				compArr.second->SerializeComponent(entity, json);
-				json->EndObject();
-			}
-		}
-	}
-	std::vector<std::string> GetEntityComponents(unsigned int entity) {
-		std::vector<std::string> comps;
-		for (auto& comp : componentArrays) {
-			if (comp.second->HasComponent(entity))
-				comps.push_back(comp.first);
-		}
-		return comps;
-	}
-	void DrawEntityComponentGUI(unsigned int entity) {
-		for (auto& comp : componentArrays) {
-			if(comp.second->name != "Transform")
-				componentArrays[comp.first]->DrawComponentGUI(entity);
-		}
-	}
-	void AddScript(unsigned int entity, const std::string& component) {
-		if (std::find(entityScripts[entity].begin(), entityScripts[entity].end(), component) != entityScripts[entity].end()) {
-			std::cout << "script already attatched to entity" << std::endl;
-			return;
-		}
-		entityScripts[entity].push_back(component);
-	
-	}
-	void RemoveScript(unsigned int entity, const std::string& component) {
-		auto location = std::find(entityScripts[entity].begin(), entityScripts[entity].end(), component);
-		if (location == entityScripts[entity].end()) {
-			std::cout << "no script of that type is attatched to the entity" << std::endl;
-			return;
-		}
-		entityScripts[entity].erase(location);
-	}
-	std::vector<std::string> GetEntityScripts(unsigned int entity) {
-		return entityScripts[entity];
-	}
-	void AddComponent(unsigned int entity, const std::string& name) {
-		if (componentArrays.find(name) != componentArrays.end()) {
-			componentArrays[name]->Add(entity);
-			std::cout << name << std::endl;
 		}
 	}
 	template<typename T>
@@ -129,19 +53,20 @@ public:
 		auto comps = GetComponents<T>()->components;
 		return comps.find(entity) != comps.end();
 	}
-	bool HasComponent(unsigned int entity, const std::string& name) {
-		if (componentArrays.find(name) != componentArrays.end()) {
-			std::cout << name << std::endl;
-			return componentArrays[name]->HasComponent(entity);
-		}
-	}
-	void OnEntityDestroyed(unsigned int entity) {
-		for (auto& comp : componentArrays) {
-			comp.second->OnEntityDestroyed(entity);
-		}
-	}
-	void Render() {
-		componentArrays["MeshRenderer"]->Render();
-		componentArrays["SpriteRenderer"]->Render();
-	}
+	std::vector<std::string> GetRegisteredComponents();
+	void Start();
+	void Update();
+	void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance);
+	void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance);
+	void DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj);
+	void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json);
+	std::vector<std::string> GetEntityComponents(unsigned int entity);
+	void DrawEntityComponentGUI(unsigned int entity);
+	void AddScript(unsigned int entity, const std::string& component);
+	void RemoveScript(unsigned int entity, const std::string& component);
+	std::vector<std::string> GetEntityScripts(unsigned int entity);
+	void AddComponent(unsigned int entity, const std::string& name);
+	bool HasComponent(unsigned int entity, const std::string& name);
+	void OnEntityDestroyed(unsigned int entity);
+	void Render();
 };

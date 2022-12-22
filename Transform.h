@@ -47,12 +47,21 @@ public:
 		}
 		model = glm::translate(model, position);
 		model = glm::translate(model, pivot);
-		model = glm::rotate(model, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::translate(model, -pivot);
 		model = glm::scale(model, scale);
 		return model;
+	}
+	glm::vec3 GetForward() {
+		return glm::vec3(cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y)), sin(glm::radians(rotation.y)), sin(glm::radians(rotation.x)) * cos(glm::radians(rotation.y)));
+	}
+	glm::vec3 GetRight() {
+		return glm::normalize(glm::cross(GetForward(), glm::vec3(0.0f, 1.0f, 0.0f)));
+	}
+	glm::vec3 GetUp() {
+		return glm::normalize(glm::cross(GetRight(), GetForward()));
 	}
 
 	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {

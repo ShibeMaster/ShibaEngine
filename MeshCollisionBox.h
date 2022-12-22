@@ -2,6 +2,7 @@
 #include "BoundingBox.h"
 #include "ModelLoader.h"
 #include "MeshRenderer.h"
+#include "ScriptingTypes.h"
 #include "Engine.h"
 #include "ProjectItem.h"
 class MeshCollisionBox : public Component {

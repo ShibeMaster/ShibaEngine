@@ -15,9 +15,6 @@ public:
 	glm::vec3 up;
 	glm::vec3 right;
 
-	float yaw;
-	float pitch;
-
 	float speed;
 	float sensitivity;
 
@@ -26,8 +23,8 @@ public:
 	void Initialize() {
 		Component::Initialize();
 		worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-		yaw = -90.0f;
-		pitch = 0.0f;
+		transform->rotation.x = -90.0f;
+		transform->rotation.y = 0.0f;
 		speed = 10.0f;
 		sensitivity = 0.1f;
 		UpdateCameraVectors();
@@ -37,34 +34,30 @@ public:
 	Camera(Transform* transform, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : speed(10.0f), sensitivity(0.1f) {
 		this->transform = transform;
 		worldUp = wUp;
-		yaw = y;
-		pitch = p;
+		this->transform->rotation.x = y;
+		this->transform->rotation.y = p;
 		UpdateCameraVectors();
 	}
 	static void DrawGUI(unsigned int selectedEntity) {
 		auto& camera = Engine::GetComponent<Camera>(selectedEntity);
 		ImGui::InputFloat("Speed", &camera.speed);
-		ImGui::ImageButton((ImTextureID)camera.icon.texture, ImVec2(camera.icon.width, camera.icon.height));
+		ImGui::ImageButton((ImTextureID)camera.icon.texture, ImVec2((float)camera.icon.width, (float)camera.icon.height));
 		ImGui::InputFloat("Sensitivity", &camera.sensitivity);
 	}
 	void UpdateCameraVectors() {
-		glm::vec3 direction;
-		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-		direction.y = sin(glm::radians(pitch));
-		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-		forward = direction;
+		forward = transform->GetForward();
 
 		right = glm::normalize(glm::cross(forward, worldUp));
 		up = glm::normalize(glm::cross(right, forward));
 	}
 	void ProcessCameraMouse() {
-		yaw += InputManager::mouse.xOffset * sensitivity; 
-		pitch += InputManager::mouse.yOffset * sensitivity;
+		transform->rotation.x += InputManager::mouse.xOffset * sensitivity; 
+		transform->rotation.y += InputManager::mouse.yOffset * sensitivity;
 
-		if (pitch > 89.0f)
-			pitch = 89.0f;
-		if (pitch < -89.0f)
-			pitch = -89.0f;
+		if (transform->rotation.x > 89.0f)
+			transform->rotation.x = 89.0f;
+		if (transform->rotation.y < -89.0f)
+			transform->rotation.y = -89.0f;
 
 		UpdateCameraVectors();
 	}
@@ -78,7 +71,7 @@ public:
 		json->Double(sensitivity);
 	}
 	void Deserialize(rapidjson::Value& obj) {
-		speed = obj["Speed"].GetDouble();
-		sensitivity = obj["Sensitivity"].GetDouble();
+		speed = (float)obj["Speed"].GetDouble();
+		sensitivity = (float)obj["Sensitivity"].GetDouble();
 	}
 };

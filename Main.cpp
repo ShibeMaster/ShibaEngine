@@ -71,7 +71,7 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 		if (key == GLFW_KEY_F1) {
 			std::vector<RayHit> outHits;
-			std::cout << Raycast(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
+			std::cout << Raycast::CheckHit(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
 		}
 		if (key == GLFW_KEY_F3) {
 			Scripting::OnRuntimeStart();
@@ -80,28 +80,28 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			runtimeStartTime = glfwGetTime();
 		}
 
-		if (key == GLFW_KEY_D && mods == GLFW_MOD_CONTROL && UIManager::selectedEntity > -1 ) {
+		if (key == GLFW_KEY_D && mods == GLFW_MOD_CONTROL && UIManager::sceneFrame.selectedEntity > -1 ) {
 			unsigned int newEntity = Engine::CreateEntity();
-			for (auto& script : Engine::GetEntityScripts(UIManager::selectedEntity)) {
+			for (auto& script : Engine::GetEntityScripts(UIManager::sceneFrame.selectedEntity)) {
 				Engine::AddScript(newEntity, script);
 				Scripting::LoadEntityScript(newEntity, script);
 			}
-			for (auto& comp : Engine::GetEntityComponents(UIManager::selectedEntity)) {
+			for (auto& comp : Engine::GetEntityComponents(UIManager::sceneFrame.selectedEntity)) {
 				Engine::AddComponent(newEntity, comp);
 			}
 		}
-		if (key == GLFW_KEY_DELETE && UIManager::selectedEntity > -1) {
-			Engine::DestroyEntity(UIManager::selectedEntity);
-			Scripting::OnEntityDestroyed(UIManager::selectedEntity);
-			SceneManager::OnEntityDestroyed(UIManager::selectedEntity);
-			UIManager::selectedEntity = -1;
+		if (key == GLFW_KEY_DELETE && UIManager::sceneFrame.selectedEntity > -1) {
+			Engine::DestroyEntity(UIManager::sceneFrame.selectedEntity);
+			Scripting::OnEntityDestroyed(UIManager::sceneFrame.selectedEntity);
+			SceneManager::OnEntityDestroyed(UIManager::sceneFrame.selectedEntity);
+			UIManager::sceneFrame.selectedEntity = -1;
 		}
 	}
 }
 void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	InputManager::mouse.MouseCallback(window, xpos, ypos);
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
-	if (UIManager::sceneViewActive)
+	if (UIManager::viewportFrame.sceneViewFrameOpen)
 		ViewManager::sceneView.sceneCam.ProcessCameraMouse();
 	else if (inRuntime)
 		ViewManager::gameView.view.camera->ProcessCameraMouse();
@@ -180,7 +180,7 @@ int main() {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (UIManager::sceneViewFrameOpen) {
+		if (UIManager::viewportFrame.sceneViewFrameOpen) {
 			Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
 			Renderer::shaderData.viewPos = ViewManager::sceneView.sceneCam.transform->position;
 			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.framebuffer.dimensions.x / ViewManager::sceneView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
@@ -197,7 +197,7 @@ int main() {
 			RenderScene();
 			ViewManager::sceneView.view.framebuffer.Unbind();
 		}
-		if (UIManager::gameViewFrameOpen) {
+		if (UIManager::viewportFrame.gameViewFrameOpen) {
 			ViewManager::gameView.Update(inRuntime);
 			if (ViewManager::gameView.view.hasCamera) {
 				Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();

@@ -42,7 +42,6 @@ public:
 		int count;
 		glGetProgramiv(id, GL_ACTIVE_UNIFORMS, &count);
 		for (int i = 0; i < count; i++) {
-			GLsizei size;
 			GLsizei length;
 			GLchar name[16];
 			Uniform uniform;

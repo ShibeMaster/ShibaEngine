@@ -79,7 +79,7 @@ public:
 			unsigned int specular = 1;
 			unsigned int normals = 1;
 			unsigned int height = 1;
-			for (int i = 0; i < textures.size(); i++) {
+			for (unsigned int i = 0; i < textures.size(); i++) {
 				glActiveTexture(GL_TEXTURE0 + i);
 				std::string number;
 				std::string name = textures[i].type;

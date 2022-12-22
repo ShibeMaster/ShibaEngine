@@ -10,78 +10,12 @@ private:
 	static EntityManager entityManager;
 	static ComponentManager componentManager;
 public:
-	static void Update() {
-		componentManager.Update();
-	}
-	static void Start() {
-		componentManager.Start();
-	}
-	static unsigned int CreateEntity() {
-		unsigned int entity = entityManager.CreateEntity();
-		SceneManager::AddEntity(entity);
-		return entity;
-	}
-	static void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance) {
-		componentManager.GetCoreComponentObject(entity, name, instance);
-	}
-	static void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance) {
-		componentManager.SetCoreComponent(entity, name, instance);
-	}
-	static void DestroyEntity(unsigned int entity) {
-		auto entPos = std::find(SceneManager::activeScene->entities.begin(), SceneManager::activeScene->entities.end(), entity);
-		if (entPos != SceneManager::activeScene->entities.end())
-			SceneManager::activeScene->entities.erase(entPos);
-		entityManager.DestroyEntity(entity);
-		componentManager.OnEntityDestroyed(entity);
-	}
-	static void AddScript(unsigned int entity, const std::string& component) {
-		componentManager.AddScript(entity, component);
-	}
-	static void RemoveScript(unsigned int entity, const std::string& component) {
-		std::cout << "removed script" << std::endl;
-		componentManager.RemoveScript(entity, component);
-	}
-	static std::vector<std::string> GetEntityScripts(unsigned int entity) {
-		return componentManager.GetEntityScripts(entity);
-	}
-	static void DrawEntityComponentGUI(unsigned int entity) {
-		componentManager.DrawEntityComponentGUI(entity);
-	}
-	/// <summary>
-	/// This iterates through all components attached to an entity and serializes them into the existing json document
-	/// </summary>
-	/// <param name="entity"></param>
-	/// <param name="json"></param>
-	static void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
-		componentManager.SerializeEntityComponents(entity, json);
-	}
-	static void DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj) {
-		componentManager.DeserializeEntityComponents(entity, obj);
-	}
-	template<typename T>
-	static std::vector<unsigned int> FindComponentsInScene() {
-		std::vector<unsigned int> entitiesWithComponent;
-		for (unsigned int entity : SceneManager::activeScene->entities) {
-			if (Engine::HasComponent<T>(entity))
-				entitiesWithComponent.push_back(entity);
-		}
-		return entitiesWithComponent;
-	}
 
-	static std::vector<unsigned int> FindScriptInScene(const std::string& name) {
-		std::vector<unsigned int> entitiesWithComponent;
-		for (unsigned int entity : SceneManager::activeScene->entities) {
-			const auto& scripts = componentManager.GetEntityScripts(entity);
-			if (std::find(scripts.begin(), scripts.end(), name) != scripts.end())
-				entitiesWithComponent.push_back(entity);
-		}
-		return entitiesWithComponent;
-	}
 	template<class T>
 	static T& GetComponent(unsigned int entity) {
 		return componentManager.GetComponent<T>(entity);
 	}
-	template<class T>
+	template<typename T>
 	static T* GetComponentPointer(unsigned int entity) {
 		return componentManager.GetComponentPointer<T>(entity);
 	}
@@ -94,15 +28,6 @@ public:
 		component.entity = entity;
 		componentManager.AddComponent<T>(entity, component);
 	}
-	static void AddComponent(unsigned int entity, const std::string& name) {
-		componentManager.AddComponent(entity, name);
-	}
-	static std::vector<std::string> GetRegisteredComponents() {
-		return componentManager.GetRegisteredComponents();
-	}
-	static std::vector<std::string> GetEntityComponents(unsigned int entity) {
-		return componentManager.GetEntityComponents(entity);
-	}
 	template<class T>
 	static void RemoveComponent(unsigned int entity) {
 		std::cout << "removed component" << std::endl;
@@ -112,14 +37,48 @@ public:
 	static bool HasComponent(unsigned int entity) {
 		return componentManager.HasComponent<T>(entity);
 	}
-	static bool HasComponent(unsigned int entity, const std::string& name) {
-		return componentManager.HasComponent(entity, name);
+
+	template<typename T>
+	static std::vector<unsigned int> FindComponentsInScene() {
+		std::vector<unsigned int> entitiesWithComponent;
+		for (unsigned int entity : SceneManager::activeScene->entities) {
+			if (Engine::HasComponent<T>(entity))
+				entitiesWithComponent.push_back(entity);
+		}
+		return entitiesWithComponent;
 	}
+
+	static void Update();
+	static void Start();
+	static unsigned int CreateEntity();
+	static void GetCoreComponentObject(unsigned int entity, const std::string& name, ClassInstance* instance);
+	static void SetCoreComponent(unsigned int entity, const std::string& name, ClassInstance* instance);
+	static void DestroyEntity(unsigned int entity);
+	static void AddScript(unsigned int entity, const std::string& component);
+	static void RemoveScript(unsigned int entity, const std::string& component);
+	static std::vector<std::string> GetEntityScripts(unsigned int entity);
+	static void DrawEntityComponentGUI(unsigned int entity);
+	/// <summary>
+	/// This iterates through all components attached to an entity and serializes them into the existing json document
+	/// </summary>
+	/// <param name="entity"></param>
+	/// <param name="json"></param>
+	static void SerializeEntityComponents(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json);
+	static void DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj);
+
+	static std::vector<unsigned int> FindScriptInScene(const std::string& name);
+
+
+
+	static void AddComponent(unsigned int entity, const std::string& name);
+	static std::vector<std::string> GetRegisteredComponents();
+	static std::vector<std::string> GetEntityComponents(unsigned int entity);
+
+	static bool HasComponent(unsigned int entity, const std::string& name);
 
 	/// <summary>
 	/// We should have this method to seperate the renderering of the meshrenderer and spriterenderer components from the normal updating methods, this will also allow us to not require a "inRuntime" parameter with all of them.
 	/// </summary>
-	static void Render() {
-		componentManager.Render();
-	}
+	static void Render();
+
 };
