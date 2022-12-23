@@ -5,6 +5,10 @@
 #include "ScriptingTypes.h"
 #include "Engine.h"
 #include "ProjectItem.h"
+struct Box {
+    glm::vec3 min;
+    glm::vec3 max;
+};
 class MeshCollisionBox : public Component {
 public:
     Model model;
@@ -33,6 +37,13 @@ public:
         debugMesh = GenerateBoundingBoxDebugMesh({ min, max });
 
         
+    }
+    Box GetBox() {
+        glm::vec3 max = glm::vec3(glm::vec4(this->max, 1.0) * transform->GetMatrix());
+        glm::vec3 min = glm::vec3(glm::vec4(this->min, 1.0) * transform->GetMatrix());
+        max += transform->position;
+        min += transform->position;
+        return { min, max };
     }
     static Mesh GenerateBoundingBoxDebugMesh(const BoundingBox& box) {
         std::vector<unsigned int> indices;

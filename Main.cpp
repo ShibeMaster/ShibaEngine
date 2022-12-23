@@ -216,12 +216,13 @@ int main() {
 			}
 		}
 
+		if (inRuntime)
+			Collisions::HandleCollision();
+
 		if (inRuntime) {
 			Scripting::Update();
 			Engine::Update();
 		}
-		if(inRuntime)
-			Collisions::HandleCollision();
 
 		UIManager::Update();
 

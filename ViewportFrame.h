@@ -3,7 +3,7 @@
 #include "ViewManager.h"
 class ViewportFrame : public EditorFrame {
 public:
-	bool sceneViewFrameOpen;
+	bool sceneViewFrameOpen = true;
 	bool gameViewFrameOpen;
 	void Render() {
 		if (sceneViewFrameOpen) {
