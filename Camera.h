@@ -15,8 +15,7 @@ public:
 	glm::vec3 up;
 	glm::vec3 right;
 
-	float speed;
-	float sensitivity;
+	float fov;
 
 	Sprite icon;
 	Camera() {}
@@ -25,13 +24,11 @@ public:
 		worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 		transform->rotation.x = -90.0f;
 		transform->rotation.y = 0.0f;
-		speed = 10.0f;
-		sensitivity = 0.1f;
 		UpdateCameraVectors();
 		icon = ModelLoader::LoadSprite("Sprite_Camera_Icon.png");
 		icon.shader = "ShibaEngine_Billboard";
 	}
-	Camera(Transform* transform, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : speed(10.0f), sensitivity(0.1f) {
+	Camera(Transform* transform, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : fov(45.0f) {
 		this->transform = transform;
 		worldUp = wUp;
 		this->transform->rotation.x = y;
@@ -40,9 +37,7 @@ public:
 	}
 	static void DrawGUI(unsigned int selectedEntity) {
 		auto& camera = Engine::GetComponent<Camera>(selectedEntity);
-		ImGui::InputFloat("Speed", &camera.speed);
-		ImGui::ImageButton((ImTextureID)camera.icon.texture, ImVec2((float)camera.icon.width, (float)camera.icon.height));
-		ImGui::InputFloat("Sensitivity", &camera.sensitivity);
+		ImGui::InputFloat("Field of View", &camera.fov);
 	}
 	void UpdateCameraVectors() {
 		forward = transform->GetForward();
@@ -51,8 +46,8 @@ public:
 		up = glm::normalize(glm::cross(right, forward));
 	}
 	void ProcessCameraMouse() {
-		transform->rotation.x += InputManager::mouse.xOffset * sensitivity; 
-		transform->rotation.y += InputManager::mouse.yOffset * sensitivity;
+		transform->rotation.x += InputManager::mouse.xOffset * 0.1f; 
+		transform->rotation.y += InputManager::mouse.yOffset * 0.1f;
 
 		if (transform->rotation.x > 89.0f)
 			transform->rotation.x = 89.0f;
@@ -65,13 +60,10 @@ public:
 		return glm::lookAt(transform->position, transform->position + forward, up);
 	}
 	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
-		json->Key("Speed");
-		json->Double(speed);
-		json->Key("Sensitivity");
-		json->Double(sensitivity);
+		json->Key("FOV");
+		json->Double((double)fov);
 	}
 	void Deserialize(rapidjson::Value& obj) {
-		speed = (float)obj["Speed"].GetDouble();
-		sensitivity = (float)obj["Sensitivity"].GetDouble();
+		fov = (float)obj["FOV"].GetDouble();
 	}
 };

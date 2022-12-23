@@ -6,6 +6,7 @@
 #include <rapidjson/PrettyWriter.h>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
+#include "SceneManager.h"
 
 Project ProjectManager::activeProject;
 void ProjectManager::CreateNewProject(const std::string& path) {
@@ -32,6 +33,7 @@ void ProjectManager::LoadProject(const std::string& path) {
 
 	std::string lastScenePath = doc["Last Loaded Scene"].GetString();
 	if (lastScenePath != "No Path") {
-		SceneLoader::LoadScene(lastScenePath);
+		if(!SceneManager::IsSceneLoaded(lastScenePath))
+			SceneLoader::LoadScene(lastScenePath);
 	}
 }

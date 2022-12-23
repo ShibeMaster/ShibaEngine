@@ -55,7 +55,6 @@ Sprite ModelLoader::LoadSprite(const std::string& path) {
 		{ glm::vec3(-aspectRatioWidth, aspectRatioHeight, 0.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f) }
 	};
 	unsigned int texture1;
-	std::cout << aspectRatioWidth << " || " << aspectRatioHeight << std::endl;
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -71,7 +70,7 @@ Sprite ModelLoader::LoadSprite(const std::string& path) {
 		sprite.texture = texture1;
 	}
 	else {
-		std::cout << "loading sprite failed" << std::endl;
+		std::cout << "loading " << path << " failed" << std::endl;
 	}
 	stbi_image_free(data);
 	return sprite;

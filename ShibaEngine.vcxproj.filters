@@ -419,6 +419,9 @@
     <ClInclude Include="InspectorFrame.h">
       <Filter>Header Files\Editor UI\Frames</Filter>
     </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprite_Camera_Icon.png">

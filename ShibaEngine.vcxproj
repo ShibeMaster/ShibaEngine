@@ -192,6 +192,7 @@
     <ClInclude Include="..\External Libraries\stb_image.h" />
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentArray.h" />

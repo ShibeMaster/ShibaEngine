@@ -28,8 +28,10 @@ void Collisions::CheckCollisions(std::vector<Collision>* collisions, unsigned in
             float time;
             glm::vec3 normal;
             Box boxB = otherBoundingBox.GetBox();
-            if (CheckSweptCollision(boxA, boxB, physics.velocity, &time, &normal)) {
-                collisions->push_back({ boxA, boxB, physics.velocity, normal, time });
+            if (ShouldCheckSwept(boxA, physics.velocity, boxB)) {
+                if (CheckSweptCollision(boxA, boxB, physics.velocity, &time, &normal)) {
+                    collisions->push_back({ boxA, boxB, physics.velocity, normal, time });
+                }
             }
         }
     }
@@ -47,18 +49,25 @@ std::vector<Collision> Collisions::FindCollision() {
 
     return collisions;
 }
-bool Collisions::Collides(glm::vec3 positionA, glm::vec3 positionB, MeshCollisionBox a, MeshCollisionBox b) {
-    a.min += positionA;
-    a.max += positionA;
-    b.min += positionB;
-    b.max += positionB;
+bool Collisions::Collides(Box a, Box b) {
+
     return (
         a.min.x <= b.max.x &&
         a.max.x >= b.min.x &&
         a.min.y <= b.max.y &&
         a.max.y >= b.min.y &&
-        a.min.z <= b.max.y &&
+        a.min.z <= b.max.z &&
         a.max.z >= b.min.z);
+}
+bool Collisions::ShouldCheckSwept(Box a, glm::vec3 velocity, Box b) {
+    Box aWhole;
+    aWhole.min.x = velocity.x > 0.0f ? a.min.x : a.min.x + velocity.x;
+    aWhole.min.y = velocity.y > 0.0f ? a.min.y : a.min.y + velocity.y;
+    aWhole.min.z = velocity.z > 0.0f ? a.min.z : a.min.z + velocity.z;
+    aWhole.max.x = velocity.x > 0.0f ? a.max.x + velocity.x : a.max.x;
+    aWhole.max.y = velocity.y > 0.0f ? a.max.y + velocity.y : a.max.y;
+    aWhole.max.z = velocity.z > 0.0f ? a.max.z + velocity.z : a.max.z;
+    return Collides(aWhole, b);
 }
 bool Collisions::CheckSweptCollision(Box a, Box b, glm::vec3& velocity, float* outTime, glm::vec3* normal) {
     glm::vec3 velocityA = velocity * Time::deltaTime;

@@ -39,8 +39,8 @@ public:
         
     }
     Box GetBox() {
-        glm::vec3 max = glm::vec3(glm::vec4(this->max, 1.0) * transform->GetMatrix());
-        glm::vec3 min = glm::vec3(glm::vec4(this->min, 1.0) * transform->GetMatrix());
+        glm::vec3 max = this->max * transform->scale;
+        glm::vec3 min = this->min * transform->scale;
         max += transform->position;
         min += transform->position;
         return { min, max };
@@ -98,6 +98,8 @@ public:
         if (debugDraw) {
             glm::mat4 model = transform->GetMatrix();
             ShaderManager::shader->SetMat4("model", model);
+            ShaderManager::shader->SetBool("lightEffected", true);
+            ShaderManager::shader->SetBool("hasTexture", false);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             debugMesh.Render();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

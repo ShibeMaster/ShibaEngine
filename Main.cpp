@@ -28,6 +28,7 @@
 #include "Mesh.h"
 #include "Display.h"
 #include "View.h"
+#include "CameraController.h"
 #include "FrameBuffer.h"
 #include "ViewManager.h"
 #include <GLFW/glfw3.h>
@@ -37,6 +38,7 @@
 #include "Transform.h"
 #include "MeshRenderer.h"
 #include <glm/ext/matrix_transform.hpp>
+#include <mono/metadata/mono-config.h>
 #include "UIManager.h"
 #include "Light.h"
 #include <glm/ext/matrix_clip_space.hpp>
@@ -103,8 +105,11 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
 	if (UIManager::viewportFrame.sceneViewFrameOpen)
 		ViewManager::sceneView.sceneCam.ProcessCameraMouse();
-	else if (inRuntime)
-		ViewManager::gameView.view.camera->ProcessCameraMouse();
+	if (inRuntime) {
+		for (auto& entity : Engine::FindComponentsInScene<CameraController>()) {
+			Engine::GetComponent<CameraController>(entity).ProcessMouse();
+		}
+	}
 }
 
 void SetupDefaultScene() {
@@ -129,6 +134,7 @@ int main() {
 	glfwSwapInterval(1);
 
 	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
+	mono_config_parse(NULL);
 
 	Scripting::Initialize("");
 
@@ -141,6 +147,7 @@ int main() {
 	Engine::RegisterComponent<Physics>();
 	Engine::RegisterComponent<SpriteRenderer>();
 	Engine::RegisterComponent<Light>();
+	Engine::RegisterComponent<CameraController>();
 
 	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
