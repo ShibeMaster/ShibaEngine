@@ -20,4 +20,4 @@ void ClassInstance::InvokeMethod(MonoMethod* method, int parameterCount, void** 
 }
 bool Behaviour::ShouldUpdate() {
 	return !hasInterval || Time::currentTime - lastUpdateTime > interval;
-}
+}	

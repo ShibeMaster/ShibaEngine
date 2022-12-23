@@ -70,7 +70,7 @@ void Project::CreateProject() {
 	Scripting::CreateVSProject(settings.projectPath);
 }
 std::string Project::GetAssemblyPath() {
-	return settings.directory + "Scripts\\bin\\Debug\\net5.0\\" + settings.name + ".dll";
+	return settings.directory + "Scripts\\bin\\Debug\\netcoreapp3.1\\" + settings.name + ".dll";
 }
 void Project::CreateNewScript(const std::string& name) {
 	FileExtensions::CreateAndWriteToFile(settings.directory + "Scripts\\" + name + ".cs", R"C#(using ShibaEngineCore;

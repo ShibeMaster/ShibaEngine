@@ -13,6 +13,7 @@
 #include <mono/metadata/attrdefs.h>
 #include "FileExtensions.h"
 #include "Console.h"
+#include <mono/metadata/mono-config.h>
 
 
 
@@ -96,10 +97,11 @@ void Scripting::Initialize(const std::string& path) {
 
 }
 void Scripting::Setup(const std::string& path) {
+	mono_config_parse(NULL);
 
 	data.appDomain = mono_domain_create_appdomain((char*)"ShibaEngine", nullptr);
 	mono_domain_set(data.appDomain, true);
-	data.coreAssemblyPath = "C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\net5.0\\ShibaEngineCore.dll";
+	data.coreAssemblyPath = "C:\\Users\\tombr\\source\\repos\\Shiba Engine\\ShibaEngineCore\\bin\\Debug\\netcoreapp3.1\\ShibaEngineCore.dll";
 	data.coreAssembly = LoadAssembly(data.coreAssemblyPath);
 	componentClass = Class{ "Component", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Component") };
 	SetupClassFields(&componentClass, componentClass.monoClass, true);
@@ -321,7 +323,7 @@ void Scripting::CreateVSProject(const std::string& path) {
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -429,7 +431,8 @@ void Scripting::LoadEntityScript(unsigned int entity, const std::string& script)
 void Scripting::OnRuntimeStart() {
 	for (auto& comp : data.entities) {
 		for (auto& instance : comp.second.scripts) {
-			instance.second.InvokeMethod(instance.second.startMethod, 0);
+			if(instance.second.hasStart)
+				instance.second.InvokeMethod(instance.second.startMethod, 0);
 		}
 	}
 }
