@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "MeshCollisionBox.h"
 #include "Scripting.h"
 #include "Engine.h"
 #include "MeshRenderer.h"
@@ -26,7 +27,12 @@ public:
 		SceneManager::activeScene->OnCreateEntity(entity);
 		Engine::AddComponent<MeshRenderer>(entity);
 		auto& renderer = Engine::GetComponent<MeshRenderer>(entity);
-		renderer.modelItem = { name, name + ".fbx", ".fbx" };
+		renderer.modelItem = { name, "Primitives\\" + name + ".fbx", ".fbx"};
 		renderer.ReloadMesh();
+
+		Engine::AddComponent<MeshCollisionBox>(entity);
+		auto& collision = Engine::GetComponent<MeshCollisionBox>(entity);
+		collision.meshItem = { name, "Primitives\\" + name + ".fbx", ".fbx" };
+		collision.LoadMeshBox();
 	}
 };
