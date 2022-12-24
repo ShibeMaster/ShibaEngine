@@ -64,9 +64,6 @@
     <Filter Include="Resource Files\Shaders\Skybox">
       <UniqueIdentifier>{24b1c3b3-b8a8-4ffa-8a61-def1048a6bdf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Toolbar Icons">
-      <UniqueIdentifier>{65de1fe4-1a69-4831-8ad5-05a416c30272}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{3840533a-8b9c-45fa-927f-928aab34cb1e}</UniqueIdentifier>
     </Filter>
@@ -126,6 +123,9 @@
     </Filter>
     <Filter Include="Header Files\Editor UI\Frames">
       <UniqueIdentifier>{dfaaee31-8e58-4de9-a349-5775c88961e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Icons">
+      <UniqueIdentifier>{ce76b046-fa2f-4741-85ba-d8d839a32076}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -447,6 +447,18 @@
     </Image>
     <Image Include="Day_Top.png">
       <Filter>Resource Files\Default Skybox</Filter>
+    </Image>
+    <Image Include="Icons\Sprite_Camera_Icon.png">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="Icons\Sprite_Light_Icon.png">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="Icons\Sprite_UI_Pause.png">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="Icons\Sprite_UI_Play.png">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
