@@ -157,8 +157,8 @@ void Project::RenderHierachyNode(HierachyTreeNode& node) {
 			if (node.item.type == ".ShbaScene") {
 				if (!SceneManager::IsSceneLoaded(node.item.path))
 					SceneLoader::LoadScene(node.item.path);
-
-				SceneManager::ChangeScene(node.item.path);
+				else
+					SceneManager::ChangeScene(node.item.path);
 			}
 			else {
 				system(std::string("\"" + node.item.path + "\"").c_str());

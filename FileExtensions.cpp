@@ -5,33 +5,48 @@
 #include <ShlObj.h>
 #include <atlbase.h>
 bool FileExtensions::OpenFileDialog(const std::string& initialDirectory, const std::string& fileType, std::string* outPath) {
-	OPENFILENAME settings = { 0 };
-	TCHAR fileBuffer[260] = { 0 };
-	auto dir = std::wstring(initialDirectory.begin(), initialDirectory.end());
-	HWND hwnd = NULL;
-	settings.lStructSize = sizeof(settings);
-	settings.hwndOwner = hwnd;
-	settings.lpstrFile = fileBuffer;
-	settings.nMaxFile = sizeof(fileBuffer);
-	settings.lpstrFilter = NULL;
-	settings.nFilterIndex = 0;
-	settings.lpstrFileTitle = NULL;
-	settings.nMaxFileTitle = 0;
-	settings.lpstrInitialDir = dir.c_str();
-	settings.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
-	if (GetOpenFileName(&settings) == TRUE) {
-		std::wstring lpstr(settings.lpstrFile);
-		std::string str(lpstr.begin(), lpstr.end());
-		std::filesystem::path path(str);
+	CoInitializeEx(nullptr, COINIT::COINIT_MULTITHREADED);
+	IFileOpenDialog* fileDialog;
+	auto result = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&fileDialog));
+	if (SUCCEEDED(result)) {
+		DWORD options;
+		fileDialog->SetOptions(FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST);
+		fileDialog->AddRef();
+		result = fileDialog->Show(NULL);
+		if (SUCCEEDED(result)) {
+			IShellItem* item;
+			result = fileDialog->GetResult(&item);
+			if (SUCCEEDED(result)) {
+				PWSTR pwstrFilePath;
+				result = item->GetDisplayName(SIGDN_FILESYSPATH, &pwstrFilePath);
+				if (SUCCEEDED(result)) {
 
-		if (path.extension().string() == fileType) {
-			*outPath = str;
-			return true;
+					std::wstring lpstr(pwstrFilePath);
+					std::string str(lpstr.begin(), lpstr.end());
+					std::filesystem::path path(str);
+
+					if (path.extension().string() == fileType) {
+
+						*outPath = str;
+						CoTaskMemFree(pwstrFilePath);
+						item->Release();
+						fileDialog->Release();
+						CoUninitialize();
+						return true;
+					}
+					CoTaskMemFree(pwstrFilePath);
+					item->Release();
+					fileDialog->Release();
+					CoUninitialize();
+				}
+				item->Release();
+			}
 		}
+		fileDialog->Release();
 	}
 
+	CoUninitialize();
 	return false;
-
 }
 bool FileExtensions::SaveFileAsDialog(const std::string& initialDir, const std::string& filetype, std::string* outpath) {
 	auto result = CoInitializeEx(nullptr, COINIT::COINIT_MULTITHREADED);
@@ -41,7 +56,6 @@ bool FileExtensions::SaveFileAsDialog(const std::string& initialDir, const std::
 		if (SUCCEEDED(result)) {
 			std::wstring str = std::wstring(filetype.begin(), filetype.end());
 			LPCWSTR extension = str.c_str();
-			result = dialog->SetDefaultExtension(extension);
 			const COMDLG_FILTERSPEC rgspec[] = { extension, extension };
 			dialog->SetFileTypes(ARRAYSIZE(rgspec), rgspec);
 			if (SUCCEEDED(dialog)) {

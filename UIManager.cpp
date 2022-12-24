@@ -230,7 +230,7 @@ void UIManager::Initialize() {
 	colors[ImGuiCol_HeaderHovered] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 }
-void UIManager::Update() {
+void UIManager::Update(bool inRuntime) {
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -245,7 +245,7 @@ void UIManager::Update() {
 
 		ProjectManager::activeProject.RenderHierachy();
 		Console::Render();
-		inspectorFrame.RenderEntity(sceneFrame.selectedEntity);
+		inspectorFrame.RenderEntity(inRuntime, sceneFrame.selectedEntity);
 		sceneFrame.Render();
 		viewportFrame.Render();
 	}
