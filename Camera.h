@@ -25,7 +25,7 @@ public:
 		transform->rotation.x = -90.0f;
 		transform->rotation.y = 0.0f;
 		UpdateCameraVectors();
-		icon = ModelLoader::LoadSprite("Sprite_Camera_Icon.png");
+		icon = ModelLoader::LoadSprite("Icons\\Sprite_Camera_Icon.png");
 		icon.shader = "ShibaEngine_Billboard";
 	}
 	Camera(Transform* transform, glm::vec3 wUp = glm::vec3(0.0f, 1.0f, 0.0f), float y = -90.0f, float p = 0.0f) : fov(45.0f) {

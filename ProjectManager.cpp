@@ -9,11 +9,18 @@
 #include "SceneManager.h"
 
 Project ProjectManager::activeProject;
+bool ProjectManager::projectLoaded = false;
 void ProjectManager::CreateNewProject(const std::string& path) {
 	activeProject = Project(path);
 	activeProject.LoadProjectHierachy();
 }
+void ProjectManager::CreateNewProject(const std::string& name, const std::string& path) {
+	activeProject = Project(path, name);
+	activeProject.LoadProjectHierachy();
+	activeProject.SaveProject();
+	projectLoaded = true;
 
+}
 void ProjectManager::LoadProject(const std::string& path) {
 	ProjectSettings settings;
 	rapidjson::Document doc;
@@ -23,17 +30,12 @@ void ProjectManager::LoadProject(const std::string& path) {
 	settings.hasProject = doc["Has Project"].GetBool();
 	if (settings.hasProject)
 		settings.projectPath = doc["Project Path"].GetString();
-	activeProject = Project(path);
+	activeProject = Project(settings.directory);
 	activeProject.settings = settings;
 	activeProject.settings.hasAssembly = std::filesystem::exists(activeProject.GetAssemblyPath());
 	if (settings.hasAssembly) {
 		Scripting::ReloadAssembly(activeProject.GetAssemblyPath());
 	}
 	activeProject.LoadProjectHierachy();
-
-	std::string lastScenePath = doc["Last Loaded Scene"].GetString();
-	if (lastScenePath != "No Path") {
-		if(!SceneManager::IsSceneLoaded(lastScenePath))
-			SceneLoader::LoadScene(lastScenePath);
-	}
+	projectLoaded = true;
 }

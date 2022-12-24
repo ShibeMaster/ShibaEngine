@@ -187,48 +187,52 @@ int main() {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (UIManager::viewportFrame.sceneViewFrameOpen) {
-			Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
-			Renderer::shaderData.viewPos = ViewManager::sceneView.sceneCam.transform->position;
-			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.framebuffer.dimensions.x / ViewManager::sceneView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
-			ViewManager::sceneView.view.framebuffer.Bind();
+		if (ProjectManager::projectLoaded) {
+			if (UIManager::viewportFrame.sceneViewFrameOpen) {
+				Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
+				Renderer::shaderData.viewPos = ViewManager::sceneView.sceneCam.transform->position;
+				Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::sceneView.view.framebuffer.dimensions.x / ViewManager::sceneView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+				ViewManager::sceneView.view.framebuffer.Bind();
 
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			ViewManager::sceneView.Update(inRuntime);
-			Renderer::ChangeShader("ShibaEngine_Skybox");
-			glDepthFunc(GL_LEQUAL);
-			ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
-			SceneManager::activeScene->RenderSkybox();
-			glDepthFunc(GL_LESS);
-			RenderScene();
-			ViewManager::sceneView.view.framebuffer.Unbind();
-		}
-		if (UIManager::viewportFrame.gameViewFrameOpen) {
-			ViewManager::gameView.Update(inRuntime);
-			if (ViewManager::gameView.view.hasCamera) {
-				Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
-				Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
-				Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
-				ViewManager::gameView.view.framebuffer.Bind();
 				glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				ViewManager::sceneView.Update(inRuntime);
 				Renderer::ChangeShader("ShibaEngine_Skybox");
 				glDepthFunc(GL_LEQUAL);
-				ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
+				ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
 				SceneManager::activeScene->RenderSkybox();
 				glDepthFunc(GL_LESS);
 				RenderScene();
-				ViewManager::gameView.view.framebuffer.Unbind();
+				ViewManager::sceneView.view.framebuffer.Unbind();
 			}
-		}
+			if (UIManager::viewportFrame.gameViewFrameOpen) {
+				ViewManager::gameView.Update(inRuntime);
+				if (ViewManager::gameView.view.hasCamera) {
+					Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
+					Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
+					Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+					ViewManager::gameView.view.framebuffer.Bind();
+					glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+					Renderer::ChangeShader("ShibaEngine_Skybox");
+					glDepthFunc(GL_LEQUAL);
+					ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
+					SceneManager::activeScene->RenderSkybox();
+					glDepthFunc(GL_LESS);
+					RenderScene();
+					ViewManager::gameView.view.framebuffer.Unbind();
+				}
+			}
 
-		if (inRuntime)
-			Collisions::HandleCollision();
 
-		if (inRuntime) {
-			Scripting::Update();
-			Engine::Update();
+			if (inRuntime)
+				Collisions::HandleCollision();
+
+			if (inRuntime) {
+				Scripting::Update();
+				Engine::Update();
+			}
+
 		}
 
 		UIManager::Update();

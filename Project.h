@@ -27,6 +27,12 @@ public:
 	Project(){}
 	Project(const std::string& path) {
 		settings.directory = path;
+		InitializeDirectories();
+	}
+	Project(const std::string& path, const std::string& name) {
+		settings.directory = path;
+		settings.name = name;
+		InitializeDirectories();
 	}
 	ProjectItem& GetItem(const std::string& path);
 	void ReloadProject();
@@ -35,6 +41,7 @@ public:
 	void SaveProject();
 	void CreateProject();
 	std::string GetAssemblyPath();
+	void InitializeDirectories();
 	void CreateNewScript(const std::string& name);
 	void CreateNewBehaviour(const std::string& name, float interval);
 	void LoadProjectHierachy();

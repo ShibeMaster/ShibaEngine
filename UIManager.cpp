@@ -6,17 +6,46 @@ float UIManager::addingBehaviourInterval = 0.0f;
 bool UIManager::isAddingBehaviour = false;
 glm::vec2 UIManager::viewportSize;
 
+std::string UIManager::creatingProjectName = "New Project";
+std::string UIManager::creatingProjectDirectory = "No Directory";
+
 SceneHierachyFrame UIManager::sceneFrame;
 ViewportFrame UIManager::viewportFrame;
 InspectorFrame UIManager::inspectorFrame;
 
 void UIManager::RenderMenuBar() {
 	bool addingScriptPopup = false;
+	bool addingProjectPopup = false;
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("Save", "CTRL+S")) {
-				SaveScene();
-				ProjectManager::activeProject.SaveProject();
+
+			if (ImGui::BeginMenu("New", "CTRL+N")) {
+				if (ImGui::MenuItem("Project"))
+					addingProjectPopup = true;
+				if (ProjectManager::projectLoaded) {
+					if (ImGui::BeginMenu("Entity")) {
+						if (ImGui::MenuItem("Empty"))
+							sceneFrame.CreateEntity();
+						if (ImGui::BeginMenu("Primitives")) {
+							Primitives::RenderPrimitiveSelection();
+							ImGui::EndMenu();
+						}
+						ImGui::EndMenu();
+					}
+					if (ImGui::MenuItem("Script")) {
+						if (!ProjectManager::activeProject.settings.hasProject)
+							ProjectManager::activeProject.CreateProject();
+						addingScriptPopup = true;
+						isAddingBehaviour = false;
+					}
+					if (ImGui::MenuItem("Behaviour")) {
+						if (!ProjectManager::activeProject.settings.hasProject)
+							ProjectManager::activeProject.CreateProject();
+						addingScriptPopup = true;
+						isAddingBehaviour = true;
+					}
+				}
+				ImGui::EndMenu();
 			}
 			if (ImGui::MenuItem("Open", "CTRL+O")) {
 				std::string path;
@@ -24,29 +53,30 @@ void UIManager::RenderMenuBar() {
 					ProjectManager::LoadProject(path);
 				}
 			}
-			if (ImGui::BeginMenu("New", "CTRL+N")) {
-				if (ImGui::BeginMenu("Entity")) {
-					if (ImGui::MenuItem("Empty"))
-						sceneFrame.CreateEntity();
-					if (ImGui::BeginMenu("Primitives")) {
-						Primitives::RenderPrimitiveSelection();
-						ImGui::EndMenu();
+			if (ProjectManager::projectLoaded) {
+
+				if (ImGui::MenuItem("Save", "CTRL+S")) {
+					std::string path;
+					if (SceneManager::activeScene->path == "No Path") {
+						if (FileExtensions::SaveFileAsDialog(ProjectManager::activeProject.settings.directory, "ShbaScene", &path)) {
+							SceneManager::activeScene->name = std::filesystem::path(path).stem().string();
+							SaveScene(path);
+						}
 					}
-					ImGui::EndMenu();
+					else
+						SaveScene();
+					ProjectManager::activeProject.SaveProject();
 				}
-				if (ImGui::MenuItem("Script")) {
-					if (!ProjectManager::activeProject.settings.hasProject)
-						ProjectManager::activeProject.CreateProject();
-					addingScriptPopup = true;
-					isAddingBehaviour = false;
+				if (ImGui::MenuItem("Save As", "CTRL+SHIFT+S")) {
+					std::string path;
+					if (FileExtensions::SaveFileAsDialog(ProjectManager::activeProject.settings.directory, "ShbaScene", &path)) {
+						std::filesystem::path file = std::filesystem::path(path);
+						SceneManager::activeScene->name = file.stem().string();
+						SaveScene(path);
+
+
+					}
 				}
-				if (ImGui::MenuItem("Behaviour")) {
-					if (!ProjectManager::activeProject.settings.hasProject)
-						ProjectManager::activeProject.CreateProject();
-					addingScriptPopup = true;
-					isAddingBehaviour = true;
-				}
-				ImGui::EndMenu();
 			}
 			if (ImGui::MenuItem("Reload", "F5")) {
 				ProjectManager::activeProject.settings.hasAssembly = std::filesystem::exists(ProjectManager::activeProject.GetAssemblyPath());
@@ -88,9 +118,31 @@ void UIManager::RenderMenuBar() {
 	}
 	if (addingScriptPopup)
 		ImGui::OpenPopup("Adding Script");
+	if (addingProjectPopup)
+		ImGui::OpenPopup("New Project");
 	RenderAddingScriptPopup();
+	RenderCreatingProjectPopup();
 
+}
+void UIManager::RenderCreatingProjectPopup() {
+	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (ImGui::BeginPopupModal("New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::InputText("Name", &creatingProjectName);
+		if (ImGui::Button(std::string("Directory: " + creatingProjectDirectory).c_str())) {
+			FileExtensions::OpenFolderDialog("C:", &creatingProjectDirectory);
+		}
+		if (ImGui::Button("Add")) {
+			ProjectManager::CreateNewProject(creatingProjectName, creatingProjectDirectory + "\\");
+			creatingProjectName = "New Project";
+			creatingProjectDirectory = "No Directory";
 
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
 }
 void UIManager::RenderAddingScriptPopup() {
 
@@ -126,9 +178,9 @@ void UIManager::RenderProjectSettings() {
 	ImGui::EndChild();
 }
 #pragma region Scene
-void UIManager::SaveScene() {
+void UIManager::SaveScene(const std::string& specificPath) {
 	std::cout << "Saving Scene" << std::endl;
-	std::string path = SceneManager::activeScene->path == "No Path" ? ProjectManager::activeProject.settings.directory + SceneManager::activeScene->name + ".ShbaScene" : SceneManager::activeScene->path;
+	std::string path = SceneManager::activeScene->path == "No Path" ? specificPath : SceneManager::activeScene->path;
 	std::cout << path << std::endl;
 	if (SceneManager::activeScene->path == "No Path")
 		ProjectManager::activeProject.CreateNewSceneNode(SceneManager::activeScene->name, path);
@@ -187,12 +239,16 @@ void UIManager::Update() {
 
 	StartDockspace();
 
-	ProjectManager::activeProject.RenderHierachy();
 	RenderMenuBar();
-	Console::Render();
-	inspectorFrame.RenderEntity(sceneFrame.selectedEntity);
-	sceneFrame.Render();
-	viewportFrame.Render();
+	
+	if (ProjectManager::projectLoaded) {
+
+		ProjectManager::activeProject.RenderHierachy();
+		Console::Render();
+		inspectorFrame.RenderEntity(sceneFrame.selectedEntity);
+		sceneFrame.Render();
+		viewportFrame.Render();
+	}
 
 
 	ImGui::Render();

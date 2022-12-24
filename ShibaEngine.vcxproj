@@ -251,6 +251,10 @@
     <Image Include="Day_Left.png" />
     <Image Include="Day_Right.png" />
     <Image Include="Day_Top.png" />
+    <Image Include="Icons\Sprite_Camera_Icon.png" />
+    <Image Include="Icons\Sprite_Light_Icon.png" />
+    <Image Include="Icons\Sprite_UI_Pause.png" />
+    <Image Include="Icons\Sprite_UI_Play.png" />
     <Image Include="Sprite_Camera_Icon.png" />
     <Image Include="Sprite_Light_Icon.png" />
   </ItemGroup>

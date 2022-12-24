@@ -62,6 +62,12 @@ void Project::SaveProject() {
 	json.EndObject();
 	FileExtensions::CreateAndWriteToFile(path, str.GetString());
 }
+void Project::InitializeDirectories() {
+	if (!std::filesystem::exists(settings.directory + "Scripts\\"))
+		std::filesystem::create_directory(settings.directory + "Scripts\\");
+	if (!std::filesystem::exists(settings.directory + "Assets\\"))
+		std::filesystem::create_directory(settings.directory + "Assets\\");
+}
 void Project::CreateProject() {
 	if (!std::filesystem::exists(settings.directory + "Scripts\\"))
 		std::filesystem::create_directory(settings.directory + "Scripts\\");
@@ -106,7 +112,7 @@ public static class )C#" + name + R"C#(
 }
 void Project::LoadProjectHierachy() {
 	hierachy.item.name = "Assets";
-	hierachy.item.path = settings.directory;
+	hierachy.item.path = settings.directory + "Assets\\";
 	IterateDirectory(hierachy);
 	hierachyMap[hierachy.item.path] = hierachy;
 	LoadProjectScriptHierachy();
