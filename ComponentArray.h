@@ -37,8 +37,8 @@ public:
 	void Add(unsigned int entity) {
 		T value;
 		value.entity = entity;
-		value.Initialize();
 		components[entity] = value;
+		components[entity].Initialize();
 	}
 	void Render() {
 		for (auto& comp : components)

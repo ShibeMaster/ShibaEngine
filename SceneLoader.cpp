@@ -26,7 +26,6 @@ SceneItem* SceneLoader::DeserializeSceneHierachyNode(Scene* scene, rapidjson::Va
 	if (item.hasParent)
 		item.parent = parent;
 	item.entity = Engine::CreateEntity();
-	scene->entities.push_back(item.entity);
 	scene->items[item.entity] = item;
 	Engine::DeserializeEntityComponents(item.entity, obj);
 	Scripting::DeserializeEntityScripts(item.entity, obj);

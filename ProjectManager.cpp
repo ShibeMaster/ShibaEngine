@@ -33,7 +33,7 @@ void ProjectManager::LoadProject(const std::string& path) {
 	activeProject = Project(settings.directory);
 	activeProject.settings = settings;
 	activeProject.settings.hasAssembly = std::filesystem::exists(activeProject.GetAssemblyPath());
-	if (settings.hasAssembly) {
+	if (activeProject.settings.hasAssembly) {
 		Scripting::ReloadAssembly(activeProject.GetAssemblyPath());
 	}
 	activeProject.LoadProjectHierachy();

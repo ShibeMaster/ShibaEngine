@@ -25,6 +25,6 @@ public:
 	static void SaveScene(const std::string& specificPath = "");
 
 	static void Initialize();
-	static void Update();
+	static void Update(bool inRuntime);
 
 };

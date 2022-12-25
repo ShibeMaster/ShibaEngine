@@ -42,7 +42,7 @@ public:
 			Scripting::RemoveScriptInstance(selectedEntity, script);
 		}
 	}
-	void RenderEntityAddingComponent(unsigned int selectedEntity) {
+	void RenderEntityAddingComponent(bool inRuntime, unsigned int selectedEntity) {
 		ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30.0f));
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
@@ -50,6 +50,8 @@ public:
 				std::cout << "adding script " << script << std::endl;
 				Engine::AddScript(selectedEntity, script);
 				Scripting::LoadEntityScript(selectedEntity, script);
+				if (inRuntime)
+					Scripting::data.entities[selectedEntity].scripts[script].InvokeMethod(Scripting::data.entities[selectedEntity].scripts[script].startMethod, 0, nullptr);
 			}
 			else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
 				auto name = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
@@ -59,7 +61,7 @@ public:
 			}
 		}
 	}
-	void RenderEntity(unsigned int selectedEntity) {
+	void RenderEntity(bool inRuntime, unsigned int selectedEntity) {
 		ImGui::Begin("Components", &isOpen, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoCollapse);
 
 		if (selectedEntity != -1) {
@@ -78,7 +80,7 @@ public:
 
 			Engine::DrawEntityComponentGUI(selectedEntity);
 			RenderEntityScripts(selectedEntity);
-			RenderEntityAddingComponent(selectedEntity);
+			RenderEntityAddingComponent(selectedEntity, inRuntime);
 		}
 		else {
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Entity Selected");

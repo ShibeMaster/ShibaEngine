@@ -235,7 +235,7 @@ int main() {
 
 		}
 
-		UIManager::Update();
+		UIManager::Update(inRuntime);
 
 		glfwSwapBuffers(window);
 	}
