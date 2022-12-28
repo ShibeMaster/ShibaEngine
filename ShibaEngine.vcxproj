@@ -191,6 +191,7 @@
     <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h" />
     <ClInclude Include="..\External Libraries\stb_image.h" />
     <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collisions.h" />
@@ -239,6 +240,7 @@
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="ScreenLayer.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="ViewManager.h" />
@@ -268,6 +270,8 @@
     <Text Include="default_vertex.txt" />
     <Text Include="skybox_fragment.txt" />
     <Text Include="skybox_vertex.txt" />
+    <Text Include="sprite_default_fragment.txt" />
+    <Text Include="sprite_default_vertex.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

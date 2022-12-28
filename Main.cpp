@@ -18,6 +18,7 @@
 #include "GameView.h"
 #include "SceneView.h"
 #include "Console.h"
+#include "ScreenLayer.h"
 #include "Scripting.h"
 #include "Camera.h"
 #include <Mono/jit/jit.h>
@@ -112,6 +113,19 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	}
 }
 
+void OnMouseClick(GLFWwindow* window, int button, int actions, int mods) {
+	ImGui_ImplGlfw_MouseButtonCallback(window, button, actions, mods);
+
+	if (Engine::FindComponentsInScene<ScreenLayer>().size() > 0) {
+		glm::vec2 dimensions = Engine::GetComponent<ScreenLayer>(Engine::FindComponentsInScene<ScreenLayer>()[0]).dimensions;
+		glm::mat4 proj = glm::ortho(0.0f, dimensions.x, -dimensions.y, 0.0f, -1.0f, 1.0f);
+		for (auto& entity : Engine::FindComponentsInScene<Button>()) {
+			Button& button = Engine::GetComponent<Button>(entity);
+			button.GenerateBox(proj, dimensions);
+			button.OnMouseClick();
+		}
+	}
+}
 void SetupDefaultScene() {
 
 	unsigned int light = CreateEntity();
@@ -148,6 +162,9 @@ int main() {
 	Engine::RegisterComponent<SpriteRenderer>();
 	Engine::RegisterComponent<Light>();
 	Engine::RegisterComponent<CameraController>();
+	Engine::RegisterComponent<ScreenLayer>();
+	Engine::RegisterComponent<Button>();
+
 
 	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -160,6 +177,8 @@ int main() {
 	Engine::Start();
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
+	glfwSetWindowSizeCallback(window, Display::HandleWindowResize);
+	glfwSetMouseButtonCallback(window, OnMouseClick);
 
 	Display::ShowWindow();
 
@@ -199,7 +218,6 @@ int main() {
 				ViewManager::sceneView.Update(inRuntime);
 				Renderer::ChangeShader("ShibaEngine_Skybox");
 				glDepthFunc(GL_LEQUAL);
-				ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::sceneView.sceneCam.GetViewMatrix())));
 				SceneManager::activeScene->RenderSkybox();
 				glDepthFunc(GL_LESS);
 				RenderScene();
@@ -216,7 +234,6 @@ int main() {
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 					Renderer::ChangeShader("ShibaEngine_Skybox");
 					glDepthFunc(GL_LEQUAL);
-					ShaderManager::shader->SetMat4("skyView", glm::mat4(glm::mat3(ViewManager::gameView.view.camera->GetViewMatrix())));
 					SceneManager::activeScene->RenderSkybox();
 					glDepthFunc(GL_LESS);
 					RenderScene();

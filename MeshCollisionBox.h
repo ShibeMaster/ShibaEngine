@@ -9,6 +9,10 @@ struct Box {
     glm::vec3 min;
     glm::vec3 max;
 };
+struct Box2d {
+    glm::vec2 min;
+    glm::vec2 max;
+};
 class MeshCollisionBox : public Component {
 public:
     Model model;

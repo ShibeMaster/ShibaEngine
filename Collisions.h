@@ -19,5 +19,6 @@ private:
     static bool CheckSweptCollision(Box a, Box b, glm::vec3& velocityA, float* outTime, glm::vec3* outNormal);
     static bool ShouldCheckSwept(Box a, glm::vec3 velocity, Box b);
 public:
+    static bool Collides(Box2d a, Box2d b);
     static void HandleCollision();
 };

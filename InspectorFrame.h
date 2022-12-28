@@ -80,7 +80,7 @@ public:
 
 			Engine::DrawEntityComponentGUI(selectedEntity);
 			RenderEntityScripts(selectedEntity);
-			RenderEntityAddingComponent(selectedEntity, inRuntime);
+			RenderEntityAddingComponent(inRuntime, selectedEntity);
 		}
 		else {
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Entity Selected");

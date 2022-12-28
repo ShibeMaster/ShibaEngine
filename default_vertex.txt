@@ -9,13 +9,6 @@ out vec2 TexCoords;
 out vec3 FragPos;
 out vec3 Normal;
 
-uniform vec3 testUniform1;
-uniform vec2 testUniform2;
-uniform vec4 testUniform3;
-uniform float testUniform4;
-uniform bool testUniform5;
-uniform int testUniform6;
-
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;

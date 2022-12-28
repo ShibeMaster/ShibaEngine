@@ -93,5 +93,5 @@ void ComponentManager::OnEntityDestroyed(unsigned int entity) {
 }
 void ComponentManager::Render() {
 	componentArrays["MeshRenderer"]->Render();
-	componentArrays["SpriteRenderer"]->Render();
+	componentArrays["ScreenLayer"]->Render();
 }
