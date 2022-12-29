@@ -16,6 +16,7 @@
 #include <GLFW/glfw3.h>
 #include "ProjectManager.h"
 #include "imgui_stdlib.h"
+#include "RuntimeManager.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 #include "ViewManager.h"
@@ -42,26 +43,24 @@ public:
 			Scripting::RemoveScriptInstance(selectedEntity, script);
 		}
 	}
-	void RenderEntityAddingComponent(bool inRuntime, unsigned int selectedEntity) {
+	void RenderEntityAddingComponent(unsigned int selectedEntity) {
 		ImGui::Button("Add Component", ImVec2(ImGui::GetWindowSize().x - 30.0f, 30.0f));
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Script")) {
 				auto script = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
-				std::cout << "adding script " << script << std::endl;
 				Engine::AddScript(selectedEntity, script);
 				Scripting::LoadEntityScript(selectedEntity, script);
-				if (inRuntime)
+				if (RuntimeManager::inRuntime)
 					Scripting::data.entities[selectedEntity].scripts[script].InvokeMethod(Scripting::data.entities[selectedEntity].scripts[script].startMethod, 0, nullptr);
 			}
 			else if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DRAG_DROP_Component")) {
 				auto name = ProjectManager::activeProject.GetItem((const char*)payload->Data).name;
 				Engine::AddComponent(selectedEntity, name);
-				std::cout << name << std::endl;
 				Scripting::OnAddComponent(selectedEntity, name);
 			}
 		}
 	}
-	void RenderEntity(bool inRuntime, unsigned int selectedEntity) {
+	void RenderEntity(unsigned int selectedEntity) {
 		ImGui::Begin("Components", &isOpen, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoCollapse);
 
 		if (selectedEntity != -1) {
@@ -80,7 +79,7 @@ public:
 
 			Engine::DrawEntityComponentGUI(selectedEntity);
 			RenderEntityScripts(selectedEntity);
-			RenderEntityAddingComponent(selectedEntity, inRuntime);
+			RenderEntityAddingComponent(selectedEntity);
 		}
 		else {
 			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Entity Selected");

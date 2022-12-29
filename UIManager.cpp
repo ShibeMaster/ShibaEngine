@@ -12,6 +12,7 @@ std::string UIManager::creatingProjectDirectory = "No Directory";
 SceneHierachyFrame UIManager::sceneFrame;
 ViewportFrame UIManager::viewportFrame;
 InspectorFrame UIManager::inspectorFrame;
+ManagementFrame UIManager::managementFrame;
 
 void UIManager::RenderMenuBar() {
 	bool addingScriptPopup = false;
@@ -112,6 +113,7 @@ void UIManager::RenderMenuBar() {
 			ImGui::MenuItem("Inspector", "", &inspectorFrame.isOpen);
 			ImGui::MenuItem("Console", "", &Console::isOpen);
 			ImGui::MenuItem("Project", "", &ProjectManager::activeProject.isFrameOpen);
+			ImGui::MenuItem("Management", "", &managementFrame.isOpen);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
@@ -230,7 +232,7 @@ void UIManager::Initialize() {
 	colors[ImGuiCol_HeaderHovered] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.35f, 0.31f);
 }
-void UIManager::Update(bool inRuntime) {
+void UIManager::Update() {
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -245,9 +247,10 @@ void UIManager::Update(bool inRuntime) {
 
 		ProjectManager::activeProject.RenderHierachy();
 		Console::Render();
-		inspectorFrame.RenderEntity(inRuntime, sceneFrame.selectedEntity);
+		inspectorFrame.RenderEntity(sceneFrame.selectedEntity);
 		sceneFrame.Render();
 		viewportFrame.Render();
+		managementFrame.Render();
 	}
 
 

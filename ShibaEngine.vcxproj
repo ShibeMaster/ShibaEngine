@@ -209,6 +209,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InspectorFrame.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="ManagementFrame.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshCollisionBox.h" />
     <ClInclude Include="MeshRenderer.h" />
@@ -223,6 +224,7 @@
     <ClInclude Include="ProjectSettings.h" />
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RuntimeManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneHierachyFrame.h" />
     <ClInclude Include="SceneLoader.h" />
@@ -239,6 +241,7 @@
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="ScreenLayer.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="ViewManager.h" />
@@ -268,6 +271,8 @@
     <Text Include="default_vertex.txt" />
     <Text Include="skybox_fragment.txt" />
     <Text Include="skybox_vertex.txt" />
+    <Text Include="sprite_default_fragment.txt" />
+    <Text Include="sprite_default_vertex.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

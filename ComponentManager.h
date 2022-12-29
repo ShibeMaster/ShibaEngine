@@ -68,5 +68,6 @@ public:
 	void AddComponent(unsigned int entity, const std::string& name);
 	bool HasComponent(unsigned int entity, const std::string& name);
 	void OnEntityDestroyed(unsigned int entity);
+	void Clear();
 	void Render();
 };

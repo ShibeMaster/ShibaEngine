@@ -49,8 +49,8 @@ public:
 		transform->rotation.x += InputManager::mouse.xOffset * 0.1f; 
 		transform->rotation.y += InputManager::mouse.yOffset * 0.1f;
 
-		if (transform->rotation.x > 89.0f)
-			transform->rotation.x = 89.0f;
+		if (transform->rotation.y > 89.0f)
+			transform->rotation.y = 89.0f;
 		if (transform->rotation.y < -89.0f)
 			transform->rotation.y = -89.0f;
 

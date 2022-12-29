@@ -59,6 +59,14 @@ bool Collisions::Collides(Box a, Box b) {
         a.min.z <= b.max.z &&
         a.max.z >= b.min.z);
 }
+bool Collisions::Collides(Box2d a, Box2d b) {
+
+    return (
+        a.min.x <= b.max.x &&
+        a.max.x >= b.min.x &&
+        a.min.y <= b.max.y &&
+        a.max.y >= b.min.y);
+}
 bool Collisions::ShouldCheckSwept(Box a, glm::vec3 velocity, Box b) {
     Box aWhole;
     aWhole.min.x = velocity.x > 0.0f ? a.min.x : a.min.x + velocity.x;

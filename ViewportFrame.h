@@ -5,6 +5,11 @@ class ViewportFrame : public EditorFrame {
 public:
 	bool sceneViewFrameOpen = true;
 	bool gameViewFrameOpen;
+	glm::vec2 sceneViewportDimensions;
+	glm::vec2 sceneViewportPosition;
+
+	glm::vec2 gameViewportDimensions;
+	glm::vec2 gameViewportPosition;
 	void Render() {
 		if (sceneViewFrameOpen) {
 
@@ -18,6 +23,9 @@ public:
 				dimensions.x = (ImGui::GetWindowHeight() / 9) * 16;
 				dimensions.y = ImGui::GetWindowHeight();
 			}
+			sceneViewportDimensions = { dimensions.x, dimensions.y };
+			sceneViewportPosition = { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (ImGui::GetWindowHeight() - dimensions.y)/2};
+
 
 			ImGui::SetCursorPos({ (ImGui::GetWindowWidth() - dimensions.x) * 0.5f, (ImGui::GetWindowHeight() - dimensions.y) * 0.5f }) ;
 			ImGui::Image((ImTextureID)ViewManager::sceneView.view.framebuffer.GetTexture(), dimensions, ImVec2(0, 1), ImVec2(1, 0));
@@ -34,6 +42,10 @@ public:
 				dimensions.x = (ImGui::GetWindowHeight() / 9) * 16;
 				dimensions.y = ImGui::GetWindowHeight();
 			}
+
+			gameViewportDimensions = { dimensions.x, dimensions.y };
+			gameViewportPosition = { ImGui::GetWindowPos().x, ImGui::GetWindowPos().y };
+
 
 			ImGui::SetCursorPos({ (ImGui::GetWindowWidth() - dimensions.x) * 0.5f, (ImGui::GetWindowHeight() - dimensions.y) * 0.5f });
 			ImGui::Image((ImTextureID)ViewManager::gameView.view.framebuffer.GetTexture(), dimensions, ImVec2(0, 1), ImVec2(1, 0));

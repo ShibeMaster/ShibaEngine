@@ -46,8 +46,9 @@ Sprite ModelLoader::LoadSprite(const std::string& path) {
 	Sprite sprite;
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(path.c_str(), &sprite.width, &sprite.height, &sprite.channels, 0);
-	float aspectRatioHeight = ((float)sprite.height / (float)sprite.width) / 2;
-	float aspectRatioWidth = ((float)sprite.width / (float)sprite.height) / 2;
+	float aspectRatio = ((float)sprite.width / (float)sprite.height) / 2;
+	float aspectRatioWidth = 0.5 * aspectRatio;
+	float aspectRatioHeight = 0.5;
 	std::vector<Vertex> vertices = {
 		{ glm::vec3(aspectRatioWidth, aspectRatioHeight, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec3(0.0f)},
 		{ glm::vec3(aspectRatioWidth, -aspectRatioHeight, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec3(0.0f)},
@@ -185,7 +186,6 @@ int ModelLoader::GenerateTexture(const char* path, const std::string& directory)
 	filename = directory + "\\" + filename;
 
 	int width, height, comps;
-	std::cout << filename << std::endl;
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &comps, 0);
 	if (data) {

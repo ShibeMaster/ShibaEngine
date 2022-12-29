@@ -8,6 +8,6 @@ public:
 	Camera sceneCam;
 
 	SceneView();
-	void Update(bool inRuntime);
+	void Update();
 	void RenderSceneSprites();
 };

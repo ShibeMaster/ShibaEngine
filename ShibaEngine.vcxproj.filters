@@ -127,6 +127,12 @@
     <Filter Include="Resource Files\Icons">
       <UniqueIdentifier>{ce76b046-fa2f-4741-85ba-d8d839a32076}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shaders\Sprite">
+      <UniqueIdentifier>{eaa2df25-fd20-4574-aa34-74aa90086851}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components\UI">
+      <UniqueIdentifier>{13e5d37f-752b-4543-a5ca-a9f2080d725c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -287,9 +293,6 @@
     <ClInclude Include="MeshCollisionBox.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteRenderer.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
@@ -422,6 +425,18 @@
     <ClInclude Include="CameraController.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteRenderer.h">
+      <Filter>Header Files\Components\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenLayer.h">
+      <Filter>Header Files\Components\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ManagementFrame.h">
+      <Filter>Header Files\Editor UI\Frames</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeManager.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Sprite_Camera_Icon.png">
@@ -484,6 +499,12 @@
     </Text>
     <Text Include="skybox_fragment.txt">
       <Filter>Resource Files\Shaders\Skybox</Filter>
+    </Text>
+    <Text Include="sprite_default_fragment.txt">
+      <Filter>Resource Files\Shaders\Sprite</Filter>
+    </Text>
+    <Text Include="sprite_default_vertex.txt">
+      <Filter>Resource Files\Shaders\Sprite</Filter>
     </Text>
   </ItemGroup>
 </Project>

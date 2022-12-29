@@ -76,13 +76,11 @@ std::vector<std::string> ComponentManager::GetEntityScripts(unsigned int entity)
 void ComponentManager::AddComponent(unsigned int entity, const std::string& name) {
 	if (componentArrays.find(name) != componentArrays.end()) {
 		componentArrays[name]->Add(entity);
-		std::cout << name << std::endl;
 	}
 }
 
 bool ComponentManager::HasComponent(unsigned int entity, const std::string& name) {
 	if (componentArrays.find(name) != componentArrays.end()) {
-		std::cout << name << std::endl;
 		return componentArrays[name]->HasComponent(entity);
 	}
 }
@@ -91,7 +89,12 @@ void ComponentManager::OnEntityDestroyed(unsigned int entity) {
 		comp.second->OnEntityDestroyed(entity);
 	}
 }
+void ComponentManager::Clear() {
+	for (auto& comp : componentArrays) {
+		comp.second->Clear();
+	}
+}
 void ComponentManager::Render() {
 	componentArrays["MeshRenderer"]->Render();
-	componentArrays["SpriteRenderer"]->Render();
+	componentArrays["ScreenLayer"]->Render();
 }

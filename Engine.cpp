@@ -31,7 +31,6 @@ void Engine::AddScript(unsigned int entity, const std::string& component) {
 	componentManager.AddScript(entity, component);
 }
 void Engine::RemoveScript(unsigned int entity, const std::string& component) {
-	std::cout << "removed script" << std::endl;
 	componentManager.RemoveScript(entity, component);
 }
 std::vector<std::string> Engine::GetEntityScripts(unsigned int entity) {

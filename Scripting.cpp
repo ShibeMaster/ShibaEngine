@@ -523,6 +523,10 @@ void Scripting::Update() {
 		}
 	}
 }
+void Scripting::Clear() {
+	data.entities.clear();
+	data.behaviours.clear();
+}
 MonoObject* Scripting::Instantiate(MonoClass* klass) {
 	MonoObject* instance = mono_object_new(data.appDomain, klass);
 	if (instance == nullptr) {

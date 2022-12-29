@@ -32,7 +32,6 @@ public:
 	void Deserialize(rapidjson::Value& obj) {
 		spriteItem = ProjectManager::activeProject.GetItem(obj["Sprite"].GetString());
 		ReloadSprite();
-		
 	}
 	void GetObject(ClassInstance* instance) {
 		instance->SetFieldValue<MonoString>("spritePath", mono_string_new(Scripting::data.appDomain, spriteItem.path.c_str()));
@@ -41,9 +40,8 @@ public:
 		spriteItem = ProjectManager::activeProject.GetItem(mono_string_to_utf8(instance->GetFieldValue<MonoString*>("spritePath")));
 		ReloadSprite();
 	}
-	void Render() {
+	void RenderUI() {
 		if (hasSprite) {
-			Renderer::ChangeShader(sprite.shader);
 			glm::mat4 model = transform->GetMatrix();
 			Renderer::SetModel(model);
 			sprite.Render();

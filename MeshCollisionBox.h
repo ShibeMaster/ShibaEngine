@@ -9,6 +9,10 @@ struct Box {
     glm::vec3 min;
     glm::vec3 max;
 };
+struct Box2d {
+    glm::vec2 min;
+    glm::vec2 max;
+};
 class MeshCollisionBox : public Component {
 public:
     Model model;
@@ -111,7 +115,6 @@ public:
         ProjectItem item;
         if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
             box.meshItem = item;
-            std::cout << box.meshItem.name << " || " << box.meshItem.path << std::endl;
             box.LoadMeshBox();
         }
 		ImGui::Checkbox("Debug Draw", &box.debugDraw);

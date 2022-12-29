@@ -30,12 +30,15 @@ public:
 	}
 	template<class T>
 	static void RemoveComponent(unsigned int entity) {
-		std::cout << "removed component" << std::endl;
 		componentManager.RemoveComponent<T>(entity);
 	}
 	template<class T>
 	static bool HasComponent(unsigned int entity) {
 		return componentManager.HasComponent<T>(entity);
+	}
+	static void ResetEntities() {
+		entityManager = EntityManager();
+		componentManager.Clear();
 	}
 
 	template<typename T>

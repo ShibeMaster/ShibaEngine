@@ -68,5 +68,6 @@ public:
 		LoadShader("ShibaEngine_Default", "default_vertex.txt", "default_fragment.txt");
 		LoadShader("ShibaEngine_Billboard", "billboard_vertex.txt", "billboard_fragment.txt");
 		LoadShader("ShibaEngine_Skybox", "skybox_vertex.txt", "skybox_fragment.txt");
+		LoadShader("ShibaEngine_Sprite", "sprite_default_vertex.txt", "sprite_default_fragment.txt");
 	}
 };
