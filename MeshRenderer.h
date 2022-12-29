@@ -28,7 +28,6 @@ public:
         ProjectItem item;
         if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
             renderer.modelItem = item;
-            std::cout << renderer.modelItem.name << " || " << renderer.modelItem.path << std::endl;
             renderer.ReloadMesh();
         }
         ImGui::InputText("Shader", &renderer.shader);
@@ -59,12 +58,52 @@ public:
         json->String(modelItem.path.c_str());
         json->Key("Shader");
         json->String(shader.c_str());
+        json->Key("Uniforms");
+        json->StartArray();
+        SerializeUniforms(json);
+        json->EndArray();
+    }
+    // a terrible way of doing this, but it still works
+    void SerializeUniforms(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
+        for (auto bools : uniforms.bools) {
+            json->StartObject();
+            SerializationUtils::SerializeUniformInformation(json, "bool", bools.first);
+            json->Key("value");
+            json->Bool(bools.second);
+            json->EndObject();
+        }
+        for (auto floats : uniforms.floats) {
+            json->StartObject();
+            SerializationUtils::SerializeUniformInformation(json, "float", floats.first);
+            json->Key("value");
+            json->Double((double)floats.second);
+            json->EndObject();
+        }
+        for (auto vec3s : uniforms.vec3s) {
+            json->StartObject();
+            SerializationUtils::SerializeUniformInformation(json, "vec3", vec3s.first);
+            SerializationUtils::SerializeVec3("value", vec3s.second, json);
+            json->EndObject();
+        }
+    }
+    void DeserializeUniforms(rapidjson::Value& obj) {
+        for (auto& uniform : obj["Uniforms"].GetArray()) {
+            std::string type = uniform["type"].GetString();
+            std::string name = uniform["name"].GetString();
+            if (type == "bool")
+                uniforms.bools[name] = uniform["value"].GetBool();
+            if (type == "float")
+                uniforms.floats[name] = (float)uniform["value"].GetDouble();
+            if (type == "vec3")
+                uniforms.vec3s[name] = SerializationUtils::DeserializeVec3(uniform["value"]);
+
+        }
     }
     void Deserialize(rapidjson::Value& obj) {
         modelItem = ProjectManager::activeProject.GetItem(obj["Model"].GetString());
         shader = obj["Shader"].GetString();
         ReloadMesh();
-
+        DeserializeUniforms(obj);
     }
     void GetObject(ClassInstance* instance) {
         instance->SetFieldValue<MonoString>("modelPath", mono_string_new(Scripting::data.appDomain, modelItem.path.c_str()));

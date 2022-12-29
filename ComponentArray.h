@@ -15,6 +15,7 @@ public:
 	virtual void Start() = 0;
 	virtual void Update() = 0;
 	virtual void Render() = 0;
+	virtual void Clear() = 0;
 	virtual void Add(unsigned int entity) = 0;
 	virtual bool HasComponent(unsigned int entity) = 0;
 	virtual void DrawComponentGUI(unsigned int entity) = 0;
@@ -39,6 +40,9 @@ public:
 		value.entity = entity;
 		components[entity] = value;
 		components[entity].Initialize();
+	}
+	void Clear() {
+		components.clear();
 	}
 	void Render() {
 		for (auto& comp : components)

@@ -115,7 +115,6 @@ public:
         ProjectItem item;
         if (GUIExtensions::CreateProjectItemDropField({ ".fbx", ".obj" }, &item)) {
             box.meshItem = item;
-            std::cout << box.meshItem.name << " || " << box.meshItem.path << std::endl;
             box.LoadMeshBox();
         }
 		ImGui::Checkbox("Debug Draw", &box.debugDraw);

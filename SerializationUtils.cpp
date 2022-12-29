@@ -37,6 +37,12 @@ glm::vec3 SerializationUtils::DeserializeVec3(rapidjson::Value& obj) {
 	val.z = (float)arr[2].GetDouble();
 	return val;
 }
+void SerializationUtils::SerializeUniformInformation(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json, const std::string& type, const std::string& name) {
+	json->Key("name");
+	json->String(name.c_str());
+	json->Key("type");
+	json->String(type.c_str());
+}
  std::string SerializationUtils::ReadFile(const std::string& path) {
 	std::ifstream file(path);
 	std::cout << path << std::endl;

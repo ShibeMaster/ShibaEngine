@@ -8,7 +8,7 @@ class GameView {
 public:
 	View view = View(glm::vec2(0.0f), glm::vec2(Display::width, Display::height));
 
-	void Update(bool inRuntime) {
+	void Update() {
 		if (!view.hasCamera) {
 			auto cams = Engine::FindComponentsInScene<Camera>();
 			if (cams.size() > 0) {

@@ -45,12 +45,9 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include "MeshCollisionBox.h"
 #include "SpriteRenderer.h"
+#include "RuntimeManager.h"
 
 GLFWwindow* window;
-
-bool inRuntime = false;
-bool isPaused = false;
-float runtimeStartTime = 0.0f;
 int clipboardEntity = -1;
 
 unsigned int CreateEntity() {
@@ -72,17 +69,6 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 			else
 				InputManager::SetMouseLocked();
 		}
-		if (key == GLFW_KEY_F1) {
-			std::vector<RayHit> outHits;
-			std::cout << Raycast::CheckHit(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), 10.0f, &outHits) << std::endl;
-		}
-		if (key == GLFW_KEY_F3) {
-			Scripting::OnRuntimeStart();
-			inRuntime = true;
-			Console::LogMessage("Runtime Started");
-			runtimeStartTime = glfwGetTime();
-		}
-
 		if (key == GLFW_KEY_D && mods == GLFW_MOD_CONTROL && UIManager::sceneFrame.selectedEntity > -1 ) {
 			unsigned int newEntity = Engine::CreateEntity();
 			for (auto& script : Engine::GetEntityScripts(UIManager::sceneFrame.selectedEntity)) {
@@ -106,26 +92,13 @@ void HandleMouseInput(GLFWwindow* window, double xpos, double ypos) {
 	ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);		
 	if (UIManager::viewportFrame.sceneViewFrameOpen)
 		ViewManager::sceneView.sceneCam.ProcessCameraMouse();
-	if (inRuntime) {
+	if (RuntimeManager::inRuntime && !RuntimeManager::isPaused) {
 		for (auto& entity : Engine::FindComponentsInScene<CameraController>()) {
 			Engine::GetComponent<CameraController>(entity).ProcessMouse();
 		}
 	}
 }
 
-void OnMouseClick(GLFWwindow* window, int button, int actions, int mods) {
-	ImGui_ImplGlfw_MouseButtonCallback(window, button, actions, mods);
-
-	if (Engine::FindComponentsInScene<ScreenLayer>().size() > 0) {
-		glm::vec2 dimensions = Engine::GetComponent<ScreenLayer>(Engine::FindComponentsInScene<ScreenLayer>()[0]).dimensions;
-		glm::mat4 proj = glm::ortho(0.0f, dimensions.x, -dimensions.y, 0.0f, -1.0f, 1.0f);
-		for (auto& entity : Engine::FindComponentsInScene<Button>()) {
-			Button& button = Engine::GetComponent<Button>(entity);
-			button.GenerateBox(proj, dimensions);
-			button.OnMouseClick();
-		}
-	}
-}
 void SetupDefaultScene() {
 
 	unsigned int light = CreateEntity();
@@ -163,8 +136,6 @@ int main() {
 	Engine::RegisterComponent<Light>();
 	Engine::RegisterComponent<CameraController>();
 	Engine::RegisterComponent<ScreenLayer>();
-	Engine::RegisterComponent<Button>();
-
 
 	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
 	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -178,7 +149,6 @@ int main() {
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
 	glfwSetWindowSizeCallback(window, Display::HandleWindowResize);
-	glfwSetMouseButtonCallback(window, OnMouseClick);
 
 	Display::ShowWindow();
 
@@ -199,7 +169,7 @@ int main() {
 			Renderer::shaderData.lightPos = light.transform->position;
 		}
 
-		Time::currentTime = glfwGetTime() - runtimeStartTime;
+		Time::currentTime = glfwGetTime() - RuntimeManager::runtimeStartTime;
 		Time::deltaTime = glfwGetTime() - Time::lastFrameTime;
 		Time::lastFrameTime = glfwGetTime();
 
@@ -215,7 +185,7 @@ int main() {
 
 				glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				ViewManager::sceneView.Update(inRuntime);
+				ViewManager::sceneView.Update();
 				Renderer::ChangeShader("ShibaEngine_Skybox");
 				glDepthFunc(GL_LEQUAL);
 				SceneManager::activeScene->RenderSkybox();
@@ -224,7 +194,7 @@ int main() {
 				ViewManager::sceneView.view.framebuffer.Unbind();
 			}
 			if (UIManager::viewportFrame.gameViewFrameOpen) {
-				ViewManager::gameView.Update(inRuntime);
+				ViewManager::gameView.Update();
 				if (ViewManager::gameView.view.hasCamera) {
 					Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
 					Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
@@ -242,17 +212,17 @@ int main() {
 			}
 
 
-			if (inRuntime)
+			if (RuntimeManager::inRuntime && !RuntimeManager::isPaused)
 				Collisions::HandleCollision();
 
-			if (inRuntime) {
+			if (RuntimeManager::inRuntime && !RuntimeManager::isPaused) {
 				Scripting::Update();
 				Engine::Update();
 			}
 
 		}
 
-		UIManager::Update(inRuntime);
+		UIManager::Update();
 
 		glfwSwapBuffers(window);
 	}

@@ -64,6 +64,8 @@ void SceneLoader::SerializeSceneHierachy(const Scene& scene, rapidjson::PrettyWr
 }
 
 void SceneLoader::LoadScene(const std::string& path) {
+	Engine::ResetEntities();
+	Scripting::Clear();
 	rapidjson::Document doc;
 	SceneManager::AddScene(path);
 	SceneManager::ChangeScene(path);

@@ -431,8 +431,11 @@
     <ClInclude Include="ScreenLayer.h">
       <Filter>Header Files\Components\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Button.h">
-      <Filter>Header Files\Components\UI</Filter>
+    <ClInclude Include="ManagementFrame.h">
+      <Filter>Header Files\Editor UI\Frames</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeManager.h">
+      <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

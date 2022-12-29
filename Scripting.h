@@ -87,5 +87,6 @@ public:
 	static void SerializeEntityScripts(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json);
 	static void DeserializeEntityScripts(unsigned int entity, rapidjson::Value& obj);
 	static void Update();
+	static void Clear();
 	static MonoObject* Instantiate(MonoClass* klass);
 };

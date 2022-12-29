@@ -8,7 +8,7 @@ SceneView::SceneView() {
 	sceneCam = Camera(&cameraTransform);
 	view = View(glm::vec2(0.0f), glm::vec2(Display::width, Display::height), &this->sceneCam);
 }
-void SceneView::Update(bool inRuntime) {
+void SceneView::Update() {
 	// view.Update(inRuntime);
 	RenderSceneSprites();
 	sceneCam.transform->position += sceneCam.forward * InputManager::MoveVert() * Time::deltaTime;

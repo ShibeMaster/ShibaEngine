@@ -191,7 +191,6 @@
     <ClInclude Include="..\External Libraries\ImGui\imstb_truetype.h" />
     <ClInclude Include="..\External Libraries\stb_image.h" />
     <ClInclude Include="BoundingBox.h" />
-    <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collisions.h" />
@@ -210,6 +209,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="InspectorFrame.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="ManagementFrame.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshCollisionBox.h" />
     <ClInclude Include="MeshRenderer.h" />
@@ -224,6 +224,7 @@
     <ClInclude Include="ProjectSettings.h" />
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RuntimeManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneHierachyFrame.h" />
     <ClInclude Include="SceneLoader.h" />

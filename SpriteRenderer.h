@@ -32,7 +32,6 @@ public:
 	void Deserialize(rapidjson::Value& obj) {
 		spriteItem = ProjectManager::activeProject.GetItem(obj["Sprite"].GetString());
 		ReloadSprite();
-		
 	}
 	void GetObject(ClassInstance* instance) {
 		instance->SetFieldValue<MonoString>("spritePath", mono_string_new(Scripting::data.appDomain, spriteItem.path.c_str()));

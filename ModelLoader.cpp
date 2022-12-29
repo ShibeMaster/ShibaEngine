@@ -186,7 +186,6 @@ int ModelLoader::GenerateTexture(const char* path, const std::string& directory)
 	filename = directory + "\\" + filename;
 
 	int width, height, comps;
-	std::cout << filename << std::endl;
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &comps, 0);
 	if (data) {
