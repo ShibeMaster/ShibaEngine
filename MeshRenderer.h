@@ -30,7 +30,11 @@ public:
             renderer.modelItem = item;
             renderer.ReloadMesh();
         }
-        ImGui::InputText("Shader", &renderer.shader);
+        ProjectItem shaderItem;
+        ImGui::Button(renderer.shader.c_str());
+        if (GUIExtensions::CreateProjectItemDropField({ "Model Shader" }, &shaderItem)) {
+            renderer.shader = shaderItem.name;
+        }
         if (ShaderManager::shaders[renderer.shader].uniforms.size() > 0) {
             ImGui::Text("Uniforms");
             GUIExtensions::RenderShaderUniforms(renderer.shader, &renderer.uniforms);
