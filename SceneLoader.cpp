@@ -5,6 +5,7 @@
 #include "Scripting.h"
 #include <fstream>
 #include "FileExtensions.h"
+#include "ProjectManager.h"
 #include "Engine.h"
 #include "SceneManager.h"
 
@@ -18,6 +19,10 @@ void SceneLoader::DeserializeSceneHierachy(Scene* scene, rapidjson::GenericArray
 		SceneItem* sceneItem = DeserializeSceneHierachyNode(scene, item);
 		scene->hierachy.push_back(sceneItem);
 	}
+	for (auto& item : document) {
+		if (scene->names.find(item["name"].GetString()) != scene->names.end())
+			DeserializeSceneHierachyNodeScripts(scene, scene->names[item["name"].GetString()], item);
+	}
 }
 SceneItem* SceneLoader::DeserializeSceneHierachyNode(Scene* scene, rapidjson::Value& obj, SceneItem* parent) {
 	SceneItem item;
@@ -26,15 +31,28 @@ SceneItem* SceneLoader::DeserializeSceneHierachyNode(Scene* scene, rapidjson::Va
 	if (item.hasParent)
 		item.parent = parent;
 	item.entity = Engine::CreateEntity();
+
 	scene->items[item.entity] = item;
-	Engine::DeserializeEntityComponents(item.entity, obj);
-	Scripting::DeserializeEntityScripts(item.entity, obj);
+	scene->names[item.name] = &scene->items[item.entity];
+	Scripting::OnEntityCreated(item.entity);
+
 	if (obj.HasMember("Children")) {
 		for (auto& child : obj["Children"].GetArray()) {
 			scene->items[item.entity].children.push_back(DeserializeSceneHierachyNode(scene, child, &scene->items[item.entity]));
 		}
 	}
 	return &scene->items[item.entity];
+}
+void SceneLoader::DeserializeSceneHierachyNodeScripts(Scene* scene, SceneItem* item, rapidjson::Value& obj) {
+	Engine::DeserializeEntityComponents(item->entity, obj);
+	Scripting::DeserializeEntityScripts(item->entity, obj);
+	
+	if (obj.HasMember("Children")) {
+		for (auto& child : obj["Children"].GetArray()) {
+			if (scene->names.find(child.GetString()) != scene->names.end())
+				DeserializeSceneHierachyNodeScripts(scene, scene->names[child.GetString()], child);
+		}
+	}
 }
 void SceneLoader::SerializeSceneHierachyNode(SceneItem* item, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
 	json->StartObject();

@@ -35,6 +35,7 @@ private:
 	static Class timeClass;
 	static Class coreComponentClass;
 	static Class behaviourManager;
+	static Class mouseClass;
 
 
 	static void LoadCoreAssemblyClasses();
@@ -63,6 +64,7 @@ private:
 	static unsigned int CreateEntity();
 	static void PrintMessage(MonoString* message);
 	static void PrintError(MonoString* error);
+	static bool MouseButtonDown(int button);
 #pragma endregion 
 
 public:

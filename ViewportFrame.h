@@ -16,7 +16,6 @@ public:
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 			ImGui::Begin("Scene View", &sceneViewFrameOpen, ImGuiWindowFlags_NoDecoration);
 
-
 			ImVec2 dimensions{ ImGui::GetWindowWidth(), ImGui::GetWindowHeight() };
 			dimensions.y = (dimensions.x / 16) * 9;
 			if (dimensions.y > ImGui::GetWindowHeight()) {

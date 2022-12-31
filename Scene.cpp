@@ -107,6 +107,11 @@ void Scene::DestroyChildren(unsigned int entity) {
 		items.erase(child->entity);
 	}
 }
+unsigned int Scene::GetInstanceFromName(const std::string& name) {
+	if (names.find(name) != names.end())
+		return names[name]->entity;
+	return -1;
+}
 void Scene::MoveEntityToChild(unsigned int entity, unsigned int parent) {
 	if (items[entity].hasParent) {
 		auto position = std::find(items[entity].parent->children.begin(), items[entity].parent->children.end(), &items[entity]);

@@ -11,6 +11,7 @@ private:
 public:
 	float xOffset = 0.0f;
 	float yOffset = 0.0f;
+	glm::vec2 frameOffset;
 	glm::vec2 position;
 	bool inputLocked = false;
 
@@ -29,7 +30,8 @@ public:
 			xOffset = (float)xpos - lastMouseX;
 			yOffset = lastMouseY - (float)ypos;
 		}
-
+		frameOffset.x = xOffset;
+		frameOffset.y = yOffset;
 		position.x = (float)xpos;
 		position.y = (float)ypos;
 		lastMouseX = (float)xpos;

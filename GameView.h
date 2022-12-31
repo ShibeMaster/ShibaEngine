@@ -18,5 +18,8 @@ public:
 			}
 
 		}
+		else {
+			view.camera->UpdateCameraVectors();
+		}
 	}
 };
