@@ -5,6 +5,7 @@
 #include "Engine.h"
 #include <fstream>
 #include "Transform.h"
+#include "SceneManager.h"
 #include "InputManager.h"
 #include "ScriptingTypes.h"
 #include <glm/glm.hpp>
@@ -23,6 +24,7 @@ Class Scripting::timeClass;
 Class Scripting::coreComponentClass;
 Class Scripting::instanceClass;
 Class Scripting::behaviourManager;
+Class Scripting::mouseClass;
 
 #pragma region Utils
 
@@ -93,6 +95,7 @@ void Scripting::Initialize(const std::string& path) {
 	mono_add_internal_call("ShibaEngineCore.Components::GetCoreComponent", GetCoreComponent);
 	mono_add_internal_call("ShibaEngineCore.Instance::GetName", GetName);
 	mono_add_internal_call("ShibaEngineCore.Components::GetEntityInstance", GetInstance);
+	mono_add_internal_call("ShibaEngineCore.Mouse::MouseButtonDown", MouseButtonDown);
 
 
 }
@@ -111,7 +114,8 @@ void Scripting::Setup(const std::string& path) {
 	instanceClass = Class{ "Instance", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Instance") };
 	SetupClassFields(&instanceClass, instanceClass.monoClass, true);
 	behaviourManager = Class{ "BehaviourManager", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "BehaviourManager") };
-
+	mouseClass = Class{ "Mouse", "ShibaEngineCore", GetClass(data.coreAssembly, "ShibaEngineCore", "Mouse") };
+	SetupClassFields(&mouseClass, mouseClass.monoClass, false, false);
 
 	LoadCoreAssemblyClasses();
 	if (path != "") {
@@ -241,7 +245,9 @@ void Scripting::PrintMessage(MonoString* message) {
 void Scripting::PrintError(MonoString* error) {
 	Console::LogError(mono_string_to_utf8(error));
 }
-
+bool Scripting::MouseButtonDown(int button) {
+	return InputManager::MouseButtonDown(button);
+}
 #pragma endregion 
 
 void Scripting::OnAddComponent(unsigned int entity, const std::string& name) {
@@ -466,9 +472,9 @@ void Scripting::SerializeEntityScriptField(unsigned int entity, ClassInstance& i
 	case FieldType::UInt: json->Int(instance.GetFieldValue<unsigned int>(field.name)); break;
 	case FieldType::Vector2: SerializationUtils::SerializeVec2(instance.GetFieldValue<glm::vec2>(field.name), json); break;
 	case FieldType::Vector3: SerializationUtils::SerializeVec3(instance.GetFieldValue<glm::vec3>(field.name), json); break;
-	case FieldType::Int: json->Int(instance.GetFieldValue<unsigned int>(field.name)); break;
+	case FieldType::Int: json->Int(instance.GetFieldValue<int>(field.name)); break;
 	case FieldType::Instance: json->String(GetNameFromInstance(instance.GetFieldValue<MonoObject*>(field.name)).c_str()); break;
-	default: break;
+	default: json->String("No support for this type of variable"); break;
 	}
 }
 void Scripting::SerializeEntityScripts(unsigned int entity, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
@@ -491,6 +497,7 @@ void Scripting::DeserializeEntityScriptField(unsigned int entity, ClassInstance&
 	case FieldType::Vector2: instance.SetFieldValue<glm::vec2>(field.name, SerializationUtils::DeserializeVec2(obj)); break;
 	case FieldType::Vector3: instance.SetFieldValue<glm::vec3>(field.name, SerializationUtils::DeserializeVec3(obj)); break;
 	case FieldType::Int: instance.SetFieldValue<int>(field.name, obj.GetInt()); break;
+	case FieldType::Instance: instance.SetFieldValue<MonoObject>(field.name, data.entities[SceneManager::activeScene->GetInstanceFromName(obj.GetString())].instance.instance); std::cout << SceneManager::activeScene->GetInstanceFromName(obj.GetString()) << std::endl; break;
 	default: break;
 	}
 }
@@ -516,6 +523,8 @@ void Scripting::Update() {
 	};
 	MonoObject* exception = nullptr;
 	mono_runtime_invoke(timeClass.GetMethod("UpdateTime", 2), nullptr, params, &exception);
+	mono_field_set_value(nullptr, mouseClass.fields["position"].classField, &InputManager::mouse.position);
+	mono_field_set_value(nullptr, mouseClass.fields["frameOffset"].classField, &InputManager::mouse.frameOffset);
 	UpdateBehaviours();
 	for (auto& comp : data.entities) {
 		for (auto& instance : comp.second.scripts) {

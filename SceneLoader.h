@@ -9,6 +9,7 @@ private:
 	static void SerializeSceneInfo(const Scene& scene, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json);
 	static void DeserializeSceneHierachy(Scene* scene, rapidjson::GenericArray<false, rapidjson::Value> document);
 	static SceneItem* DeserializeSceneHierachyNode(Scene* scene, rapidjson::Value& obj, SceneItem* parent = nullptr);
+	static void DeserializeSceneHierachyNodeScripts(Scene* scene, SceneItem* item, rapidjson::Value& obj);
 	static void SerializeSceneHierachyNode(SceneItem* item, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json);
 	static void SerializeSceneHierachy(const Scene& scene, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json);
 public:

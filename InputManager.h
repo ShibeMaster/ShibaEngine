@@ -18,6 +18,9 @@ public:
 	static bool GetKeyDown(int key) {
 		return glfwGetKey(glfwGetCurrentContext(), key) == GLFW_PRESS;
 	}
+	static bool MouseButtonDown(int key) {
+		return glfwGetMouseButton(glfwGetCurrentContext(), key) == GLFW_PRESS;
+	}
 	static float MoveVert() {
 		bool forward = GetKeyDown(GLFW_KEY_W);
 		bool backward = GetKeyDown(GLFW_KEY_S);

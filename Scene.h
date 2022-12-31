@@ -21,6 +21,7 @@ public:
 	std::vector<SceneItem*> hierachy;
 
 	std::map<unsigned int, SceneItem> items;
+	std::map<std::string, SceneItem*> names;
 	Shader shader;
 	std::string path = "No Path";
 
@@ -29,6 +30,7 @@ public:
 	void OnDestroyEntity(unsigned int entity);
 	void LoadSkybox();
 	void RenderSkybox();
+	unsigned int GetInstanceFromName(const std::string& name);
 	void DestroyChildren(unsigned int entity);
 	void MoveEntityToChild(unsigned int entity, unsigned int parent);
 	
