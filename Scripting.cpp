@@ -497,7 +497,7 @@ void Scripting::DeserializeEntityScriptField(unsigned int entity, ClassInstance&
 	case FieldType::Vector2: instance.SetFieldValue<glm::vec2>(field.name, SerializationUtils::DeserializeVec2(obj)); break;
 	case FieldType::Vector3: instance.SetFieldValue<glm::vec3>(field.name, SerializationUtils::DeserializeVec3(obj)); break;
 	case FieldType::Int: instance.SetFieldValue<int>(field.name, obj.GetInt()); break;
-	case FieldType::Instance: instance.SetFieldValue<MonoObject>(field.name, data.entities[SceneManager::activeScene->GetInstanceFromName(obj.GetString())].instance.instance); std::cout << SceneManager::activeScene->GetInstanceFromName(obj.GetString()) << std::endl; break;
+	case FieldType::Instance: instance.SetFieldValue<MonoObject>(field.name, data.entities[SceneManager::activeScene->GetInstanceFromName(obj.GetString())].instance.instance); break;
 	default: break;
 	}
 }

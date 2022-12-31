@@ -15,8 +15,11 @@ private:
 	HierachyTreeNode hierachy;
 	HierachyTreeNode scriptHierachy;
 	HierachyTreeNode componentHierachy;
+	HierachyTreeNode shaderHierachy;
+	ProjectItem removingItem = { "", "No Path", "" };
 	void LoadProjectScriptHierachy();
 	void LoadDefaultComponentHierachy();
+	void LoadShaderHierachy();
 	void IterateDirectory(HierachyTreeNode& directoryNode);
 	void RenderHierachyNode(HierachyTreeNode& node);
 public:
@@ -42,6 +45,7 @@ public:
 	void CreateProject();
 	std::string GetAssemblyPath();
 	void InitializeDirectories();
+	void CreateNewShader(const std::string& name, const std::string& type, const std::string& vertexSource, const std::string& fragmentSource);
 	void CreateNewScript(const std::string& name);
 	void CreateNewBehaviour(const std::string& name, float interval);
 	void LoadProjectHierachy();

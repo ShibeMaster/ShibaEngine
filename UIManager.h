@@ -12,8 +12,15 @@ private:
 
 	static std::string creatingProjectName;
 	static std::string creatingProjectDirectory;
+
+	static std::string addingShaderName;
+	static std::string addingShaderType;
+	static std::string addingShaderVertexDirectory;
+	static std::string addingShaderFragmentDirectory;
+
 	static void RenderMenuBar();
 	static void RenderCreatingProjectPopup();
+	static void RenderAddingShaderPopup();
 	static void RenderAddingScriptPopup();
 	static void RenderProjectSettings();
 	static void StartDockspace();

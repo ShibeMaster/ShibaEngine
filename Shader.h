@@ -9,6 +9,7 @@ class Shader {
 public:
 	GLuint id;
 	std::vector<Uniform> uniforms;
+	std::string type;
 
 
 	Shader(){}
@@ -19,14 +20,13 @@ public:
 		glCompileShader(vertex);
 		int vertexStatus;
 		glGetShaderiv(vertex, GL_COMPILE_STATUS, &vertexStatus);
-		std::cout << "vertex status: " << vertexStatus << std::endl;
 
 		GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fragmentSource, NULL);
 		glCompileShader(fragment);
 		int fragmentStatus;
 		glGetShaderiv(fragment, GL_COMPILE_STATUS, &fragmentStatus);
-		std::cout << "fragment status: " << fragmentStatus << std::endl;
+		std::cout << "vertex: " << vertexStatus << " | " << "fragment : " << fragmentStatus << std::endl;
 
 		id = glCreateProgram();
 		glAttachShader(id, vertex);

@@ -9,6 +9,11 @@ glm::vec2 UIManager::viewportSize;
 std::string UIManager::creatingProjectName = "New Project";
 std::string UIManager::creatingProjectDirectory = "No Directory";
 
+std::string UIManager::addingShaderName = "New Shader";
+std::string UIManager::addingShaderType = "Model";
+std::string UIManager::addingShaderVertexDirectory = "";
+std::string UIManager::addingShaderFragmentDirectory = "";
+
 SceneHierachyFrame UIManager::sceneFrame;
 ViewportFrame UIManager::viewportFrame;
 InspectorFrame UIManager::inspectorFrame;
@@ -17,6 +22,7 @@ ManagementFrame UIManager::managementFrame;
 void UIManager::RenderMenuBar() {
 	bool addingScriptPopup = false;
 	bool addingProjectPopup = false;
+	bool addingShaderPopup = false;
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 
@@ -44,6 +50,9 @@ void UIManager::RenderMenuBar() {
 							ProjectManager::activeProject.CreateProject();
 						addingScriptPopup = true;
 						isAddingBehaviour = true;
+					}
+					if (ImGui::MenuItem("Shader")) {
+						addingShaderPopup = true;
 					}
 				}
 				ImGui::EndMenu();
@@ -122,9 +131,35 @@ void UIManager::RenderMenuBar() {
 		ImGui::OpenPopup("Adding Script");
 	if (addingProjectPopup)
 		ImGui::OpenPopup("New Project");
+	if (addingShaderPopup)
+		ImGui::OpenPopup("New Shader");
 	RenderAddingScriptPopup();
 	RenderCreatingProjectPopup();
+	RenderAddingShaderPopup();
 
+}
+void UIManager::RenderAddingShaderPopup() {
+	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (ImGui::BeginPopupModal("New Shader", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::InputText("Name", &addingShaderName);
+		ImGui::InputText("Type", &addingShaderType);
+		if (ImGui::Button(std::string("Vertex Directory: " + addingShaderVertexDirectory).c_str())) {
+			FileExtensions::OpenFileDialog("C:", ".txt", &addingShaderVertexDirectory);
+		}
+		if (ImGui::Button(std::string("Fragment Directory: " + addingShaderFragmentDirectory).c_str())) {
+			FileExtensions::OpenFileDialog("C:", ".txt", &addingShaderFragmentDirectory);
+		}
+		if (ImGui::Button("Add")) {
+			ProjectManager::activeProject.CreateNewShader(addingShaderName, addingShaderType, SerializationUtils::ReadFile(addingShaderVertexDirectory), SerializationUtils::ReadFile(addingShaderFragmentDirectory));
+			addingShaderName = "New Shader";
+			addingShaderType = "Model";
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
 }
 void UIManager::RenderCreatingProjectPopup() {
 	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));

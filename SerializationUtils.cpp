@@ -45,7 +45,6 @@ void SerializationUtils::SerializeUniformInformation(rapidjson::PrettyWriter<rap
 }
  std::string SerializationUtils::ReadFile(const std::string& path) {
 	std::ifstream file(path);
-	std::cout << path << std::endl;
 	std::string data;
 	if (file) {
 		std::ostringstream ss;

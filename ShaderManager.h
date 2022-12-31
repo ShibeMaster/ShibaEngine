@@ -53,21 +53,32 @@ public:
 		shader = &shaders[str];
 		shader->Use();
 	}
-	static void AddShader(const std::string& str, const Shader& shader) {
+	static void AddShader(const std::string& str, const Shader& shader, const std::string& type = "") {
 		shaders[str] = shader;
+		shaders[str].type = type;
 	}
-	static void AddShader(const std::string& str, const char* vertex, const char* fragment) {
+	static void AddShader(const std::string& str, const char* vertex, const char* fragment, const std::string& type = "") {
 		shaders[str] = Shader(vertex, fragment);
+		shaders[str].type = type;
 	}
-	static void LoadShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath) {
+	static void RemoveCustomShaders() {
+		std::vector<const char*> removingShaders;
+		for (auto& shader : shaders) {
+			if (shader.first.find("ShibaEngine_") == std::string::npos)
+				removingShaders.push_back(shader.first.c_str());
+		}
+		for (auto& shader : removingShaders)
+			shaders.erase(shader);
+	}
+	static void LoadShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, const std::string& type = "") {
 		auto vertex = SerializationUtils::ReadFile(vertexPath);
 		auto fragment = SerializationUtils::ReadFile(fragmentPath);
-		AddShader(name, vertex.c_str(), fragment.c_str());
+		AddShader(name, vertex.c_str(), fragment.c_str(), type);
 	}
 	static void LoadDefaultShaders() {
-		LoadShader("ShibaEngine_Default", "default_vertex.txt", "default_fragment.txt");
-		LoadShader("ShibaEngine_Billboard", "billboard_vertex.txt", "billboard_fragment.txt");
-		LoadShader("ShibaEngine_Skybox", "skybox_vertex.txt", "skybox_fragment.txt");
-		LoadShader("ShibaEngine_Sprite", "sprite_default_vertex.txt", "sprite_default_fragment.txt");
+		LoadShader("ShibaEngine_Default", "default_vertex.txt", "default_fragment.txt", "Model");
+		LoadShader("ShibaEngine_Billboard", "billboard_vertex.txt", "billboard_fragment.txt", "Sprite");
+		LoadShader("ShibaEngine_Skybox", "skybox_vertex.txt", "skybox_fragment.txt", "Skybox");
+		LoadShader("ShibaEngine_Sprite", "sprite_default_vertex.txt", "sprite_default_fragment.txt", "Sprite");
 	}
 };
