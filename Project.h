@@ -24,24 +24,23 @@ private:
 	void RenderHierachyNode(HierachyTreeNode& node);
 public:
 	ProjectSettings settings;
+
 	bool isFrameOpen = true;
 	std::map<std::string, HierachyTreeNode> hierachyMap;
 
 	Project(){}
 	Project(const std::string& path) {
 		settings.directory = path;
-		InitializeDirectories();
 	}
 	Project(const std::string& path, const std::string& name) {
 		settings.directory = path;
 		settings.name = name;
-		InitializeDirectories();
 	}
 	ProjectItem& GetItem(const std::string& path);
 	void ReloadProject();
 	HierachyTreeNode& CreateHierachyNode(const std::string& name, const std::string& path, const std::string& type, HierachyTreeNode& parentNode, bool isDirectory = false);
 	void CreateNewSceneNode(const std::string& name, const std::string& path);
-	void SaveProject();
+	void SaveProject(const std::string& specificPath = "None");
 	void CreateProject();
 	std::string GetAssemblyPath();
 	void InitializeDirectories();

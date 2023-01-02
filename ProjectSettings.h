@@ -7,4 +7,6 @@ public:
 	bool hasProject = false;
 	std::string projectPath;
 	bool hasAssembly = false;
+	bool inEngine = true;
+	std::string startingScenePath = "None";
 };

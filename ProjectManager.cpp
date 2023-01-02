@@ -12,10 +12,12 @@ Project ProjectManager::activeProject;
 bool ProjectManager::projectLoaded = false;
 void ProjectManager::CreateNewProject(const std::string& path) {
 	activeProject = Project(path);
+	activeProject.InitializeDirectories();
 	activeProject.LoadProjectHierachy();
 }
 void ProjectManager::CreateNewProject(const std::string& name, const std::string& path) {
 	activeProject = Project(path, name);
+	activeProject.InitializeDirectories();
 	activeProject.LoadProjectHierachy();
 	activeProject.SaveProject();
 	projectLoaded = true;
@@ -28,6 +30,7 @@ void ProjectManager::LoadProject(const std::string& path) {
 	settings.name = doc["Name"].GetString();
 	settings.directory = doc["Directory"].GetString();
 	settings.hasProject = doc["Has Project"].GetBool();
+	settings.inEngine = doc["In Engine"].GetBool();
 	if (settings.hasProject)
 		settings.projectPath = doc["Project Path"].GetString();
 	activeProject = Project(settings.directory);
@@ -36,6 +39,9 @@ void ProjectManager::LoadProject(const std::string& path) {
 	if (activeProject.settings.hasAssembly) {
 		Scripting::ReloadAssembly(activeProject.GetAssemblyPath());
 	}
-	activeProject.LoadProjectHierachy();
+	if (doc.HasMember("Starting Scene"))
+		activeProject.settings.startingScenePath = doc["Starting Scene"].GetString();
+	if(settings.inEngine)
+		activeProject.LoadProjectHierachy();
 	projectLoaded = true;
 }

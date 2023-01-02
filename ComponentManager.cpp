@@ -25,7 +25,8 @@ void ComponentManager::GetCoreComponentObject(unsigned int entity, const std::st
 void ComponentManager::DeserializeEntityComponents(unsigned int entity, rapidjson::Value& obj) {
 	for (auto& compArr : componentArrays) {
 		if (obj.HasMember(compArr.first.c_str())) {
-			compArr.second->Add(entity);
+			if(!compArr.second->HasComponent(entity))
+				compArr.second->Add(entity);
 			compArr.second->DeserializeComponent(entity, obj[compArr.first.c_str()]);
 		}
 	}

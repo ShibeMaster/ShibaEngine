@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32319.34
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32413.511
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShibaEngine", "ShibaEngine.vcxproj", "{DAA315FE-4BA4-45E9-B252-19C67732170C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShibaEngineCore", "..\ShibaEngineCore\ShibaEngineCore.csproj", "{E978B380-E497-4E49-B625-C2F7B90C9093}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ShibaEngineInstaller", "..\ShibaEngineInstaller\ShibaEngineInstaller.vdproj", "{65D78366-82E9-4AD2-ADF1-93439DB635AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,22 @@ Global
 		{E978B380-E497-4E49-B625-C2F7B90C9093}.Release|x64.Build.0 = Release|Any CPU
 		{E978B380-E497-4E49-B625-C2F7B90C9093}.Release|x86.ActiveCfg = Release|Any CPU
 		{E978B380-E497-4E49-B625-C2F7B90C9093}.Release|x86.Build.0 = Release|Any CPU
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|Any CPU.ActiveCfg = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|Any CPU.Build.0 = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|Win32.ActiveCfg = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|Win32.Build.0 = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|x64.ActiveCfg = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|x64.Build.0 = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|x86.ActiveCfg = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Debug|x86.Build.0 = Debug
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|Any CPU.ActiveCfg = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|Any CPU.Build.0 = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|Win32.ActiveCfg = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|Win32.Build.0 = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|x64.ActiveCfg = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|x64.Build.0 = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|x86.ActiveCfg = Release
+		{65D78366-82E9-4AD2-ADF1-93439DB635AF}.Release|x86.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

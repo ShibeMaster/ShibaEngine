@@ -33,7 +33,6 @@
 #include "FrameBuffer.h"
 #include "ViewManager.h"
 #include <GLFW/glfw3.h>
-#include <assimp/Importer.hpp>
 #include "Time.h"
 #include "Collisions.h"
 #include "Transform.h"
@@ -46,6 +45,17 @@
 #include "MeshCollisionBox.h"
 #include "SpriteRenderer.h"
 #include "RuntimeManager.h"
+
+// This is whether the application is going to be running the game or being used as an engine
+#define SHIBAENGINE_RUNTIME 1
+
+// I'm basically just gonna write out an explanation of the idea that I'm going to be using for compiling and running games
+// The way that I'm going to be handling this in the engine certainly isn't the best or safest in any way, but I'm just trying to do it including a compiler in the engine
+// The engine is going to need to be installed twice, one with this variable as 1 and another with 0 (it definitely would work better with using seperate project but theres so much interlinking shit in here that I'm not bothered trying to seperate all the files need for runtime from the engine)
+// When a game is compiled from the engine, it'll create a zip file which includes the project information, all the assets in the same layout as in the project directory (probably should try to encrypt them later lol), the project assembly with a specific name and finally a copy of the engine with the runtime variable enabled
+// If the runtime preprocessor definiton is enabled, the engine is expecting that all of these things are in the correct places
+// The runtime application will not show anything of the actual engine and pretty much just run the game normally using all of the existing data
+// probably explained this pretty poorly, but I hope anyone reading this will get the basic idea
 
 GLFWwindow* window;
 int clipboardEntity = -1;
@@ -116,11 +126,10 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = Display::Create();
-
 	glewInit();
 	glfwSwapInterval(1);
 
-	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
+	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc"); 
 	mono_config_parse(NULL);
 
 	Scripting::Initialize("");
@@ -136,27 +145,26 @@ int main() {
 	Engine::RegisterComponent<Light>();
 	Engine::RegisterComponent<CameraController>();
 	Engine::RegisterComponent<ScreenLayer>();
-
-	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
-	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-
 	ShaderManager::LoadDefaultShaders();
+
+#if SHIBAENGINE_RUNTIME
+	ProjectManager::LoadProject("GameData\\Project.SHBAPROJ");
+	SceneLoader::LoadScene(ProjectManager::activeProject.settings.startingScenePath);
+	RuntimeManager::StartRuntime(true);
+#else 
+	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
 	SceneManager::AddScene("temp.ShbaScene");
 	SceneManager::ChangeScene("temp.ShbaScene");
 	SceneManager::activeScene->LoadSkybox();
-	Engine::Start();
+	ViewManager::sceneView.view.framebuffer.Generate();
+	ViewManager::gameView.view.framebuffer.Generate();
+#endif
+
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
 	glfwSetWindowSizeCallback(window, Display::HandleWindowResize);
-
 	Display::ShowWindow();
 
-	ViewManager::sceneView.view.framebuffer.Generate();
-	ViewManager::gameView.view.framebuffer.Generate();
-
-
-	bool gameViewOpen;
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -175,7 +183,26 @@ int main() {
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#if SHIBAENGINE_RUNTIME
+		ViewManager::gameView.Update();
+		if (ViewManager::gameView.view.hasCamera) {
+			Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
+			Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
+			Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+			Renderer::ChangeShader("ShibaEngine_Skybox");
+			glDepthFunc(GL_LEQUAL);
+			SceneManager::activeScene->RenderSkybox();
+			glDepthFunc(GL_LESS);
+			RenderScene();
+		}
+		if (RuntimeManager::inRuntime && !RuntimeManager::isPaused)
+			Collisions::HandleCollision();
 
+		if (RuntimeManager::inRuntime && !RuntimeManager::isPaused) {
+			Scripting::Update();
+			Engine::Update();
+		}
+#else
 		if (ProjectManager::projectLoaded) {
 			if (UIManager::viewportFrame.sceneViewFrameOpen) {
 				Renderer::shaderData.view = ViewManager::sceneView.sceneCam.GetViewMatrix();
@@ -211,7 +238,6 @@ int main() {
 				}
 			}
 
-
 			if (RuntimeManager::inRuntime && !RuntimeManager::isPaused)
 				Collisions::HandleCollision();
 
@@ -221,8 +247,9 @@ int main() {
 			}
 
 		}
-
 		UIManager::Update();
+
+#endif
 
 		glfwSwapBuffers(window);
 	}

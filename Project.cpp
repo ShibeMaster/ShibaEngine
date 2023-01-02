@@ -41,10 +41,10 @@ void Project::IterateDirectory(HierachyTreeNode& directoryNode) {
 		CreateHierachyNode(file.path().stem().string(), file.path().string(), file.is_directory() ? "" : file.path().extension().string(), directoryNode, file.is_directory());
 	}
 }
-void Project::SaveProject() {
+void Project::SaveProject(const std::string& specificPath) {
 	if (settings.name == "")
 		settings.name = "New Project";
-	std::string path = settings.directory + settings.name + ".SHBAPROJ";
+	std::string path = specificPath == "None" ? settings.directory + settings.name + ".SHBAPROJ" : specificPath;
 	rapidjson::StringBuffer str;
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> json(str);
 	json.StartObject();
@@ -56,6 +56,10 @@ void Project::SaveProject() {
 	json.String(SceneManager::activeScene->path.c_str());
 	json.Key("Has Project");
 	json.Bool(settings.hasProject);
+	json.Key("Starting Scene");
+	json.String(settings.startingScenePath.c_str());
+	json.Key("In Engine");
+	json.Bool(settings.inEngine);
 	if (settings.hasProject) {
 		json.Key("Project Path");
 		json.String(settings.projectPath.c_str());
@@ -80,7 +84,7 @@ void Project::CreateProject() {
 	Scripting::CreateVSProject(settings.projectPath);
 }
 std::string Project::GetAssemblyPath() {
-	return settings.directory + "Scripts\\bin\\Debug\\netcoreapp3.1\\" + settings.name + ".dll";
+	return settings.inEngine ? settings.directory + "Scripts\\bin\\Debug\\netcoreapp3.1\\" + settings.name + ".dll" : std::filesystem::path(settings.directory).parent_path().parent_path().string() + "\\" + settings.name + ".dll";
 }
 void Project::CreateNewShader(const std::string& name, const std::string& type, const std::string& vertexSource, const std::string& fragmentSource) {
 	rapidjson::StringBuffer str;
@@ -231,7 +235,8 @@ void Project::RenderHierachy() {
 		ImGui::EndTable();
 
 		if (removingItem.path != "No Path") {
-			if (removingItem.type.find("Shader") != std::string::npos)
+			// just need to remove the shader from the shader manager if the user is deleting a shader, we also need to check whether that shader is a custom one as we don't want to delete the default engine shaders
+			if (removingItem.type.find("Shader") != std::string::npos && removingItem.name.find("ShibaEngine_") != std::string::npos)
 				ShaderManager::shaders.erase(removingItem.name);
 
 			std::cout << removingItem.path << std::endl;
