@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include "Scripting.h"
+#include "FileExtensions.h"
 #include "Console.h"
 
 class RuntimeManager {

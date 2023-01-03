@@ -3,7 +3,6 @@
 #include "Engine.h"
 #include "Scene.h"
 #include <limits>
-#include "Console.h"
 
 void Collisions::ResolveCollision(std::vector<Collision> collisions) {
     for (auto& col : collisions) {
@@ -15,6 +14,7 @@ void Collisions::ResolveCollision(std::vector<Collision> collisions) {
         else if (dot < 0.0f) dot = -1.0f;
 
         col.velocityA = glm::vec3(dot * col.normal * magnitude) / Time::deltaTime;
+        col.velocityA.y = 0.0f;
     }
 }
 void Collisions::CheckCollisions(std::vector<Collision>* collisions, unsigned int e, MeshCollisionBox& box) {

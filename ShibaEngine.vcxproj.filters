@@ -338,7 +338,7 @@
     <ClInclude Include="SceneManager.h">
       <Filter>Header Files\Engine\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="Time.h">
+    <ClInclude Include="EngineTime.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="View.h">

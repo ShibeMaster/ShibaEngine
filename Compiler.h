@@ -28,7 +28,7 @@ public:
 		project.SaveProject(gameDataDirectory + "Project.SHBAPROJ");
 		std::filesystem::copy(ProjectManager::activeProject.GetAssemblyPath(), directory + ProjectManager::activeProject.settings.name + ".dll");
 		std::filesystem::copy(std::filesystem::path(ProjectManager::activeProject.GetAssemblyPath()).parent_path().string() + "\\" + "ShibaEngineCore.dll", directory + "ShibaEngineCore.dll");
-		// std::filesystem::copy("path of other installed project", directory);
+		std::filesystem::copy("Runtime\\", directory);
 	}
 
 };

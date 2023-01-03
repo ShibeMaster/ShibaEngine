@@ -96,7 +96,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\tombr\source\repos\Shiba Engine\External Libraries\GL\GLFWx32\lib-vc2022;C:\Users\tombr\source\repos\Shiba Engine\External Libraries\GL\GLEWbin\lib\Release\Win32;C:\Users\tombr\source\repos\Shiba Engine\External Libraries\ImGui;C:\Users\tombr\source\repos\vcpkg\installed\x86-windows\lib;C:\Program Files (x86)\Mono\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;mono-2.0-sgen.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glfw3dll.lib;glew32.lib;mono-2.0-sgen.lib;assimp-vc142-mt.lib;pugixml.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -240,7 +240,7 @@
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteRenderer.h" />
-    <ClInclude Include="Time.h" />
+    <ClInclude Include="EngineTime.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="ScreenLayer.h" />
     <ClInclude Include="UIManager.h" />

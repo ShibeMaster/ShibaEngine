@@ -121,12 +121,16 @@ public:
 	}
     void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
         json->Key("Mesh");
-        json->String(meshItem.path.c_str());
+        json->String(std::filesystem::proximate(meshItem.path, ProjectManager::activeProject.settings.directory).string().c_str());
         json->Key("Debug Draw");
         json->Bool(debugDraw);
     }
     void Deserialize(rapidjson::Value& obj) {
-        meshItem = ProjectManager::activeProject.GetItem(obj["Mesh"].GetString());
+
+        if (ProjectManager::activeProject.settings.inEngine)
+            meshItem = ProjectManager::activeProject.GetItem(ProjectManager::activeProject.settings.directory + obj["Mesh"].GetString());
+        else
+            meshItem.path = ProjectManager::activeProject.settings.directory + obj["Mesh"].GetString();
         debugDraw = obj["Debug Draw"].GetBool();
         LoadMeshBox();
     }
