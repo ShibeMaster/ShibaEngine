@@ -1,5 +1,5 @@
 #include "ScriptingTypes.h"
-#include "Time.h"
+#include "EngineTime.h"
 #include <iostream>
 
 MonoMethod* Class::GetMethod(const std::string& name, int parameterCount) {

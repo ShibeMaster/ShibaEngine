@@ -5,6 +5,7 @@
 #include "GUIExtensions.h"
 #include "ModelLoader.h"
 #include "Sprite.h"
+#include "Renderer.h"
 #include <imgui.h>
 class SpriteRenderer : public Component {
 public:

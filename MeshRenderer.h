@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "ShaderManager.h"
 #include "ShaderInstanceData.h"
+#include <filesystem>
 #include "Engine.h"
 #include "Transform.h"
 #include "Scripting.h"
@@ -59,7 +60,7 @@ public:
 	}
     void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
         json->Key("Model");
-        json->String(modelItem.path.c_str());
+        json->String(std::filesystem::proximate(modelItem.path, ProjectManager::activeProject.settings.directory).string().c_str());
         json->Key("Shader");
         json->String(shader.c_str());
         json->Key("Uniforms");
@@ -104,8 +105,12 @@ public:
         }
     }
     void Deserialize(rapidjson::Value& obj) {
-        modelItem = ProjectManager::activeProject.GetItem(obj["Model"].GetString());
+        if (ProjectManager::activeProject.settings.inEngine)
+            modelItem = ProjectManager::activeProject.GetItem(ProjectManager::activeProject.settings.directory + obj["Model"].GetString());
+        else
+            modelItem.path = ProjectManager::activeProject.settings.directory + obj["Model"].GetString();
         shader = obj["Shader"].GetString();
+
         ReloadMesh();
         DeserializeUniforms(obj);
     }

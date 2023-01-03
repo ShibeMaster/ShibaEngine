@@ -33,8 +33,7 @@
 #include "FrameBuffer.h"
 #include "ViewManager.h"
 #include <GLFW/glfw3.h>
-#include <assimp/Importer.hpp>
-#include "Time.h"
+#include "EngineTime.h"
 #include "Collisions.h"
 #include "Transform.h"
 #include "MeshRenderer.h"
@@ -116,11 +115,10 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = Display::Create();
-
 	glewInit();
 	glfwSwapInterval(1);
 
-	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc");
+	mono_set_dirs("C:\\Program Files (x86)\\Mono\\lib", "C:\\Program Files (x86)\\Mono\\etc"); 
 	mono_config_parse(NULL);
 
 	Scripting::Initialize("");
@@ -136,31 +134,25 @@ int main() {
 	Engine::RegisterComponent<Light>();
 	Engine::RegisterComponent<CameraController>();
 	Engine::RegisterComponent<ScreenLayer>();
+	ShaderManager::LoadDefaultShaders();
 
 	ProjectManager::CreateNewProject("C:\\Users\\tombr\\OneDrive\\Desktop\\Downloads\\Test Hierachy\\");
-	float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-
-	ShaderManager::LoadDefaultShaders();
 	SceneManager::AddScene("temp.ShbaScene");
 	SceneManager::ChangeScene("temp.ShbaScene");
 	SceneManager::activeScene->LoadSkybox();
-	Engine::Start();
+	ViewManager::sceneView.view.framebuffer.Generate();
+	ViewManager::gameView.view.framebuffer.Generate();
+	SetupDefaultScene();
+
+
 	glfwSetKeyCallback(window, ProcessInput);
 	glfwSetCursorPosCallback(window, HandleMouseInput); 
 	glfwSetWindowSizeCallback(window, Display::HandleWindowResize);
-
 	Display::ShowWindow();
 
-	ViewManager::sceneView.view.framebuffer.Generate();
-	ViewManager::gameView.view.framebuffer.Generate();
-
-
-	bool gameViewOpen;
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	SetupDefaultScene();
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		for (auto& source : Engine::FindComponentsInScene<Light>()) {
@@ -198,7 +190,7 @@ int main() {
 				if (ViewManager::gameView.view.hasCamera) {
 					Renderer::shaderData.view = ViewManager::gameView.view.camera->GetViewMatrix();
 					Renderer::shaderData.viewPos = ViewManager::gameView.view.camera->transform->position;
-					Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y, 0.1f, 100.0f);
+					Renderer::shaderData.projection = glm::perspective(glm::radians(45.0f), (ViewManager::gameView.view.framebuffer.dimensions.x / ViewManager::gameView.view.framebuffer.dimensions.y), 0.1f, 100.0f);
 					ViewManager::gameView.view.framebuffer.Bind();
 					glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -211,7 +203,6 @@ int main() {
 				}
 			}
 
-
 			if (RuntimeManager::inRuntime && !RuntimeManager::isPaused)
 				Collisions::HandleCollision();
 
@@ -221,8 +212,8 @@ int main() {
 			}
 
 		}
-
 		UIManager::Update();
+
 
 		glfwSwapBuffers(window);
 	}

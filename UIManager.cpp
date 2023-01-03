@@ -1,4 +1,5 @@
 #include "UIManager.h"
+#include "Compiler.h"
 #include <filesystem>
 
 std::string UIManager::addingScriptName = "NewScript";
@@ -13,6 +14,7 @@ std::string UIManager::addingShaderName = "New Shader";
 std::string UIManager::addingShaderType = "Model";
 std::string UIManager::addingShaderVertexDirectory = "";
 std::string UIManager::addingShaderFragmentDirectory = "";
+std::string UIManager::compilingProjectDirectory = "";
 
 SceneHierachyFrame UIManager::sceneFrame;
 ViewportFrame UIManager::viewportFrame;
@@ -23,6 +25,7 @@ void UIManager::RenderMenuBar() {
 	bool addingScriptPopup = false;
 	bool addingProjectPopup = false;
 	bool addingShaderPopup = false;
+	bool compilingPopup = false;
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 
@@ -116,6 +119,8 @@ void UIManager::RenderMenuBar() {
 			}
 			ImGui::EndMenu();
 		}
+		if (ImGui::MenuItem("Compile"))
+			compilingPopup = true;
 		if (ImGui::BeginMenu("Window")) {
 			ImGui::MenuItem("Scene", "", &viewportFrame.sceneViewFrameOpen);
 			ImGui::MenuItem("Game", "", &viewportFrame.gameViewFrameOpen);
@@ -133,10 +138,29 @@ void UIManager::RenderMenuBar() {
 		ImGui::OpenPopup("New Project");
 	if (addingShaderPopup)
 		ImGui::OpenPopup("New Shader");
+	if (compilingPopup)
+		ImGui::OpenPopup("Compiling Project");
 	RenderAddingScriptPopup();
 	RenderCreatingProjectPopup();
 	RenderAddingShaderPopup();
+	RenderCompilingProjectPopup();
 
+}
+void UIManager::RenderCompilingProjectPopup() {
+	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (ImGui::BeginPopupModal("Compiling Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		if (ImGui::Button(std::string("Directory: " + compilingProjectDirectory).c_str()))
+			FileExtensions::OpenFolderDialog("C:", &compilingProjectDirectory);
+		if (ImGui::Button("Compile")) {
+			Compiler compiler = (compilingProjectDirectory);
+			compiler.Compile();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
 }
 void UIManager::RenderAddingShaderPopup() {
 	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -212,6 +236,7 @@ void UIManager::RenderProjectSettings() {
 	ImGui::BeginChild("Project Settings", ImVec2(360, 60), true);
 	ImGui::InputText("Name", &ProjectManager::activeProject.settings.name);
 	ImGui::InputText("Directory", &ProjectManager::activeProject.settings.directory);
+	ImGui::InputText("Starting Scene", &ProjectManager::activeProject.settings.startingScenePath);
 	ImGui::EndChild();
 }
 #pragma region Scene

@@ -44,9 +44,22 @@ public:
 	void Serialize(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
 		json->Key("Sensitivity");
 		json->Double((double)sensitivity);
+		if (hasCamera) {
+			json->Key("Camera");
+			json->String(SceneManager::activeScene->items[camera->entity].name.c_str());
+		}
 	}
 	void Deserialize(rapidjson::Value& obj) {
 		sensitivity = (float)obj["Sensitivity"].GetDouble();
+		if (obj.HasMember("Camera")) {
+			unsigned int entity = SceneManager::activeScene->names[obj["Camera"].GetString()]->entity;
+			if (!Engine::HasComponent<Camera>(entity)) {
+				Engine::AddComponent<Camera>(entity);
+				Scripting::OnAddComponent(entity, "Camera");
+			}
+			camera = Engine::GetComponentPointer<Camera>(entity);
+			hasCamera = true;
+		}
 	}
 	void GetObject(ClassInstance* instance) {
 		instance->SetFieldValue<float>("sensitivity", sensitivity);

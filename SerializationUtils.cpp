@@ -43,6 +43,18 @@ void SerializationUtils::SerializeUniformInformation(rapidjson::PrettyWriter<rap
 	json->Key("type");
 	json->String(type.c_str());
 }
+std::string SerializationUtils::ReadFileBinary(const std::string& path) {
+	std::ifstream file(path, std::ios_base::binary);
+	std::string data;
+	if (file) {
+		std::ostringstream ss;
+		ss << file.rdbuf();
+		data = ss.str();
+	}
+	file.close();
+	return data;
+	
+}
  std::string SerializationUtils::ReadFile(const std::string& path) {
 	std::ifstream file(path);
 	std::string data;

@@ -338,7 +338,7 @@
     <ClInclude Include="SceneManager.h">
       <Filter>Header Files\Engine\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="Time.h">
+    <ClInclude Include="EngineTime.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="View.h">
@@ -435,6 +435,9 @@
       <Filter>Header Files\Editor UI\Frames</Filter>
     </ClInclude>
     <ClInclude Include="RuntimeManager.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>

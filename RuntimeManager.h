@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include "Scripting.h"
+#include "FileExtensions.h"
 #include "Console.h"
 
 class RuntimeManager {
@@ -21,19 +22,21 @@ public:
 	static inline float runtimeStartTime = 0.0f;
 	static inline bool isPaused = false;
 
-	static void StartRuntime() {
+	static void StartRuntime(bool onlyRuntime = false) {
 
-		std::string path;
-		if (SceneManager::activeScene->path == "No Path") {
-			if (FileExtensions::SaveFileAsDialog(ProjectManager::activeProject.settings.directory, "ShbaScene", &path)) {
-				SceneManager::activeScene->name = std::filesystem::path(path).stem().string();
-				SaveScene(path);
+		if (!onlyRuntime) {
+			std::string path;
+			if (SceneManager::activeScene->path == "No Path") {
+				if (FileExtensions::SaveFileAsDialog(ProjectManager::activeProject.settings.directory, "ShbaScene", &path)) {
+					SceneManager::activeScene->name = std::filesystem::path(path).stem().string();
+					SaveScene(path);
+				}
 			}
-		}
-		else
-			SaveScene();
+			else
+				SaveScene();
 
-		Console::LogMessage("Runtime Started");
+			Console::LogMessage("Runtime Started");
+		}
 		Scripting::OnRuntimeStart();
 		inRuntime = true;
 		isPaused = false;

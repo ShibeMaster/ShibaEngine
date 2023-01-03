@@ -7,6 +7,7 @@
 #include "FileExtensions.h"
 #include "ProjectManager.h"
 #include "Engine.h"
+#include "ViewManager.h"
 #include "SceneManager.h"
 
 void SceneLoader::SerializeSceneInfo(const Scene& scene, rapidjson::PrettyWriter<rapidjson::StringBuffer>* json) {
@@ -33,6 +34,8 @@ SceneItem* SceneLoader::DeserializeSceneHierachyNode(Scene* scene, rapidjson::Va
 	item.entity = Engine::CreateEntity();
 
 	scene->items[item.entity] = item;
+	std::cout << scene->items[item.entity].name << std::endl;
+
 	scene->names[item.name] = &scene->items[item.entity];
 	Scripting::OnEntityCreated(item.entity);
 
@@ -83,6 +86,7 @@ void SceneLoader::SerializeSceneHierachy(const Scene& scene, rapidjson::PrettyWr
 
 void SceneLoader::LoadScene(const std::string& path) {
 	Engine::ResetEntities();
+	ViewManager::gameView.view.hasCamera = false;
 	Scripting::Clear();
 	rapidjson::Document doc;
 	SceneManager::AddScene(path);
