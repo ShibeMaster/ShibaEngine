@@ -29,6 +29,7 @@ public:
 		std::filesystem::copy(ProjectManager::activeProject.GetAssemblyPath(), directory + ProjectManager::activeProject.settings.name + ".dll");
 		std::filesystem::copy(std::filesystem::path(ProjectManager::activeProject.GetAssemblyPath()).parent_path().string() + "\\" + "ShibaEngineCore.dll", directory + "ShibaEngineCore.dll");
 		std::filesystem::copy("Runtime\\", directory);
+		std::filesystem::rename(directory + "ShibaEngineRuntime.exe", directory + ProjectManager::activeProject.settings.name + ".exe");
 	}
 
 };

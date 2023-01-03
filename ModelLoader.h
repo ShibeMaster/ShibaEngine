@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "FileExtensions.h"
 #include "Model.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

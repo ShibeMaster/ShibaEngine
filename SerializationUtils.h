@@ -13,6 +13,7 @@ public:
 	static glm::vec2 DeserializeVec2(rapidjson::Value& obj);
 	static glm::vec3 DeserializeVec3(rapidjson::Value& obj);
 	static void SerializeUniformInformation(rapidjson::PrettyWriter<rapidjson::StringBuffer>* json, const std::string& type, const std::string& name);
+	static std::string ReadFileBinary(const std::string& path);
 	static std::string ReadFile(const std::string& path);
 };
 
