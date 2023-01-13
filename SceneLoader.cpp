@@ -33,6 +33,16 @@ SceneItem* SceneLoader::DeserializeSceneHierachyNode(Scene* scene, rapidjson::Va
 		item.parent = parent;
 	item.entity = Engine::CreateEntity();
 
+	if (scene->names.find(item.name) != scene->names.end()) {
+		int duplicateNames = 0;
+		while (true) {
+			if (scene->names.find(item.name + " (" + std::to_string(++duplicateNames) + ")") == scene->names.end()) {
+				item.name = item.name + " (" + std::to_string(duplicateNames) + ")";
+				break;
+			}
+		}
+	}
+
 	scene->items[item.entity] = item;
 	std::cout << scene->items[item.entity].name << std::endl;
 

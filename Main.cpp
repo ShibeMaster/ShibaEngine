@@ -78,6 +78,10 @@ void ProcessInput(GLFWwindow* window, int key, int scancode, int action, int mod
 				Engine::AddComponent(newEntity, comp);
 			}
 		}
+		// debug instantiation
+		if (key == GLFW_KEY_F1) {
+			Scripting::InstantiateEntity(1);
+		}
 		if (key == GLFW_KEY_DELETE && UIManager::sceneFrame.selectedEntity > -1) {
 			Engine::DestroyEntity(UIManager::sceneFrame.selectedEntity);
 			Scripting::OnEntityDestroyed(UIManager::sceneFrame.selectedEntity);

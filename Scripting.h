@@ -64,6 +64,7 @@ private:
 	static void PrintMessage(MonoString* message);
 	static void PrintError(MonoString* error);
 	static bool MouseButtonDown(int button);
+	static MonoObject* InstantiateInternal(unsigned int entity);
 #pragma endregion 
 
 public:
@@ -88,5 +89,6 @@ public:
 	static void DeserializeEntityScripts(unsigned int entity, rapidjson::Value& obj);
 	static void Update();
 	static void Clear();
+	static unsigned int InstantiateEntity(unsigned int entity);
 	static MonoObject* Instantiate(MonoClass* klass);
 };
