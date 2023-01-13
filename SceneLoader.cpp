@@ -48,6 +48,8 @@ SceneItem* SceneLoader::DeserializeSceneHierachyNode(Scene* scene, rapidjson::Va
 }
 void SceneLoader::DeserializeSceneHierachyNodeScripts(Scene* scene, SceneItem* item, rapidjson::Value& obj) {
 	Engine::DeserializeEntityComponents(item->entity, obj);
+	for (auto& comp : Engine::GetEntityComponents(item->entity))
+		Scripting::OnAddComponent(item->entity, comp);
 	Scripting::DeserializeEntityScripts(item->entity, obj);
 	
 	if (obj.HasMember("Children")) {

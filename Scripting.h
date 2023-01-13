@@ -6,6 +6,7 @@
 #include <mono/metadata/object.h>
 #include <map>
 
+
 struct Instance {
 	unsigned int entity;
 	ClassInstance instance;
@@ -36,8 +37,6 @@ private:
 	static Class coreComponentClass;
 	static Class behaviourManager;
 	static Class mouseClass;
-
-
 	static void LoadCoreAssemblyClasses();
 	static void LoadAssemblyClasses();
 	static void FindBehaviours();
@@ -70,7 +69,6 @@ private:
 public:
 	static ScriptingEngineData data;
 	static Class instanceClass;
-
 	static void Initialize(const std::string& path);
 	static void Setup(const std::string& path);
 	static void UpdateBehaviours();

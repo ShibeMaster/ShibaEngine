@@ -4,6 +4,7 @@
 #include <Mono/metadata/assembly.h>
 #include "Engine.h"
 #include <fstream>
+#include <memory>
 #include "Transform.h"
 #include "SceneManager.h"
 #include "InputManager.h"
@@ -11,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <mono/metadata/debug-helpers.h>
 #include "SerializationUtils.h"
+
 #include <mono/metadata/attrdefs.h>
 #include "FileExtensions.h"
 #include "Console.h"
@@ -25,6 +27,7 @@ Class Scripting::coreComponentClass;
 Class Scripting::instanceClass;
 Class Scripting::behaviourManager;
 Class Scripting::mouseClass;
+
 
 #pragma region Utils
 
@@ -72,8 +75,6 @@ FieldType Utils::MonoTypeToFieldType(MonoType* type) {
 }
 
 #pragma endregion
-
-
 void Scripting::Initialize(const std::string& path) {
 	MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 	if (rootDomain == nullptr) {
@@ -96,8 +97,6 @@ void Scripting::Initialize(const std::string& path) {
 	mono_add_internal_call("ShibaEngineCore.Instance::GetName", GetName);
 	mono_add_internal_call("ShibaEngineCore.Components::GetEntityInstance", GetInstance);
 	mono_add_internal_call("ShibaEngineCore.Mouse::MouseButtonDown", MouseButtonDown);
-
-
 }
 void Scripting::Setup(const std::string& path) {
 	mono_config_parse(NULL);
