@@ -4,6 +4,7 @@
 #include <Mono/metadata/assembly.h>
 #include "Engine.h"
 #include <fstream>
+#include <memory>
 #include "Transform.h"
 #include "SceneManager.h"
 #include "InputManager.h"
@@ -11,6 +12,8 @@
 #include <glm/glm.hpp>
 #include <mono/metadata/debug-helpers.h>
 #include "SerializationUtils.h"
+#include "SceneLoader.h"
+
 #include <mono/metadata/attrdefs.h>
 #include "FileExtensions.h"
 #include "Console.h"
@@ -25,6 +28,7 @@ Class Scripting::coreComponentClass;
 Class Scripting::instanceClass;
 Class Scripting::behaviourManager;
 Class Scripting::mouseClass;
+
 
 #pragma region Utils
 
@@ -72,8 +76,6 @@ FieldType Utils::MonoTypeToFieldType(MonoType* type) {
 }
 
 #pragma endregion
-
-
 void Scripting::Initialize(const std::string& path) {
 	MonoDomain* rootDomain = mono_jit_init("ShibaEngineRuntime");
 	if (rootDomain == nullptr) {
@@ -96,8 +98,7 @@ void Scripting::Initialize(const std::string& path) {
 	mono_add_internal_call("ShibaEngineCore.Instance::GetName", GetName);
 	mono_add_internal_call("ShibaEngineCore.Components::GetEntityInstance", GetInstance);
 	mono_add_internal_call("ShibaEngineCore.Mouse::MouseButtonDown", MouseButtonDown);
-
-
+	mono_add_internal_call("ShibaEngineCore.Instance::InstantiateInstance", InstantiateInternal);
 }
 void Scripting::Setup(const std::string& path) {
 	mono_config_parse(NULL);
@@ -269,6 +270,10 @@ void Scripting::OnEntityDestroyed(unsigned int entity) {
 void Scripting::OnEntityCreated(unsigned int entity) {
 	data.entities[entity] = { entity, CreateClassInstance(entity, instanceClass) };
 	OnAddComponent(entity, "Transform");
+}
+MonoObject* Scripting::InstantiateInternal(unsigned int entity) {
+	InstantiateEntity(entity);
+	return data.entities[entity].instance.instance;
 }
 MonoAssembly* Scripting::LoadAssembly(const std::string& path) {
 	uint32_t size = 0;
@@ -535,6 +540,18 @@ void Scripting::Update() {
 void Scripting::Clear() {
 	data.entities.clear();
 	data.behaviours.clear();
+}
+unsigned int Scripting::InstantiateEntity(unsigned int entity) {
+	// to make a pretty good copy of the entity, we're going to want to get the sceneitem to serialize and deserialize it
+	rapidjson::StringBuffer str;
+	rapidjson::PrettyWriter<rapidjson::StringBuffer> json = rapidjson::PrettyWriter<rapidjson::StringBuffer>(str);
+	SceneLoader::SerializeSceneHierachyNode(&SceneManager::activeScene->items[entity], &json);
+	rapidjson::Document doc;
+	doc.Parse(str.GetString());
+	auto item = SceneLoader::DeserializeSceneHierachyNode(SceneManager::activeScene, doc);
+	SceneLoader::DeserializeSceneHierachyNodeScripts(SceneManager::activeScene, item, doc);
+	SceneManager::activeScene->hierachy.push_back(item);
+	return item->entity;
 }
 MonoObject* Scripting::Instantiate(MonoClass* klass) {
 	MonoObject* instance = mono_object_new(data.appDomain, klass);

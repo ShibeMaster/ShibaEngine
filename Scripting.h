@@ -6,6 +6,7 @@
 #include <mono/metadata/object.h>
 #include <map>
 
+
 struct Instance {
 	unsigned int entity;
 	ClassInstance instance;
@@ -36,8 +37,6 @@ private:
 	static Class coreComponentClass;
 	static Class behaviourManager;
 	static Class mouseClass;
-
-
 	static void LoadCoreAssemblyClasses();
 	static void LoadAssemblyClasses();
 	static void FindBehaviours();
@@ -65,12 +64,12 @@ private:
 	static void PrintMessage(MonoString* message);
 	static void PrintError(MonoString* error);
 	static bool MouseButtonDown(int button);
+	static MonoObject* InstantiateInternal(unsigned int entity);
 #pragma endregion 
 
 public:
 	static ScriptingEngineData data;
 	static Class instanceClass;
-
 	static void Initialize(const std::string& path);
 	static void Setup(const std::string& path);
 	static void UpdateBehaviours();
@@ -90,5 +89,6 @@ public:
 	static void DeserializeEntityScripts(unsigned int entity, rapidjson::Value& obj);
 	static void Update();
 	static void Clear();
+	static unsigned int InstantiateEntity(unsigned int entity);
 	static MonoObject* Instantiate(MonoClass* klass);
 };
